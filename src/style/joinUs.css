@@ -1,0 +1,165 @@
+  .joinUs {
+    display: flex;
+    justify-content: center;
+    padding: 10px 30px;
+    width: fit-content;
+  }
+
+  .donate {
+    width: fit-content;
+  }
+
+  .joinUsAction, .donateAction{
+    align-items: center;
+    display: flex;
+    justify-content: center;
+  }
+
+  .joinUsActionContainer {
+    align-items: center;
+    justify-content: center;
+    display: flex;
+    flex-wrap: nowrap; 
+    margin: 10px auto;
+    width: 100%;
+  }
+
+  .joinUsAction.data {
+    margin-bottom: 0;
+    width: fit-content;
+  }
+  
+  .joinUsAction.heading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: max-content;
+  }
+
+  .joinUsActionHeader, .donateActionHeader {
+    align-items: center;
+    display: flex;
+    flex-wrap: nowrap;
+    flex-direction: row;
+    font-size: 1.2rem;
+    width: clamp(40%, min-content, 100%);
+  }
+
+  .joinUsAction.heading .joinUsActionheader {
+    margin-bottom: 0;
+  }
+
+  .joinUsIcon {
+    margin-right: 10px;
+    font-size: 36px;
+  }
+
+  .joinUsActionDetails {
+    font-weight: 600;
+    font-size: 1.2rem;
+    margin: 0 !important;
+  }
+
+  .joinUsAction a {
+    color: var(--white);
+  }
+  
+  .joinUsButton, .donateButton {  
+      align-items: center;
+      background-color: var(--second-color);
+      border: none;
+      border-radius: 10px;
+      box-shadow: var(--shadow);
+      -webkit-box-shadow: var(--shadow);
+      -moz-box-shadow: var(--shadow);
+      color: var(--white);
+      cursor: pointer;
+      display: inline-flex;
+      font-family: var(--main-font);
+      font-size: 1rem;
+      font-weight: 900;
+      gap: .5ch;
+      padding: var(--margin-normal);
+      text-transform: uppercase;
+      transition: var(--transition);
+      width: fit-content;
+  }
+
+  .joinUsButton:hover, .donateButton:hover {
+    background-color: var(--first-color);
+  }
+  
+  .joinUs ul {
+    width: 100%;
+  }
+
+  .formField, .formLabel, .agreementContainer {
+      width: 100%;
+    }
+
+  @media only screen and (max-width: 767px) {
+  
+    .joinUsButton, .donateButton, .newsletterButton {
+        border-radius: 10px;
+        margin: 10px 5px;
+        font-size: 20px;
+    }
+    
+    .joinUsAction {
+        flex-direction: column;
+        margin: auto;
+        width: 100%;
+        font-size: 16px;
+    }
+
+    .joinUsAction i {
+      font-size: 1.5rem;
+    }
+
+    .joinUsActionContainer {
+      margin: 10px auto;
+      flex-direction: column;
+    }
+
+    .joinUsButton {
+      font-size: 16px;
+    }
+
+    .joinUsButton i, .donateButton i {
+      font-size: 16px;
+    }
+
+    .formField, .formLabel, .agreementContainer {
+      max-width: 400px;
+    }
+
+  }
+
+  @media only screen and (min-width: 768px) {
+
+    .joinUsAction {
+      flex-direction: row;
+    }
+    .joinUsButton, .donateButton, .newsletterButton {
+        border-radius: 10px;
+        margin: 10px 0px 10px 10px;
+    }
+  }
+
+.donate-form {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  width: 80vw
+}
+
+.donate .agreement {
+  margin: 10px auto;
+  width: 100%;
+}
+
+@media only screen and (max-width: 767px) {
+  .donateButton {
+    font-size: 16px;
+  }
+}

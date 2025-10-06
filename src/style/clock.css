@@ -1,0 +1,29 @@
+.clock {
+    position: fixed;
+    left: 10px;
+    bottom: 10px;
+    width: fit-content;
+    background-color: var(--first-color);
+    padding: var(--margin-normal);
+    border-radius: 10px;
+    font-weight: 600;
+    color: var(--white);
+    width: 360px;
+    z-index: 5;
+    transition: all 0.3s ease-in-out;
+    animation: default-animation 1s ease-in-out 0s 1 normal forwards;
+    cursor: pointer;
+}
+.clock-time {
+    font-weight: 900;
+    letter-spacing: 0.05rem;
+    font-size: 28px;
+    text-align: left;
+    transition: all 0.3s ease-in-out;
+}
+
+@media all and (max-width: 1023px) {
+    .clock{
+        display: none;
+    }
+  }

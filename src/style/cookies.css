@@ -1,0 +1,32 @@
+.cookies {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    width: fit-content;
+    max-width: 800px;
+    gap: 20px;
+}
+
+.cookiesButton:hover {
+    background-color: var(--first-color);
+  }
+
+  .cookiesButton {  
+    align-items: center;
+    background-color: var(--second-color);
+    border: none;
+    color: var(--white);
+    cursor: pointer;
+    display: flex;
+    font-family: var(--head-font);
+    font-weight: 900;
+    font-size: 24px;
+    opacity: 100%;
+    padding: 0.25em 0.5em;
+    text-decoration: none;
+    text-transform: uppercase;
+    -webkit-box-shadow: var(--shadow);
+    -moz-box-shadow: var(--shadow);
+    box-shadow: var(--shadow);
+    transition: all 0.3s ease-out;
+  }

@@ -1,0 +1,248 @@
+.adminPanel {
+    --form-padding: 20px;
+    --form-field-height: 10px;
+    --form-border-radius: 10px;
+    --form-bg-color: #000a;
+    --form-margin: 20px;
+    --btn-min-width: 100px;
+    --btn-max-width: 130px;
+    --btn-margin: 10px;
+    --transition: all 0.5s ease-in-out;
+    --btn-focus-padding: 7px;
+}
+
+input:focus, textarea:focus, select:focus, button:focus {
+    outline: none;
+}
+
+.adminPanel button, .adminPanel input, .adminPanel textarea, .adminPanel select{
+    padding: 10px;
+    border-radius: var(--form-border-radius);
+    border: 0;
+    font-size: 1rem;
+}
+
+.adminPanel {
+    color: var(--white);
+    width: 100vw;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: center;
+}
+
+.adminPanel h3, .addDataForm h3 {
+    text-shadow: none;
+    margin: 0;
+}
+
+.addDataForm h3, .adminPanel p {
+    font-size: 16px;
+    width: 100%;
+}
+.dataTable p, .dataTable td,  .dataTable th {
+    font-size: 12px;
+}
+
+.adminPanel .loginForm, .adminPanel .addDataForm {
+    display: flex;
+    flex-wrap: wrap;
+    align-content: flex-start;
+    background-color: var(--form-bg-color);
+    padding: var(--form-padding);
+    border-radius: var(--form-border-radius);
+    margin: var(--form-margin);
+}
+
+.adminPanel .loginForm {
+    justify-content: center;
+    max-width: 290px;
+}
+
+.adminPanel .addDataForm {
+    justify-content: left;
+    width: max(40vw, 320px);
+}
+
+.adminPanel .formLabel {
+    display: block;
+    width: auto;
+    margin: 10px;
+    color: var(--white);
+}
+
+.adminPanel .formField {
+    width: 100%;
+    color: var(--black);
+    font-family: var(--main-font);
+}
+
+input[type="file"] {
+    color: var(--white) !important;  
+}
+
+.formHeader, .tableTitle {
+    color: var(--white);
+}
+
+
+.loginBox {
+    min-width: 220px;
+    max-width: 280px;
+    margin: 10px;
+}
+
+.loginBtn, .logOutBtn {
+    margin: 5px 15px;
+}
+
+.loginBtn, .logOutBtn, .formBtn {
+    background-color: var(--second-color);
+    font-weight: bold;
+    padding: var(--form-padding);
+    cursor: pointer;
+    color: var(--white);
+    text-transform: uppercase;
+    font-family: var(--main-font);
+    transition: var(--transition);
+}
+
+input.loginBtn:hover, .logOutBtn:hover, .formBtn:hover {
+    background-color: var(--first-color);
+    color: var(--white);
+}
+
+input.loginBtn:focus, .logOutBtn:focus, .formBtn:focus {
+    border: solid 3px var(--first-color);
+}
+
+.formBtn:disabled, .alterRecordBtn:disabled {
+    background-color: var(--gray);
+    color: var(--white);
+}
+
+button.loginBtn:focus {
+    transition: var(--transition);
+    background-color: var(--white);
+    border: solid 3px var(--first-color);
+    padding: var(--btn-focus-padding);
+}
+
+button.loginBtn:focus svg {
+    color: var(--first-color);
+}
+
+select {
+    color: black;
+    font-family: var(--main-font);
+}
+
+.formMenu {
+    width: 100%;
+    display: flex;
+    flex-direction: row;
+    gap: 20px;
+    justify-content: center;
+    margin-top: 20px;
+}
+
+.articlesList img {
+    max-width: 50px;
+    max-height: 50px;
+}
+
+.adminPanel table {
+    display: block;
+    margin: 5px;
+}
+
+.adminPanel a {
+    cursor: pointer;
+}
+
+td, th {
+    border-bottom: solid 1px var(--white);
+    padding: 0 5px;
+}
+
+.dataTable {
+    background-color: var(--form-bg-color);
+    width: fit-content;
+    padding: 10px;
+    border-radius: 15px;
+    display: flex;
+    flex-direction: column;
+    margin: 20px 0;
+}
+
+@media all and (max-width: 1200px) {
+    .dataTable {
+        display: none;
+    }
+}
+
+form div {
+    width: 100%;
+}
+
+.selectCity {
+    width: 85%;
+}
+
+.refreshBtn {
+    width: 36px;
+    height: 36px;
+    margin: 0 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.selectCityContainer, .tableTitle {
+    display: flex;
+    flex-direction: row;
+}
+
+.alterRecordBtn i {
+    cursor: pointer;
+    margin: 5px;
+    font-size: 12px;
+}
+
+.alterButtonsContainer {
+    display: flex;
+    flex-wrap: nowrap;
+}
+
+.alterRecordBtn {
+    margin: 5px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    height: 32px;
+    width: 32px;
+}
+
+.formsContainer {
+    display: flex;
+    flex-direction: row;
+}
+
+.controls{
+    width: 50%;
+}
+
+.controls button{
+    width: 32px;
+    height: 32px;
+    margin: 5px;
+    align-items: center;
+    padding: 0;
+}
+
+.controls i{
+    height: 16px;
+    margin: 0;
+    font-size: 18px;
+}

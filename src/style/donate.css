@@ -1,0 +1,159 @@
+/* ================================
+   MSK — Wpłacam embed overrides
+   (CSS only; no HTML changes)
+   ================================ */
+
+/* In case Jost isn't already loaded globally */
+@import url("https://fonts.googleapis.com/css2?family=Jost:wght@400;600;700;900&display=swap");
+
+/* 0) Undo inline body overflow from the embed */
+body { overflow: auto !important; }
+
+/* 1) Typography + base color (override widget's inline Comfortaa) */
+.campaign-preview,
+.campaign-preview * {
+  font-family: var(--main-font, "Jost", sans-serif) !important;
+  color: var(--black, #0a0a0a);
+  box-sizing: border-box;
+}
+
+/* 2) Card look to match your form */
+.campaign-preview .panel.panel--standard {
+  background: var(--white, #eaeeea);
+  border: 1px solid var(--gray, #ccc);
+  border-radius: 10px;
+  box-shadow: var(--shadow, 0 0 5px 1px rgba(0,0,0,0.7));
+  overflow: hidden;
+  max-width: 720px;
+  margin: 0 auto;
+}
+
+.campaign-preview .panel__header {
+  padding: var(--space-2, 20px);
+  background: var(--white, #eaeeea);
+  border-bottom: 1px solid var(--gray, #ccc);
+}
+
+.campaign-preview .panel__title h2 {
+  margin: 0 0 var(--space-1, 6px);
+  font-weight: 900;
+  letter-spacing: .3px;
+}
+
+.campaign-preview .panel__title p {
+  margin: 0;
+  opacity: .85;
+}
+
+/* 3) Content background tint (brand green, very light) */
+.campaign-preview .panel__content {
+  /* fallback + prefer your palette */
+  background: rgba(27, 115, 64, 0.06) !important; /* approx var(--second-color, #1B7340) @ 6% */
+  padding: var(--space-2, 20px);
+}
+
+/* 4) Quick-amount buttons (10/20/50 zł) styled like your UI chips */
+.campaign-preview .panel__buttons {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-1, 6px);
+  margin-bottom: var(--space-1, 6px);
+}
+
+.campaign-preview .panel__buttons__item .btn {
+  border-radius: 10px;
+  border: 1px solid var(--gray, #ccc) !important;
+  background: var(--white, #eaeeea) !important;
+  color: var(--black, #0a0a0a) !important;
+  box-shadow: var(--shadow-1, 0 6px 16px rgba(0,0,0,.10), 0 2px 6px rgba(0,0,0,.06));
+  transition: var(--transition, all .3s ease-out);
+  text-transform: none;
+}
+
+.campaign-preview .panel__buttons__item .btn:hover {
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-2, 0 10px 24px rgba(0,0,0,.12), 0 4px 10px rgba(0,0,0,.08));
+  border-color: #bbb !important;
+}
+
+.campaign-preview .panel__buttons__item__price p {
+  margin: 0;
+  font-weight: 700;
+}
+
+/* 5) Custom amount field + primary donate button */
+.campaign-preview .panel__any-price {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: var(--space-1, 6px);
+  align-items: stretch;
+}
+
+.campaign-preview .w-input.w-input--secondary .w-input__wrapper {
+  border: 1px solid var(--gray, #ccc) !important;
+  border-radius: 10px;
+  background: var(--white, #eaeeea);
+  box-shadow: inset 0 1px 2px rgba(0,0,0,.04);
+}
+
+.campaign-preview .w-input .w-input__content input {
+  font-size: 1rem;
+  padding: 12px 14px;
+  outline: none !important;
+  background: transparent;
+  color: var(--black, #0a0a0a);
+}
+
+.campaign-preview .w-input .w-input__affix {
+  font-weight: 700;
+  opacity: .85;
+}
+
+/* Input error state (match your theme) */
+.campaign-preview .w-input-message--error .w-input-message__text {
+  color: #b91c1c; /* accessible red for errors */
+  font-weight: 600;
+}
+
+/* Primary donate button — use your greens and rounded corners */
+.campaign-preview .panel__any-price .btn.btn--secondary {
+  background: var(--first-color, #1C9346) !important;
+  color: var(--white, #eaeeea) !important;
+  border: none !important;
+  border-radius: 10px;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: .3px;
+  padding: 12px 18px;
+  box-shadow: var(--shadow-1, 0 6px 16px rgba(0,0,0,.10), 0 2px 6px rgba(0,0,0,.06));
+  transition: var(--transition, all .3s ease-out);
+}
+
+.campaign-preview .panel__any-price .btn.btn--secondary:hover {
+  background: var(--second-color, #1B7340) !important;
+  transform: translateY(-1px);
+}
+
+/* 6) Footer/link colors */
+.campaign-preview .panel__footer {
+  margin-top: var(--space-2, 20px);
+  padding-top: var(--space-1, 6px);
+  border-top: 1px solid var(--gray, #ccc);
+  color: #6b7280;
+}
+
+.campaign-preview .panel__footer .btn--link .btn__text {
+  color: var(--fourth-color, #9200DB) !important;
+  font-weight: 700;
+}
+
+/* 7) Icon accent */
+.campaign-preview .mdi,
+.campaign-preview .w-icon {
+  color: var(--first-color, #1C9346);
+}
+
+/* 8) Mobile: stack quick-amount buttons */
+@media (max-width: 767px) {
+  .campaign-preview .panel__buttons { grid-template-columns: 1fr; }
+}

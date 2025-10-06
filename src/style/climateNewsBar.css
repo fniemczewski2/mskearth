@@ -1,0 +1,52 @@
+.ccw-ticker {
+  position: sticky;
+  top: 0;
+  left: 0;
+  right: 0;
+
+  height: 4vh;
+  min-height: 40px;
+  padding: 0.6vh 0;
+
+  overflow: hidden;
+  white-space: nowrap;
+
+  background: var(--white);
+  text-transform: uppercase;
+
+  box-shadow: 0 2px 8px rgba(0,0,0,.15);
+  z-index: 8;
+}
+
+.ccw-ticker a {
+  color: #444;
+}
+/* kontener animowany */
+.ticker-track {
+  display: inline-flex;   /* ✅ inline-flex, żeby elementy się kleiły */
+  white-space: nowrap;
+  will-change: transform;
+  animation: ticker-marquee var(--duration, 60s) linear infinite;
+}
+
+/* elementy wewnątrz */
+.ticker-item {
+  display: inline-block;
+  padding-right: 50px;
+  font-family: 'Jost', sans-serif;
+  font-weight: 700;
+  font-size: clamp(12px, 2.4vh, 18px);
+}
+
+/* animacja pętli */
+@keyframes ticker-marquee {
+  from { transform: translateX(0); }
+  to   { transform: translateX(var(--ticker-distance, -50%)); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ticker-track {
+    animation: none;
+    transform: translateX(0);
+  }
+}

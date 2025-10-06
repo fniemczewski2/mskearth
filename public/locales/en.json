@@ -1,0 +1,222 @@
+{
+      "about": [
+        "About Us",
+        "We are a social movement that is part of the global Fridays for Future initiative.",
+        "By acting, we express our opposition to the passivity of politicians in the face of the climate crisis.",
+        "We are not experts in ecology and climate change but young people aware of the threat posed by the climate crisis and fighting for our right to our future.",
+        "We started as a group of high school students inspired by Greta Thunberg's activities, and our activism quickly turned into a nationwide movement.",
+        "We organize various campaigns, influence politicians and society. We act locally and nationally."
+      ],
+      "goals_h2": "Our Goals",
+      "goals": [
+        {
+          "title": "THE TRUTH MUST BE HEARD",
+          "icon": "bi bi-megaphone-fill",
+          "content": [
+            "We demand climate policy based on the current scientific position expressed in the latest reports of the Intergovernmental Panel on Climate Change (IPCC) established by the UN. We expect that the solutions suggested by the scientific community will be implemented promptly in international cooperation.",
+            "We call on the Polish government to officially acknowledge the climate crisis by declaring a climate emergency. The issue of the crisis should not be subject to ideological disputes – in the face of catastrophe, we must speak with one voice, beyond divisions."
+          ]
+        },
+        {
+          "title": "PEOPLE HAVE TO KNOW",
+          "icon": "bi bi-book-half",
+          "content": [
+            "We demand that comprehensive and up-to-date knowledge about the mechanisms of the climate crisis be included in the curriculum at all levels of education, with mandatory teacher training in this area. At the same time, climate education should be fully provided by local governments.",
+            "We demand that the media take responsibility for raising public awareness of the immediate threats associated with the climate crisis. We call for prioritizing the issue of the climate crisis in media coverage and using language that reflects the seriousness of the problem."
+          ]
+        },
+        {
+          "title": "POLAND HAVE TO ACT",
+          "icon": "bi bi-flag-fill",
+          "content": [
+            "We demand that the Polish parliament adopt a law establishing an expert and independent Climate Council, which will develop a strategy to achieve Poland's climate neutrality by 2040 and monitor the implementation of this strategy. The law must be created with the approval of the scientific community, maximum transparency, and broad public consultations.",
+            "We expect immediate steps towards a just transition of the economy to reduce greenhouse gas emissions. We demand that the rights and needs of all those affected by the transition, particularly those employed in the energy, agriculture, industry, and transport sectors, be respected."
+          ]
+        }
+      ],
+      "cities": {
+        "h1": "Choose a Voivodeship",
+        "cta": "Start a new group!",
+        "voivodeship": "Voivodeship",
+        "meetings": "Meetings: ",
+        "contactPeople": "Contact People: ",
+        "error": "Unfortunately, we do not yet have a local group in this voivodeship. We encourage you to start one.",
+        "content": ["Start a new group", "Is there no MSK group in your area?", "You can start a new one – don't worry, we'll help you with everything.", "Thanks to you, MSK will be able to reach a new place and new people!", "Write to us at", "Instagram", "You can also contact us directly", "Check"]
+      },
+      "foundation": {
+        "address": "Address: ",
+        "phone": "Phone: ",
+        "bank": "Account Number: ",
+        "board": "Board",
+        "documents": "Documents",
+        "financialReports": "Financial Reports",
+        "statut": "Statute"
+      },
+      "contact": {
+        "h1": "Feel free to contact us!",
+        "h2": "Contact form",
+        "b1": "send",
+        "email": "Your email address: ",
+        "title": "Message title: ",
+        "message": "Your message: ",
+        "consent": "I consent to the processing of my personal data for the purpose of receiving commercial and marketing information from the Friends of the Youth Climate Strike Foundation. I consent to receiving commercial and marketing information electronically from the Friends of the Youth Climate Strike Foundation at the provided email address. The administrator of your personal data is the Friends of the Youth Climate Strike Foundation based in Warsaw. Detailed information is available in our privacy policy."
+      },
+      "joinUs": {
+        "h2": "Join Us!",
+        "follow": "Follow:",
+        "filloutForm": "Fill out the form:",
+        "meeting": "Attend a meeting:",
+        "h": "hours",
+        "find": "Find a local group:",
+        "check": "Check"
+      },
+      "donate": {
+        "h2": "Support Us!",
+        "name": "Name: ",
+        "email": "Your email address: ",
+        "amount": "Amount: ",
+        "select": "Select amount",
+        "other": "Other...",
+        "input": "Enter amount",
+        "pending": "Sending...",
+        "send": "Donate",
+        "succed": "Sent successfully. Thank you!",
+        "failed": "An error occurred. Please try again later or contact us.",
+        "payment": "Select payment method: ",
+        "transfer": "Bank transfer",
+        "card": "Card",
+        "consent": "I consent to the processing of my personal data by the Friends of the Youth Climate Strike Foundation for the purpose of processing the donation in accordance with the privacy policy."
+      },
+      "buttons": {
+        "joinUs": "Join Us",
+        "donate": "Donate",
+        "support": "Support Us",
+        "newsletter": "Newsletter"
+      },
+      "articlePage": {
+        "noTranslationTitle": "No Translation",
+        "noTranslation": "Sorry, this article has not been translated yet. Choose another language or try again later.",
+        "error": "Sorry, an error occurred. Please try again later.",
+        "source": "Source: ",
+        "linkCopied": "Link copied to clipboard!",
+        "linkNotCopied": "An error occurred! Failed to copy the link."
+      },
+      "clock": {
+        "title": "Earth will warm by 1.5°C in:",
+        "years": " years ",
+        "days": " days "
+      },
+      "news": {
+        "h1": "News",
+        "more": "More..."
+      },
+      "newsletter": {
+        "h2": "Newsletter",
+        "submit": "Sign up",
+        "pending": "Signing up...",
+        "succed": "Successfully signed up, check your email.",
+        "failed": "An error occurred. Please try again later or contact us.",
+        "consent": "I consent to the processing of my personal data for the purpose of receiving commercial and marketing information from the Friends of the Youth Climate Strike Foundation. I consent to receiving commercial and marketing information electronically from the Friends of the Youth Climate Strike Foundation at the provided email address. The administrator of your personal data is the Friends of the Youth Climate Strike Foundation based in Warsaw. Detailed information is available in our privacy policy."
+      },
+      "cookies": {
+        "message": "Our website uses cookies to ensure the best user experience. By continuing to use the site, you consent to the use of cookies.",
+        "button": "I accept"
+      },
+      "footer": {
+        "menuItems": [
+          { "label": "News", "link": "/:lang/aktualnosci" },
+          { "label": "About", "link": "/:lang/o-nas" },
+          { "label": "Cities", "link": "/:lang/miasta" },
+          { "label": "Foundation", "link": "/:lang/fundacja" },
+          { "label": "Contact", "link": "/:lang/kontakt" },
+          { "label": "Privacy\u00A0policy", "link": "/:lang/polityka-prywatnosci" }
+        ]
+      },
+      "mobileNavbar":  {
+        "menuItems": [
+          { "label": "Home", "link": "/" },
+          { "label": "News", "link": "/aktualnosci" },
+          { "label": "About", "link": "/o-nas" },
+          { "label": "Cities", "link": "/miasta" },
+          { "label": "Foundation", "link": "/fundacja" },
+          { "label": "Contact", "link": "/kontakt" }
+        ]
+      },
+      "navbar":  {
+        "menuItems": [
+          { "label": "News", "link": "/:lang/aktualnosci" },
+          { "label": "About", "link": "/:lang/o-nas" },
+          { "label": "Cities", "link": "/:lang/miasta" },
+          { "label": "Foundation", "link": "/:lang/fundacja" },
+          { "label": "Contact", "link": "/:lang/kontakt" }
+        ]
+      },
+      "paths": [
+        {
+          "id": "dolnośląskie",
+          "d": "M 354 621 L 347 595 350 588 332 586 327 575 332 562 323 552 302 548 294 558 273 563 240 541 239 529 217 523 203 538 193 533 191 526 173 521 174 526 162 533 156 553 145 559 138 570 131 572 128 565 115 560 106 578 95 570 70 584 75 599 68 627 51 659 54 662 67 662 68 641 85 642 98 651 98 664 107 680 113 677 152 690 155 698 167 698 170 712 180 704 187 708 199 702 205 706 213 717 205 729 189 739 196 749 204 750 225 785 235 794 241 792 251 781 269 776 271 769 257 745 260 739 267 735 274 737 282 718 294 713 299 686 306 686 310 667 327 653 334 622 340 626 Z"  
+        },
+        {
+          "id": "kujawsko-pomorskie",
+          "d": "M 480 439 L 504 429 513 409 511 400 516 395 513 389 519 378 527 379 518 361 524 351 520 345 533 334 540 337 538 317 550 306 543 289 545 283 540 277 526 278 513 265 500 266 496 246 488 236 453 233 454 219 435 224 425 219 411 219 402 210 389 206 379 213 368 211 368 217 356 220 354 234 348 233 347 237 329 233 321 250 309 268 324 290 314 297 318 309 311 329 331 345 329 363 321 365 328 381 342 379 347 392 362 389 371 400 401 414 412 405 417 416 431 413 454 438 468 432 Z"
+        },
+        {
+          "id": "lubelskie",
+          "d": "M 884 434 L 875 446 877 452 870 455 863 469 850 470 844 467 834 480 821 475 810 484 806 480 769 488 762 496 762 510 770 516 761 526 765 536 748 547 742 543 740 548 762 563 763 577 757 581 764 591 758 623 760 637 768 680 778 683 790 677 796 680 801 685 802 700 834 713 843 728 840 734 833 732 828 742 839 750 854 748 849 752 852 757 890 757 904 742 922 738 946 760 963 736 991 730 998 702 994 682 983 667 999 657 983 645 968 612 944 587 949 574 932 543 930 522 939 511 936 492 941 479 937 465 917 449 892 441 889 435 Z"
+        },
+        {
+          "id": "lubuskie",
+          "d": "M 41 378 L 46 386 46 399 36 417 42 436 49 439 48 460 53 472 48 492 36 508 50 533 46 554 69 569 70 584 95 570 106 578 115 560 128 565 131 572 138 570 145 559 156 553 162 533 174 526 173 521 191 526 193 533 203 538 217 523 212 507 186 504 191 499 189 488 178 489 174 483 178 477 162 468 167 461 164 445 170 424 161 414 170 414 160 382 164 378 162 371 177 368 176 357 172 355 181 348 181 318 182 308 175 305 164 314 159 325 144 326 140 321 114 331 117 337 97 346 84 345 80 339 59 376 Z" 
+        },
+        {
+          "id": "łódzkie",
+          "d": "M 391 625 L 423 636 427 633 443 644 463 644 467 638 497 655 506 647 516 655 523 669 536 669 547 678 552 675 560 667 565 647 576 657 581 656 581 643 576 640 581 622 602 619 604 611 616 610 620 598 629 577 615 548 619 542 639 544 635 516 621 502 603 502 596 486 600 473 582 464 580 451 563 443 551 450 539 448 521 437 508 436 504 429 480 439 480 448 486 450 484 458 467 463 469 477 448 482 451 502 442 520 429 518 419 524 412 544 413 572 408 585 396 582 395 589 383 597 386 610 391 611 Z"
+        },
+        {
+          "id": "małopolskie",
+          "d": "M 728 902 L 719 856 711 846 719 839 708 832 711 823 702 822 700 816 702 795 698 775 703 754 662 766 654 776 640 782 627 782 612 763 613 754 606 740 601 735 573 733 563 743 530 748 525 759 510 774 518 781 500 796 486 823 493 823 495 834 503 837 510 850 521 856 518 862 525 870 525 877 543 910 558 910 558 943 577 938 589 946 596 926 613 918 615 911 620 909 640 913 659 908 679 925 696 913 693 908 697 903 709 906 714 900 Z"
+        },
+        {
+          "id": "mazowieckie",
+          "d": "M 769 488 L 806 480 810 484 821 475 834 480 844 467 850 470 863 469 870 455 877 452 875 446 884 434 878 434 868 424 827 417 822 400 812 386 814 359 808 357 803 363 799 362 793 343 789 348 774 349 768 331 757 324 761 319 758 315 740 307 732 287 737 274 727 249 710 253 711 257 702 261 693 260 674 274 662 271 662 277 655 282 641 279 636 289 626 293 617 290 604 304 607 306 586 308 583 303 571 307 562 296 556 303 557 308 550 306 538 317 540 337 533 334 520 345 524 351 518 361 527 379 519 378 513 389 516 395 511 400 513 409 504 429 508 436 521 437 539 448 551 450 563 443 580 451 582 464 600 473 596 486 603 502 621 502 635 516 639 544 619 542 615 548 629 577 620 598 627 600 631 611 643 617 649 626 673 621 680 626 687 618 694 635 714 637 724 646 734 639 755 641 760 637 758 623 764 591 757 581 763 577 762 563 740 548 742 543 748 547 765 536 761 526 770 516 762 510 762 496 769 488 769 488 769 488 769 488 769 488 769 488 Z"
+        },
+        {
+          "id": "opolskie",
+          "d": "M 354 621 L 340 626 334 622 327 653 310 667 306 686 299 686 294 713 282 718 274 737 267 735 260 739 285 749 304 767 316 772 337 768 343 762 347 780 334 786 332 791 343 797 354 815 360 818 374 813 376 804 383 786 415 773 412 741 417 737 422 740 420 726 434 726 434 720 423 701 429 697 428 685 440 667 437 662 444 650 443 644 427 633 423 636 391 625 365 635 357 634 Z"
+        },
+        {
+          "id": "podkarpackie",
+          "d": "M 728 902 L 754 901 770 912 774 908 788 914 797 932 816 939 820 945 887 964 887 952 868 936 870 908 864 887 858 884 912 797 946 760 922 738 904 742 890 757 852 757 849 752 854 748 839 750 828 742 833 732 840 734 843 728 834 713 802 700 801 685 796 680 790 677 778 683 768 680 765 697 750 712 743 725 703 754 698 775 702 795 700 816 702 822 711 823 708 832 719 839 711 846 719 856 Z"
+        },
+        {
+          "id": "podlaskie",
+          "d": "M 889 435 L 912 394 923 384 943 377 958 362 957 320 950 286 941 275 910 194 899 131 885 117 857 108 850 98 836 96 833 102 832 111 812 120 806 132 817 141 818 153 835 176 830 196 781 234 758 244 754 250 727 249 737 274 732 287 740 307 758 315 761 319 757 324 768 331 774 349 789 348 793 343 799 362 803 363 808 357 814 359 812 386 822 400 827 417 868 424 878 434 884 434 Z" 
+        },
+        {
+          "id": "pomorskie",
+          "d": "M 260 75 L 272 101 272 125 261 132 266 166 282 187 275 188 272 194 278 198 271 208 274 223 279 238 288 244 309 243 321 250 329 233 347 237 348 233 354 234 356 220 368 217 368 211 379 213 389 206 402 210 411 219 425 219 435 224 454 219 453 233 488 236 505 203 511 200 522 205 529 184 528 179 513 181 513 169 501 163 497 150 505 138 500 125 532 109 537 97 535 96 529 101 523 105 516 108 510 110 503 112 496 113 481 114 467 114 460 112 453 110 449 105 443 103 437 100 435 95 435 85 434 79 431 72 427 67 426 59 422 54 420 48 423 43 438 52 442 55 449 61 452 65 457 72 458 68 453 62 448 58 443 55 428 46 424 43 417 37 411 35 406 35 382 35 375 36 349 43 331 47 325 47 318 49 311 51 298 57 292 61 287 66 281 70 267 74 Z" 
+        },
+        {
+          "id": "śląskie",
+          "d": "M 525 877 L 525 870 518 862 521 856 510 850 503 837 495 834 493 823 486 823 500 796 518 781 510 774 525 759 530 748 563 743 573 733 560 724 568 713 562 709 560 698 549 694 558 678 552 675 547 678 536 669 523 669 516 655 506 647 497 655 467 638 463 644 443 644 444 650 437 662 440 667 428 685 429 697 423 701 434 720 434 726 420 726 422 740 417 737 412 741 415 773 383 786 376 804 386 816 392 815 402 825 430 828 437 859 456 868 459 889 471 894 474 908 478 911 492 910 502 892 Z"
+        },
+        {
+          "id": "świetokrzyskie",
+          "d": "M 620 598 L 616 610 604 611 602 619 581 622 576 640 581 643 581 656 576 657 565 647 560 667 552 675 558 678 549 694 560 698 562 709 568 713 560 724 573 733 601 735 606 740 613 754 612 763 627 782 640 782 654 776 662 766 703 754 743 725 750 712 765 697 768 680 760 637 755 641 734 639 724 646 714 637 694 635 687 618 680 626 673 621 649 626 643 617 631 611 627 600 Z"
+        },
+        {
+          "id": "warmińsko-mazurskie",
+          "d": "M 537 97 L 532 109 500 125 505 138 497 150 501 163 513 169 513 181 528 179 529 184 522 205 511 200 505 203 488 236 496 246 500 266 513 265 526 278 540 277 545 283 543 289 550 306 557 308 556 303 562 296 571 307 583 303 586 308 607 306 604 304 617 290 626 293 636 289 641 279 655 282 662 277 662 271 674 274 693 260 702 261 711 257 710 253 727 249 754 250 758 244 781 234 830 196 835 176 818 153 817 141 806 132 812 120 832 111 833 102 709 114 Z"
+        },
+        {
+          "id": "wielkopolskie",
+          "d": "M 181 318 L 181 348 172 355 176 357 177 368 162 371 164 378 160 382 170 414 161 414 170 424 164 445 167 461 162 468 178 477 174 483 178 489 189 488 191 499 186 504 212 507 217 523 239 529 240 541 273 563 294 558 302 548 323 552 332 562 327 575 332 586 350 588 347 595 354 621 357 634 365 635 391 625 391 611 386 610 383 597 395 589 396 582 408 585 413 572 412 544 419 524 429 518 442 520 451 502 448 482 469 477 467 463 484 458 486 450 480 448 480 439 468 432 454 438 431 413 417 416 412 405 401 414 371 400 362 389 347 392 342 379 328 381 321 365 329 363 331 345 311 329 318 309 314 297 324 290 309 268 321 250 309 243 288 244 279 238 274 223 261 227 258 242 250 249 231 248 229 253 232 264 255 279 247 286 247 293 240 290 233 301 224 300 215 320 196 324 Z"
+        },
+        {
+          "id": "zachodniopomorskie",
+          "d": "M 41 378 L 59 376 80 339 84 345 97 346 117 337 114 331 140 321 144 326 159 325 164 314 175 305 182 308 181 318 196 324 215 320 224 300 233 301 240 290 247 293 247 286 255 279 232 264 229 253 231 248 250 249 258 242 261 227 274 223 271 208 278 198 272 194 275 188 282 187 266 166 261 132 272 125 272 101 260 75 238 84 220 107 203 120 125 137 38 169 18 169 24 189 26 232 34 275 24 307 7 320 1 340 Z"
+        }
+      
+      ]
+  }
+  

@@ -1,0 +1,200 @@
+.foundationLogoContainer {
+    width: 30vw;
+    max-width: 400px;
+}
+
+.foundationLogo {
+    width: 100%;
+    margin: auto;
+    object-fit: contain;
+}
+
+.foundationDataElement {
+    width: 100%;
+    flex-wrap: nowrap;
+    flex-direction: row;
+    font-size: 1.2rem;
+}
+
+.foundationDataElement p {
+    margin: 0 10px;
+}
+
+.boardMemberName {
+    margin: 10px 0 5px 0px;
+    text-align: center;
+}
+
+.description {
+    font-size: 0.8rem;
+    margin-top: 20px;
+}
+
+a.mailto {
+    color: var(--second-color);
+    margin: 0;
+}
+
+@media all and (max-width: 768px) {
+
+    .foundation h1 {
+        font-size: 30px;
+    }
+    .foundationLogoContainer,
+    .foundationLogoContainer * { 
+        display: none;
+        width: 0;
+    }
+    .foundationDataElement {
+        flex-wrap: wrap;
+        margin: 5px 0;
+    }
+
+    .foundationContactData, .boardMember, .reports {
+        max-width: 90vw;
+        display: flex;
+        justify-content: center;
+    }
+
+    .foundationDataElement h4, .foundationDataElement p {
+        width: 100%;
+    }
+
+    .foundationData h3 {
+        margin-left: 5px;
+    }
+
+    .statut, .report {
+        border-radius: 5px;
+        -webkit-box-shadow: 0 0 4px 1px rgba(0,0,0,0.7);
+        -moz-box-shadow: 0 0 4px 1px rgba(0,0,0,0.7);
+        box-shadow: 0 0 4px 1px rgba(0,0,0,0.7);
+    }
+}
+
+
+@media all and (max-width: 320px) {
+    .foundation h1 {
+        font-size: 26px;
+    }
+    p.bankAccountNumber {
+        font-size: 12px;
+    }
+}
+
+@media all and (min-width: 769px) {
+
+    .foundation img {
+        display: block;
+    }
+    .foundationDataElement {
+        flex-wrap: nowrap;
+    }
+    .foundationContactData {
+        max-width: 1200px;
+    }
+
+    .foundationData {
+        width: 65%;
+    }
+
+    .foundationDataElement {
+        flex-wrap: nowrap;
+    }
+
+
+}
+
+.foundationContactData {
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: nowrap;
+    height: auto;
+    width: fit-content;
+    margin: 0;
+}
+
+.foundation div {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+}
+
+.boardContainer, .documentsContainer {
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    gap: 0 50px;
+    margin-top: 10px;
+}
+
+.boardContainer h4{
+    width: 100%;
+    text-align: center;
+    margin: 0 0 20px 0;
+    font-weight: 600;
+}
+
+.boardContainer img {
+    height: 200px;
+    width: 200px;
+    object-fit: cover;
+    object-position: 0 -5px;
+    border-radius: 50%;
+    margin: 20px;
+}
+
+.documentsContainer article {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    width: fit-content;
+    gap: 15px;
+}
+.reportsTitle{
+    width: 100%;
+}
+
+.reports {
+    width: min-content;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+}
+
+.statut, .report {
+    align-items: center;
+    background-color: var(--second-color);
+    border: none;
+    color: var(--white);
+    cursor: pointer;
+    display: flex;
+    font-family: var(--head-font);
+    font-weight: 900;
+    margin: 10px;
+    opacity: 100%;
+    padding: 0.25em 0.5em;
+    text-decoration: none;
+    text-transform: uppercase;
+  }
+
+  .statut:hover, .report:hover {
+    background-color: var(--first-color);
+  }
+
+  .reports {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+
+.boardMember {
+    display: flex;
+    flex-direction: column;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+    min-width: 260px;
+    max-width: 460px;
+}
