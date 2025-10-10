@@ -48,7 +48,7 @@ function FooterMenu({ menuItems, lang }) {
       <ul>
         {menuItems.map((item, index) => {
           const link = item.label === "Polityka prywatności" 
-            ? "/assets/polityka-prywatnosci.pdf" 
+            ? "/polityka-prywatnosci.pdf" 
             : item.link.replace(':lang', lang);
 
           return (

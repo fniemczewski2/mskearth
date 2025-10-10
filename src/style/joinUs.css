@@ -5,10 +5,6 @@
     width: fit-content;
   }
 
-  .donate {
-    width: fit-content;
-  }
-
   .joinUsAction, .donateAction{
     align-items: center;
     display: flex;

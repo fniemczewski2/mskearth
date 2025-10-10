@@ -1,8 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import MobileNavbar from "./mobileNavbar";
-import logoMSK from '../assets/logoMSK.png';
-import logoFFF from '../assets/logoFFF.png';
 import '../style/header.css';
 
 function MobileHeader({ lang = 'pl', handleLanguageChange }) {
@@ -17,10 +15,8 @@ function MobileHeader({ lang = 'pl', handleLanguageChange }) {
   const toggleOpen = () => setOpen(v => !v);
   const closeMenu = () => setOpen(false);
 
-  // Close on route change
   useEffect(() => { closeMenu(); }, [location.pathname]);
 
-  // Lock body scroll when menu is open
   useEffect(() => {
     const { body } = document;
     if (!body) return;
@@ -45,13 +41,13 @@ function MobileHeader({ lang = 'pl', handleLanguageChange }) {
       >
         <Link to={homeHref} className="mobile logo" aria-label="Strona główna">
           <img
-            src={logoMSK}
+            src="/logoMSK.png"
             alt="MSK — Młodzieżowy Strajk Klimatyczny"
             loading="lazy"
             decoding="async"
           />
           <img
-            src={logoFFF}
+            src="/logoFFF.png"
             alt="FFF — Fridays For Future"
             loading="lazy"
             decoding="async"

@@ -1,91 +1,150 @@
-import { useEffect, useRef, useState } from "react";
-import "../style/donate.css";
-import "../style/joinUs.css";
+import { useMemo, useState } from 'react';
 
-const CAMPAIGN_URL = "https://nowe.platnosci.ngo.pl/pl/public/campaign/5n7wgG";
-const SCRIPT_SRC   = "https://nowe.platnosci.ngo.pl/campaign.js";
+export default function DonateWidget() {
+  // preset amounts (PLN). Adjust as you like.
+  const amounts = useMemo(() => [10, 20, 50], []);
+  const [amount, setAmount] = useState(amounts[1]); // default 20 zł
 
-export default function WplacamDonate() {
-  const hostRef = useRef(null);
-  const [fallback, setFallback] = useState(false);
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
+  const emailValid = !email || /^\S+@\S+\.\S+$/.test(email);
 
-  // put the container in the DOM (before script loads)
-  const mountContainer = () => {
-    const host = hostRef.current;
-    if (!host) return;
-    host.innerHTML = ""; // reset
-    const div = document.createElement("div");
-    div.className = "wplacam-container";
-    div.setAttribute("data-url", CAMPAIGN_URL);
-    host.appendChild(div);
-  };
+  const [consent, setConsent] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const [err, setErr] = useState('');
 
-  // load script once; if already present, wait for it to finish
-  const loadScriptOnce = () =>
-    new Promise((resolve, reject) => {
-      const existing = document.querySelector(`script[src="${SCRIPT_SRC}"]`);
-      if (existing) {
-        if (existing.dataset.loaded === "1") return resolve();
-        existing.addEventListener("load", resolve, { once: true });
-        existing.addEventListener("error", () => reject(new Error("script error")), { once: true });
-        return;
-      }
-      const s = document.createElement("script");
-      s.src = SCRIPT_SRC;
-      s.async = true;
-      s.onload = () => { s.dataset.loaded = "1"; resolve(); };
-      s.onerror = () => reject(new Error("script error"));
-      document.head.appendChild(s);
+  const canPay = consent && emailValid && !!email && !!amount && !busy;
+
+const startPayment = async () => {
+  if (!canPay) return;
+  setBusy(true);
+  setErr('');
+
+  try {
+    const extOrderId = `DON-${Date.now()}`;
+
+    const resp = await fetch('/api/payments/create-order', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json', // nudge server/proxy to return JSON
+      },
+      body: JSON.stringify({
+        total: Number(amount),
+        email,
+        firstName: name || 'Donor',
+        description: `Darowizna ${amount} PLN`,
+        orderId: extOrderId,
+      }),
     });
 
-  useEffect(() => {
-    let cancelled = false;
-    mountContainer();
+    // ---- SAFE PARSE (handles empty/HTML responses) ----
+    const contentType = resp.headers.get('content-type') || '';
+    const raw = await resp.text();                // read once
+    const data = contentType.includes('application/json') && raw
+      ? (() => { try { return JSON.parse(raw); } catch { return null; } })()
+      : null;
 
-    (async () => {
-      try {
-        await loadScriptOnce();
+    if (!resp.ok) {
+      const msg =
+        data?.details?.status?.statusCode ||
+        data?.error ||
+        data?.message ||
+        raw ||                             // maybe HTML/plain-text error from a proxy
+        `HTTP ${resp.status}`;
+      throw new Error(msg);
+    }
 
-        // wait up to 3s for the widget (iframe) to appear
-        const start = performance.now();
-        const waitForIframe = () =>
-          new Promise((res) => {
-            const check = () => {
-              if (cancelled) return res(false);
-              if (hostRef.current?.querySelector("iframe")) return res(true);
-              if (performance.now() - start > 3000) return res(false);
-              requestAnimationFrame(check);
-            };
-            check();
-          });
+    const redirectUri = data?.redirectUri;
+    if (!redirectUri) {
+      throw new Error('Brak redirectUri w odpowiedzi serwera.');
+    }
 
-        const ok = await waitForIframe();
-        if (!ok && !cancelled) setFallback(true);
-      } catch {
-        if (!cancelled) setFallback(true);
-      }
-    })();
+    window.location.href = redirectUri;
+  } catch (e) {
+    console.error('Payment start error:', e);
+    setErr(e?.message || 'Wystąpił błąd. Spróbuj ponownie.');
+    setBusy(false);
+  }
+};
 
-    return () => { cancelled = true; };
-  }, []);
 
   return (
     <>
-      <h2>Wesprzyj nas</h2>
-
+      <h2>Wesprzyj nas!</h2>
       <aside className="donate">
-        {/* host for the widget */}
-        {!fallback && <div ref={hostRef} className="donate-widget__host" />}
+        <div className="amounts">
+          {amounts.map((v) => (
+            <button
+              key={v}
+              type="button"
+              onClick={() => setAmount(v)}
+              className={amount === v ? 'active' : undefined}
+              aria-pressed={amount === v}
+            >
+              {v}&nbsp;zł
+            </button>
+          ))}
+        </div>
 
-        {/* guaranteed fallback if script didn’t hydrate */}
-        {fallback && (
-          <iframe
-            src={CAMPAIGN_URL}
-            title="Wpłacam — darowizna"
-            className="donate-widget__iframe"
-            style={{ width: "100%", height: "100%", minHeight: 540, border: 0, borderRadius: 8 }}
+        <form onSubmit={(e) => e.preventDefault()}>
+          <label className="formLabel" htmlFor="donor-name">Imię:</label>
+          <input
+            id="donor-name"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            className="formField"
+            placeholder="Anna"
+            autoComplete="name"
           />
+
+          <label className="formLabel" htmlFor="donor-email">E-mail:</label>
+          <input
+            id="donor-email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            className="formField"
+            placeholder="jan@example.com"
+            type="email"
+            autoComplete="email"
+            inputMode="email"
+            aria-invalid={email && !emailValid ? 'true' : 'false'}
+          />
+          {email && !emailValid && (
+            <p role="alert" className="formError">Podaj poprawny adres e-mail.</p>
+          )}
+        </form>
+
+        <div className="agreementContainer">
+          <input
+            id="donate-consent"
+            type="checkbox"
+            checked={consent}
+            onChange={(e) => setConsent(e.target.checked)}
+          />
+          <label className="agreement" htmlFor="donate-consent">
+            Wyrażam zgodę na przetwarzanie moich danych osobowych w celu realizacji darowizny.
+            <br />Zostaniesz przekierowany/a na bezpieczną stronę płatności PayU.
+          </label>
+        </div>
+
+        {err && (
+          <p role="alert" className="formError" style={{ marginTop: 8 }}>
+            {err}
+          </p>
         )}
+
+        <div className="buttonContainer">
+          <button
+            type="button"
+            className="primaryBtn"
+            disabled={!canPay}
+            onClick={startPayment}
+            aria-disabled={!canPay ? 'true' : 'false'}
+          >
+            {busy ? 'Przekierowywanie…' : 'Wpłać'}
+          </button>
+        </div>
       </aside>
     </>
   );

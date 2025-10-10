@@ -2,7 +2,6 @@ import { useEffect, useMemo, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import Goals from './goals';
 import '../style/goals.css';
-import logo from '../assets/logoMSK-kolor.png';
 
 const LOCALE_CACHE = new Map();
 
@@ -76,7 +75,7 @@ export default function About() {
             <figure className="logoContainer">
               <img
                 className="logo"
-                src={logo}
+                src="/logoMSK-kolor.png"
                 alt="Logo Młodzieżowego Strajku Klimatycznego"
                 loading="lazy"
                 decoding="async"

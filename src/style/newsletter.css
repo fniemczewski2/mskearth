@@ -4,29 +4,25 @@
     padding: 40px;
   }
 
-.newsletterIcon {
-    margin-right: 10px;
-    font-size: 36px;
-}
-
-.newsletterButton {  
-    align-items: center;
-    background-color: var(--second-color);
-    border: none;
-    color: var(--white);
-    cursor: pointer;
-    display: flex;
-    font-family: var(--head-font);
-    font-weight: 900;
-    font-size: 24px;
-    opacity: 100%;
-    padding: 0.25em 0.5em;
-    text-decoration: none;
-    text-transform: uppercase;
-    -webkit-box-shadow: var(--shadow);
-    -moz-box-shadow: var(--shadow);
-    box-shadow: var(--shadow);
-    transition: all 0.3s ease-out;
+  .newsletterButton {  
+      align-items: center;
+      background-color: var(--second-color);
+      border: none;
+      border-radius: 10px;
+      box-shadow: var(--shadow);
+      -webkit-box-shadow: var(--shadow);
+      -moz-box-shadow: var(--shadow);
+      color: var(--white);
+      cursor: pointer;
+      display: inline-flex;
+      font-family: var(--main-font);
+      font-size: 1rem;
+      font-weight: 900;
+      gap: .5ch;
+      padding: var(--margin-normal);
+      text-transform: uppercase;
+      transition: var(--transition);
+      width: fit-content;
   }
 
   .newsletterButton:hover {
@@ -43,8 +39,3 @@
     .newsletter .agreement {
         margin: 10px auto;
     }
-
-    .newsletterIcon {
-        margin-right: 10px;
-        font-size: 36px;
-      }

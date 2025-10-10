@@ -24,6 +24,7 @@ import './style/map.css';
 import './style/news.css';
 import './style/foundation.css';
 import './style/joinUs.css';
+import './style/donate.css';
 
 const LANGS = ['pl', 'en', 'ua'];
 const DEFAULT_LANG = 'pl';
@@ -38,7 +39,7 @@ const toPublicUrl = (path, bucket = 'public') => {
 async function loadArticles() {
   const { data, error } = await supabase
     .from('articles')
-    .select('id,accepted,published,created,imgurl,imgalt,author,sourceText,sourceLink,title,subtitle,content,titleEn,subtitleEn,contentEn,titleUa,subtitleUa,contentUa')
+    .select('id,accepted,published,created,imgurl,imgalt,author,sourcetext,sourcelink,title,subtitle,content,titleen,subtitleen,contenten,titleua,subtitleua,contentua')
     .order('published', { ascending: false });
   if (error) throw error;
   return (data || []).map(a => ({

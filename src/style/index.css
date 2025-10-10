@@ -6,8 +6,8 @@
   --white: #eaeeea;
   --gray: #ccc;
   --black: #0a0a0a;
-  --cta-picture: url('/src/assets/bckgrnd.png');
-  --background-green: url('/src/assets/www/background-green.png'); 
+  --cta-picture: url('/bckgrnd.png');
+  --background-green: url('/background-green.png'); 
   --min-width: 280px;
   --main-font: "Jost", sans-serif;
   --shadow: 0 0 5px 1px rgba(0,0,0,0.7);
@@ -26,7 +26,7 @@
 html {
   background-image:
     linear-gradient(#aba9, #aba9),
-    url('/src/assets/photo.png');
+    url('/photo.png');
   background-position: center;
   background-size: cover;
   background-attachment: fixed; /* wyłączamy na mobile poniżej */
@@ -58,7 +58,7 @@ a:visited { color: var(--fourth-color); } */
 html {
   background-image: 
     linear-gradient(#aba9, #aba9), 
-    url('/src/assets/photo.png');
+    url('/photo.png');
   background-position: center;
   background-size: cover;
   background-attachment: fixed;
@@ -252,7 +252,6 @@ a:visited {
 
   button, a {
     font-size: 1rem;
-    border-radius: 6px;
     margin: 5px 10px;
   }
 }

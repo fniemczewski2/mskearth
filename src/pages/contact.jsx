@@ -104,12 +104,8 @@ function Contact() {
       return;
     }
 
-    // Suggested metadata
     fd.set('_captcha', 'false');
     fd.set('_template', 'table');
-    // You can set a custom thank-you redirect too:
-    // fd.set('_next', window.location.href);
-
     setSubmitting(true);
     try {
       const res = await fetch(FORMSUBMIT_ENDPOINT, {
@@ -191,11 +187,11 @@ function Contact() {
               {t.contact?.consent || 'Wyrażam zgodę na przetwarzanie danych…'}
             </label>
           </div>
-
-          <button className="primaryBtn" type="submit" disabled={submitting}>
-            {submitting ? (t.contact?.pending || 'Wysyłanie…') : (t.contact?.b1 || 'Wyślij')}
-          </button>
-
+          <div className="buttonContainer">
+            <button className="primaryBtn" type="submit" disabled={submitting}>
+              {submitting ? (t.contact?.pending || 'Wysyłanie…') : (t.contact?.b1 || 'Wyślij')}
+            </button>
+          </div>  
           {statusMsg && (
             <p
               className={`formStatus ${statusType === 'ok' ? 'formStatus--ok' : 'formStatus--error'}`}

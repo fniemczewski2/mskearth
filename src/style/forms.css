@@ -10,7 +10,7 @@ form {
     margin: 10px 0 0 0;
 }
 
-.formLabel:nth-of-type(1) {
+.formLabel:first-of-type {
     margin-top: 0;
 }
 
@@ -57,9 +57,11 @@ form {
     color: var(--first-color);
 }
 
-.form-container button[type="submit"] {
-    margin-left: auto !important;
-    margin-right: 0;
+.buttonContainer {
+    display: flex;
+    justify-content: flex-end;
+    width: 100%;
+    margin-bottom: 12px;
 }
 
 @media all and (max-width: 768px) { 
@@ -67,9 +69,6 @@ form {
         width: fit-content
     }
     .formField {
-        border-radius: 5px;
-    }
-    .form-container button[type="submit"] {
         border-radius: 5px;
     }
 }

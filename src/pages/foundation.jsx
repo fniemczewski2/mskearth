@@ -1,8 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import '../style/foundation.css';
-import logo from '../assets/logoFPMSK.png';
-import statut from '../assets/statut.pdf';
 import { supabase } from '../services/supabaseClient';
 
 const LOCALE_CACHE = new Map();
@@ -160,7 +158,7 @@ export default function Foundation() {
         <div className="foundationLogoContainer">
           <img
             className="foundationLogo"
-            src={logo}
+            src="/logoFPMSK.png"
             alt="Logo Fundacji Przyjaciół Młodzieżowego Strajku Klimatycznego"
             loading="lazy"
             decoding="async"
@@ -201,10 +199,22 @@ export default function Foundation() {
           <h3>{t.foundation.statut || 'Statut'}</h3>
           <a
             className="statut"
-            href={statut}
+            href="/statut.pdf"
             target="_blank"
             rel="noopener noreferrer"
             aria-label="Pobierz statut (PDF)"
+          >
+            Pobierz&nbsp;<i className="bi bi-download" aria-hidden="true" />
+          </a>
+        </article>
+        <article>
+          <h3>{t.foundation.polityka || 'Polityka ochrony dzieci przed skrzywdzeniem'}</h3>
+          <a
+            className="statut"
+            href="/som.pdf"
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label="Pobierz politykę ochrony dzieci przed skrzywdzeniem (PDF)"
           >
             Pobierz&nbsp;<i className="bi bi-download" aria-hidden="true" />
           </a>

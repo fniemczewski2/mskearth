@@ -14,8 +14,11 @@ export default function NewsletterForm() {
   const [t, setT] = useState({ newsletter: {} });
   const [email, setEmail] = useState('');
   const [consent, setConsent] = useState(false);
-  const [status, setStatus] = useState('idle'); // idle | loading | ok | error
+  const [status, setStatus] = useState('idle'); // 'idle' | 'loading' | 'ok' | 'error'
   const [errMsg, setErrMsg] = useState('');
+
+  // honeypot (anti-bot). If filled, we bail out silently as “validation failed”.
+  const [company, setCompany] = useState('');
 
   const abortRef = useRef(null);
 
@@ -42,6 +45,9 @@ export default function NewsletterForm() {
   }, [language]);
 
   const validate = () => {
+    if (company.trim().length > 0) {
+      return { ok: false, msg: t.newsletter?.failed || 'Coś poszło nie tak.' };
+    }
     if (!consent) return { ok: false, msg: t.newsletter?.consentRequired || 'Zaznacz zgodę.' };
     if (!/^\S+@\S+\.\S+$/.test(email)) return { ok: false, msg: t.newsletter?.invalidEmail || 'Nieprawidłowy e-mail.' };
     return { ok: true, msg: '' };
@@ -49,72 +55,105 @@ export default function NewsletterForm() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setStatus('loading'); setErrMsg('');
+    if (status === 'loading') return; // guard double-submit
+
+    setStatus('loading'); 
+    setErrMsg('');
 
     const v = validate();
-    if (!v.ok) { setStatus('error'); setErrMsg(v.msg); return; }
+    if (!v.ok) { 
+      setStatus('error'); 
+      setErrMsg(v.msg); 
+      return; 
+    }
 
     // cancel any in-flight request
     if (abortRef.current) abortRef.current.abort();
     const controller = new AbortController();
     abortRef.current = controller;
 
+    // manual timeout: abort the fetch after N ms
+    const timeoutId = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
+
     try {
       const resp = await fetch(SUBSCRIBE_URL, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json; charset=utf-8' },
+        headers: {
+          'Content-Type': 'application/json; charset=utf-8',
+          Accept: 'application/json',
+        },
         body: JSON.stringify({
-          api_key: import.meta.env.VITE_CONVERTKIT_PUBLIC_API_KEY,
+          api_key: import.meta.env.VITE_CONVERTKIT_PUBLIC_API_KEY, // CK public key is fine client-side
           email,
+          // optional: first_name, fields: { locale: language }, tags: [12345]
         }),
         signal: controller.signal,
       });
-
-      // manual timeout (since native fetch timeout isn't universal)
-      const timeout = new Promise((_, rej) =>
-        setTimeout(() => rej(new Error('timeout')), REQUEST_TIMEOUT_MS)
-      );
-      await Promise.race([resp, timeout]);
 
       if (!resp.ok) {
         let info = '';
         try {
           const j = await resp.json();
-          info = j?.message || '';
-        } catch { /* ignore */ }
+          info =
+            j?.message ||
+            j?.error?.message ||
+            (Array.isArray(j?.errors) ? j.errors.map((x) => x?.message).filter(Boolean).join(', ') : '');
+        } catch { /* ignore parse errors */ }
         throw new Error(info || `HTTP ${resp.status}`);
       }
 
       setStatus('ok');
       setEmail('');
       setConsent(false);
+      setCompany('');
     } catch (err) {
-      if (err.name === 'AbortError') return; // user resubmitted
-      setStatus('error');
-      setErrMsg(
-        err.message === 'timeout'
-          ? (t.newsletter?.timeout || 'Przekroczono czas. Spróbuj ponownie.')
-          : (t.newsletter?.failed || 'Nie udało się zapisać do newslettera.')
-      );
-      console.error('Newsletter subscribe error:', err);
+      if (err && err.name === 'AbortError') {
+        setStatus('error');
+        setErrMsg(t.newsletter?.timeout || 'Przekroczono czas. Spróbuj ponownie.');
+      } else {
+        const isTimeout = String(err?.message || '').toLowerCase().includes('timeout');
+        setStatus('error');
+        setErrMsg(
+          isTimeout
+            ? (t.newsletter?.timeout || 'Przekroczono czas. Spróbuj ponownie.')
+            : /already/i.test(err?.message || '')
+            ? (t.newsletter?.success || 'Dziękujemy! Sprawdź skrzynkę e-mail.')
+            : (t.newsletter?.failed || 'Nie udało się zapisać do newslettera.')
+        );
+        console.error('Newsletter subscribe error:', err);
+      }
+    } finally {
+      clearTimeout(timeoutId);
     }
   };
+
+  const busy = status === 'loading';
 
   return (
     <>
       <h2>{t.newsletter?.h2 || 'Newsletter'}</h2>
 
       <aside className="newsletter">
-        <form className="newsletter-form" onSubmit={handleSubmit} noValidate aria-busy={status === 'loading' ? 'true' : 'false'}>
+        <form
+          className="newsletter-form"
+          onSubmit={handleSubmit}
+          noValidate
+          aria-busy={busy ? 'true' : 'false'}
+        >
           {/* Honeypot: bots fill visible inputs eagerly; this one is hidden off-screen */}
+          <label htmlFor="company" style={{ position: 'absolute', left: '-9999px' }}>
+            Company
+          </label>
           <input
+            id="company"
             type="text"
-            name="company" // innocuous name
+            name="company"
             tabIndex={-1}
             autoComplete="off"
             aria-hidden="true"
             style={{ position: 'absolute', left: '-9999px', width: 1, height: 1, opacity: 0 }}
-            onChange={() => { /* if filled, silently ignore submit by failing validation */ }}
+            value={company}
+            onChange={(e) => setCompany(e.target.value)}
           />
 
           <label className="formLabel" htmlFor="newsletter-email">
@@ -148,19 +187,26 @@ export default function NewsletterForm() {
             </label>
           </div>
 
-          <button type="submit" className="newsletterButton" disabled={status === 'loading'}>
-            {status === 'loading' ? (t.newsletter?.pending || 'Przetwarzanie…') : (t.newsletter?.submit || 'Zapisz się')}
+          <button
+            type="submit"
+            className="newsletterButton"
+            disabled={busy}
+            aria-disabled={busy ? 'true' : 'false'}
+          >
+            {busy ? (t.newsletter?.pending || 'Przetwarzanie…') : (t.newsletter?.submit || 'Zapisz się')}
             &nbsp;<i className="bi bi-envelope icon newsletterIcon" aria-hidden="true" />
           </button>
 
           {/* Status messages */}
-          {status === 'loading' && (
+          {busy && (
             <div className="loader" aria-hidden="true" role="status" aria-live="polite" aria-busy="true">
-              <span className="spinner" aria-hidden="true"/>
+              <span className="spinner" aria-hidden="true" />
             </div>
           )}
           {status === 'error' && (
-            <p className="failed" role="alert">{errMsg || t.newsletter?.failed || 'Coś poszło nie tak.'}</p>
+            <p className="failed" role="alert">
+              {errMsg || t.newsletter?.failed || 'Coś poszło nie tak.'}
+            </p>
           )}
           {status === 'ok' && (
             <p className="succeeded" role="status" aria-live="polite">

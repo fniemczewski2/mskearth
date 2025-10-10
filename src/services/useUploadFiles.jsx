@@ -3,12 +3,6 @@ import { useState } from 'react';
 import { v4 as uuid } from 'uuid';
 import { supabase } from './supabaseClient';
 
-/**
- * Upload one or many files to a Supabase Storage bucket/prefix.
- * - Returns STORAGE PATHS (e.g. "articles/<articleId>/<filename>.jpg")
- * - Later you can resolve a public URL with:
- *     supabase.storage.from(bucket).getPublicUrl(path)
- */
 export default function useUploadFiles(defaultBucket = 'mskearth') {
   const [fileIds, setFileIds] = useState([]);           // storage paths
   const [uploadProgress, setUploadProgress] = useState({}); // index -> 0..100

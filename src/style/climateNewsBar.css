@@ -11,7 +11,7 @@
   overflow: hidden;
   white-space: nowrap;
 
-  background: var(--white);
+  background: var(--white, #fff);
   text-transform: uppercase;
 
   box-shadow: 0 2px 8px rgba(0,0,0,.15);
@@ -20,16 +20,24 @@
 
 .ccw-ticker a {
   color: #444;
+  text-decoration: none;
 }
-/* kontener animowany */
+
+/* track holds two identical groups */
 .ticker-track {
-  display: inline-flex;   /* ✅ inline-flex, żeby elementy się kleiły */
-  white-space: nowrap;
+  display: flex;
+  align-items: center;
   will-change: transform;
   animation: ticker-marquee var(--duration, 60s) linear infinite;
 }
 
-/* elementy wewnątrz */
+/* a single pass of all items */
+.ticker-group {
+  display: inline-flex;
+  white-space: nowrap;
+}
+
+/* individual items */
 .ticker-item {
   display: inline-block;
   padding-right: 50px;
@@ -38,15 +46,9 @@
   font-size: clamp(12px, 2.4vh, 18px);
 }
 
-/* animacja pętli */
+/* seamless loop: move left by exactly the width of the first group */
 @keyframes ticker-marquee {
   from { transform: translateX(0); }
   to   { transform: translateX(var(--ticker-distance, -50%)); }
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .ticker-track {
-    animation: none;
-    transform: translateX(0);
-  }
-}

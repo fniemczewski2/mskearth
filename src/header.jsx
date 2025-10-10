@@ -4,11 +4,8 @@ import MobileHeader from './mobile/mobileHeader';
 import ReactCountryFlag from 'react-country-flag';
 
 import './style/header.css';
-import logoMSK from './assets/logoMSK.png';
-import logoFFF from './assets/logoFFF.png';
 import ClimateNewsBar from './pages/climateNewsBar';
 
-/** Pobiera pełny plik i18n (np. /locales/pl.json) */
 async function fetchLocale(lang) {
   try {
     const res = await fetch(`/locales/${lang}.json`, { credentials: 'same-origin' });
@@ -30,7 +27,6 @@ function Header({ lang, handleLanguageChange }) {
     return supported.includes(seg) ? seg : 'pl';
   }, [lang, location.pathname]);
 
-  // Możemy chcieć przekazać mobileMenu do MobileHeader (nie jest wymagane jeśli MobileHeader sam pobiera)
   const [mobileMenuItems, setMobileMenuItems] = useState([]);
 
   useEffect(() => {
@@ -46,7 +42,6 @@ function Header({ lang, handleLanguageChange }) {
   return (
     <>
       <DesktopHeader lang={effectiveLang} handleLanguageChange={handleLanguageChange} />
-      {/* Jeśli MobileHeader ma własne tłumaczenia, możesz pominąć props mobileMenuItems */}
       <MobileHeader
         lang={effectiveLang}
         handleLanguageChange={handleLanguageChange}
@@ -65,14 +60,12 @@ function DesktopHeader({ lang, handleLanguageChange }) {
     (async () => {
       const data = await fetchLocale(lang);
       if (!active || !data) return;
-      // ⬇️ dokładnie z pliku: navbar.menuItems
       setMenuItems(data?.navbar?.menuItems ?? []);
     })();
     return () => { active = false; };
   }, [lang]);
 
   const isActive = (href) => {
-    // aktywne gdy dokładnie pasuje lub gdy path zaczyna się od href (np. /pl/aktualnosci/123)
     return location.pathname === href || location.pathname.startsWith(href + '/');
   };
 
@@ -80,8 +73,8 @@ function DesktopHeader({ lang, handleLanguageChange }) {
     <header className="desktopHeader" id="header">
       <div className="headerElementsContainer">
         <Link to={`/${lang}`} className="desktop logo">
-          <img src={logoMSK} alt="Logo Młodzieżowy Strajk Klimatyczny" />
-          <img src={logoFFF} alt="Logo Fridays For Future" />
+          <img src="/logoMSK.png" alt="Logo Młodzieżowy Strajk Klimatyczny" />
+          <img src="/logoFFF.png" alt="Logo Fridays For Future" />
         </Link>
 
         <div className="desktopNavbar">

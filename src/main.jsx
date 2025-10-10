@@ -1,5 +1,4 @@
 import { useEffect, useMemo, useRef, useState, lazy, Suspense } from 'react';
-import filmIKEA from './assets/filmikea.webm';
 import './style/main.css';
 import Clock from './services/clock.jsx';
 
@@ -10,46 +9,9 @@ function Main() {
   const videoRef = useRef(null);
   const observerRef = useRef(null);
 
-  const [isMuted, setIsMuted] = useState(true);   // start muted for autoplay policies
+  const [isMuted, setIsMuted] = useState(true);
   const [isLoading, setIsLoading] = useState(true);
-  const [isInView, setIsInView] = useState(true); // default true so SSR/older browsers still play
-
-  // initial PRM
-  const prefersReducedMotion = useMemo(() => {
-    if (typeof window === 'undefined' || !window.matchMedia) return false;
-    return window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  }, []);
-
-  // respond to PRM changes live
-  useEffect(() => {
-    if (!window.matchMedia) return;
-    const mq = window.matchMedia('(prefers-reduced-motion: reduce)');
-    const onChange = (e) => {
-      const v = videoRef.current;
-      if (!v) return;
-      if (e.matches) {
-        v.pause();
-        v.removeAttribute('loop');
-      } else {
-        v.setAttribute('loop', '');
-        if (isInView) v.play().catch(() => {});
-      }
-    };
-    mq.addEventListener?.('change', onChange);
-    return () => mq.removeEventListener?.('change', onChange);
-  }, [isInView]);
-
-  // pause when tab is hidden
-  useEffect(() => {
-    const v = videoRef.current;
-    if (!v) return;
-    const onVis = () => {
-      if (document.hidden) v.pause();
-      else if (!prefersReducedMotion && isInView) v.play().catch(() => {});
-    };
-    document.addEventListener('visibilitychange', onVis);
-    return () => document.removeEventListener('visibilitychange', onVis);
-  }, [prefersReducedMotion, isInView]);
+  const [isInView, setIsInView] = useState(true);
 
   // lazy-play only when hero video is in view
   useEffect(() => {
@@ -59,16 +21,16 @@ function Main() {
     observerRef.current = new IntersectionObserver(
       (entries) => {
         const entry = entries[0];
-        const visible = entry.isIntersecting || entry.intersectionRatio > 0;
+        const visible = entry.isIntersecting && entry.intersectionRatio > 0;
         setIsInView(visible);
-        if (visible && !prefersReducedMotion) v.play().catch(() => {});
+        if (visible) v.play().catch(() => {});
         else v.pause();
       },
-      { rootMargin: '0px 0px -20% 0px', threshold: [0, 0.1, 0.5] }
+      { rootMargin: '0px 0px -10% 0px', threshold: [0, 0.1, 0.5] }
     );
     observerRef.current.observe(v);
     return () => observerRef.current?.disconnect();
-  }, [prefersReducedMotion]);
+  }, []);
 
   // keep React state in sync if something external changes mute
   useEffect(() => {
@@ -100,16 +62,14 @@ function Main() {
           className="film"
           ref={videoRef}
           autoPlay
-          muted={isMuted}
-          loop={!prefersReducedMotion}
+          muted={isMuted}     
           playsInline
           preload="metadata"
           onCanPlayThrough={() => setIsLoading(false)}
           onLoadedData={() => setIsLoading(false)}
-          onError={() => setIsLoading(false)}
-          aria-hidden="true"  /* change to aria-label if the video is meaningful content */
+          aria-label="Film promocyjny IKEA przedstawiający działania proekologiczne"
         >
-          <source src={filmIKEA} type="video/webm" />
+          <source src="./filmikea.webm" type="video/webm" />
           Twoja przeglądarka nie obsługuje elementu wideo.
         </video>
 
