@@ -1,7 +1,3 @@
-// src/components/LocalContactPersonForm.jsx
-import { useEffect, useId, useMemo, useState } from 'react';
-import { supabase } from './supabaseClient';
-
 const LocalContactPersonForm = () => {
   // a11y ids
   const nameId = useId();

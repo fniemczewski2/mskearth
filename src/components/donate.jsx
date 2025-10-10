@@ -1,19 +1,15 @@
-import React, { useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 
-export default function DonateStripe() {
-  // preset PLN amounts
+export default function Donate() {
   const amounts = useMemo(() => [10, 20, 50], []);
-  const [amount, setAmount] = useState(amounts[1]); // default 25
+  const [amount, setAmount] = useState(amounts[1]); 
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [consent, setConsent] = useState(false);
   const [busy, setBusy] = useState(false);
-  const [err, setErr] = useState("");
 
-  // simple email validation (optional email allowed)
   const emailValid = !email || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 
-  // canPay: positive amount, consent checked, email ok
   const canPay = Boolean(amount > 0 && consent && emailValid && !busy);
 
   async function startPayment() {

@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState, useId, useCallback, lazy, Suspense} from 'react';
 import { Routes, Route, Navigate, useLocation, useNavigate, BrowserRouter } from 'react-router-dom';
 import { supabase } from './services/supabaseClient';
 import ReactDOM from 'react-dom/client';
@@ -11,12 +11,12 @@ import News from './pages/news.jsx';
 import About from './pages/about.jsx';
 import Map from './pages/map.jsx';
 import Foundation from './pages/foundation.jsx';
-import AdminPanel from './pages/adminPanel.jsx';
-import SideButtons from './services/sideButtons.jsx';
-import CookieConsent from './services/cookies.jsx';
+import AdminPanel from './pages/admin/adminPanel.jsx';
+import SideButtons from './components/sideButtons.jsx';
+import CookieConsent from './components/cookies.jsx';
 import './style/index.css';
 
-const LANGS = ['pl', 'en', 'ua'];
+const LANGS = ['pl', 'en'];
 const DEFAULT_LANG = 'pl';
 
 const toPublicUrl = (path, bucket = 'public') => {

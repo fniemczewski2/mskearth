@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import JoinUs from '../pages/joinUs';
-import Donate from '../pages/donate';
-import NewsletterForm from '../pages/newsletter';
+import JoinUs from './joinUs';
+import Donate from './donate';
+import NewsletterForm from './newsletter';
 
 function SideButtons() {
     const [overlayVisible, setOverlayVisible] = useState(false);

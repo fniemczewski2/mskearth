@@ -2,19 +2,19 @@
 import { useCallback, useMemo, useState } from 'react';
 import PropTypes from 'prop-types';
 
-import CityForm from './addCity.jsx';
-import ArticleForm from './addArticle.jsx';
-import ListArticles from './listArticles.jsx';
-import LocalContactPersonForm from './addLocalContactPerson.jsx';
-import { AddRecrutationData, AddRecrutationCallData } from './addRecrutationData.jsx';
-import FinancialReportForm from './addFinancialReport.jsx';
-import FoundationBoardForm from './addFoundationBoard.jsx';
-import ListCities from './listCities.jsx';
-import ListCalls from './listCalls.jsx';
-import ListLocalContactPeople from './listLocalContactPeople.jsx';
-import ListFoundationBoardMembers from './listFoundationBoardMembers.jsx';
-import ContactPersonForm from './addContactPerson.jsx';
-import ListContactPeople from './listContactPeople.jsx';
+import CityForm from '../../services/addCity.jsx';
+import ArticleForm from '../../services/addArticle.jsx';
+import ListArticles from '../../services/listArticles.jsx';
+import LocalContactPersonForm from '../../services/addLocalContactPerson.jsx';
+import { AddRecrutationData, AddRecrutationCallData } from '../../services/addRecrutationData.jsx';
+import FinancialReportForm from '../../services/addFinancialReport.jsx';
+import FoundationBoardForm from '../../services/addFoundationBoard.jsx';
+import ListCities from '../../services/listCities.jsx';
+import ListCalls from '../../services/listCalls.jsx';
+import ListLocalContactPeople from '../../services/listLocalContactPeople.jsx';
+import ListFoundationBoardMembers from '../../services/listFoundationBoardMembers.jsx';
+import ContactPersonForm from '../../services/addContactPerson.jsx';
+import ListContactPeople from '../../services/listContactPeople.jsx';
 
 const TABS = [
   { id: 'recrutation', label: 'Rekrutacja' },

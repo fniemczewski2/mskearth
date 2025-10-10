@@ -1,6 +1,6 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import SocialLink from './services/socialLink';
+import SocialLink from './components/socialLink';
 
 async function fetchLocale(lang) {
   try {

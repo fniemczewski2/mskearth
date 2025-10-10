@@ -1,7 +1,5 @@
 import PropTypes from "prop-types";
-import { useEffect, useMemo, useState } from 'react';
 import { useLocation } from 'react-router-dom';
-import { supabase } from '../services/supabaseClient';
 
 const LOCALE_CACHE = new Map();
 

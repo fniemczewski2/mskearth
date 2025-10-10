@@ -1,6 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
-import { supabase } from './supabaseClient';
-import DataTable from './dataTable';
+import DataTable from "../pages/admin/dataTable";
 
 function ListContactPeople() {
   const [rows, setRows] = useState([]);

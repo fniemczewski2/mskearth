@@ -1,8 +1,8 @@
-import { useEffect, useMemo, useRef, useState, lazy, Suspense } from 'react';
-import Clock from './services/clock.jsx';
+import { useEffect, useRef, useState, lazy, Suspense } from 'react';
+import Clock from './components/clock.jsx';
 
-const JoinUs = lazy(() => import('./pages/joinUs.jsx'));
-const Donate = lazy(() => import('./pages/donate.jsx'));
+const JoinUs = lazy(() => import('./components/joinUs.jsx'));
+const Donate = lazy(() => import('./components/donate.jsx'));
 
 function Main() {
   const videoRef = useRef(null);

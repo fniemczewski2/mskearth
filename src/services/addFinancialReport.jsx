@@ -1,5 +1,3 @@
-import { useId, useRef, useState, useEffect } from 'react';
-import { supabase } from './supabaseClient';
 import useUploadFiles from './useUploadFiles';
 
 function FinancialReportForm({ currentUserName }) {

@@ -1,7 +1,4 @@
-// useUploadFiles.js
-import { useState } from 'react';
 import { v4 as uuid } from 'uuid';
-import { supabase } from './supabaseClient';
 
 export default function useUploadFiles(defaultBucket = 'mskearth') {
   const [fileIds, setFileIds] = useState([]);           // storage paths

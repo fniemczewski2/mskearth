@@ -1,8 +1,6 @@
 // ArticleForm.jsx
-import { useEffect, useId, useRef, useState } from 'react';
 import PropTypes from 'prop-types';
 import { v4 as uuid } from 'uuid';
-import { supabase } from './supabaseClient';
 import useUploadFiles from './useUploadFiles';
 
 function ArticleForm({ currentUserName }) {

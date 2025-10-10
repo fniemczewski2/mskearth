@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
-import { supabase } from "../services/supabaseClient";
-import DataForms from "../services/dataForms";
+import { supabase } from "../../services/supabaseClient";
+import DataForms from "./dataForms";
 
 function AdminPanel() {
   const [email, setEmail] = useState("");

@@ -1,6 +1,3 @@
-import { useId, useMemo, useState } from 'react';
-import { supabase } from './supabaseClient';
-
 const VOIVODESHIPS = [
   'dolnośląskie','kujawsko-pomorskie','lubelskie','lubuskie','łódzkie',
   'małopolskie','mazowieckie','opolskie','podkarpackie','podlaskie',

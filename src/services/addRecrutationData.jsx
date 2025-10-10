@@ -1,6 +1,3 @@
-import { useId, useState } from 'react';
-import { supabase } from './supabaseClient';
-
 const toUrl = (v) => {
   const s = (v || '').trim();
   if (!s) return null;

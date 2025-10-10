@@ -1,7 +1,7 @@
-// src/pages/News.jsx
-import React, { useEffect, useMemo, useRef, useState, useCallback } from 'react';
+import { useState, useRef, useMemo, useCallback, useEffect } from 'react';
 import { useLocation, Link } from 'react-router-dom';
-import { supabase, toPublicUrl } from '../services/supabaseClient';
+import { toPublicUrl } from '../services/supabaseClient';
+import { supabase } from '../services/supabaseClient';
 
 function News() {
   const [articles, setArticles] = useState([]);

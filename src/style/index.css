@@ -1,5 +1,11 @@
-/* Simplified stylesheet — deduplicated + grouped without changing class names */
-/* ========= Core Variables ========= */
+@font-face{
+  font-family:"Jost";
+  src:url("/fonts/Jost-Variable.woff2") format("woff2-variations");
+  font-weight:100 900;
+  font-style:normal;
+  font-display:swap;
+}
+
 :root {
   --second-color: #1B7340;
   --first-color: #1C9346;
@@ -23,7 +29,6 @@
   --shadow-2: 0 10px 24px rgba(0,0,0,.12), 0 4px 10px rgba(0,0,0,.08);
 }
 
-/* ========= Base / Reset ========= */
 *, *::before, *::after { box-sizing: border-box; }
 html {
   background-image: linear-gradient(#aba9, #aba9), url('/photo.png');
@@ -46,7 +51,6 @@ ul { margin: 0; padding: 0; list-style: none; }
 p { margin: 0; }
 article, aside, section, p { overflow-wrap: anywhere; }
 
-/* ========= Typography ========= */
 h1, h2, h3, h4, h5, h6 {
   font-weight: 900;
   text-transform: uppercase;
@@ -64,7 +68,6 @@ a { color: var(--fourth-color); text-decoration: none; }
 a:hover { text-decoration: underline; }
 a:visited { color: var(--fourth-color); }
 
-/* ========= Layout ========= */
 main {
   display: flex;
   flex-wrap: wrap;
@@ -94,7 +97,6 @@ article, aside {
   max-width: 100%;
 }
 
-/* ========= Button-like Elements (grouped) ========= */
 button,
 .index a,
 .foundation .documentsContainer a,
@@ -123,9 +125,9 @@ button,
   width: fit-content;
   text-decoration: none;
 }
-/* Primary accent buttons */
+
 .primaryBtn, .cta { background-color: var(--fourth-color) !important; color: var(--white) !important; }
-/* Hover states */
+
 button:hover,
 button:focus,
 .foundation .documentsContainer a:focus,
@@ -136,10 +138,8 @@ button:focus,
 .report:hover { background-color: var(--first-color); }
 .primaryBtn:hover, .cta:hover { background-color: var(--fourth-dark-color) !important; color: var(--white) !important; }
 
-/* ========= Index extras ========= */
 .index h2 { margin-top: 3rem; }
 
-/* ========= Hero / Film ========= */
 .hero { margin-bottom: 10px; flex-direction: column; }
 .film {
   animation: default-animation 1s ease-in-out;
@@ -167,7 +167,6 @@ button:focus,
 }
 .film-container:hover .mute-button { display: block; }
 
-/* ========= Spinner ========= */
 .spinner-container {
   position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
 }
@@ -181,7 +180,6 @@ button:focus,
 }
 @keyframes spinner { to { transform: rotate(360deg); } }
 
-/* ========= Join / Donate ========= */
 .joinUs, .donate { display: flex; justify-content: center; flex-direction: column; padding: 10px 30px; width: fit-content; }
 .joinUsAction, .donateAction { display: flex; align-items: center; justify-content: center; }
 .joinUsActionContainer { display: flex; align-items: center; justify-content: center; flex-wrap: nowrap; margin: 10px auto; width: 100%; }
@@ -198,7 +196,6 @@ button:focus,
 .donate .agreement { margin: 10px auto;}
 .amounts { display: flex; flex-wrap: wrap; justify-content: space-around; margin: 10px 0;}
 
-/* ========= Forms ========= */
 form { max-width: 800px; }
 .formLabel { color: var(--first-color); display: block; text-align: left; margin: 10px 0 0; }
 .formLabel:first-of-type { margin-top: 0; }
@@ -213,12 +210,10 @@ form { max-width: 800px; }
 .form-container input[type="checkbox"] { inline-size: 20px; block-size: 20px; margin: auto 5px; color: var(--first-color); }
 .buttonContainer { display: flex; justify-content: flex-end; width: 100%; margin-bottom: 12px; }
 
-/* ========= Newsletter ========= */
 .newsletter { display: flex; justify-content: center; padding: 40px; }
 .newsletter-form { display: flex; flex-direction: column; align-items: flex-end; width: fit-content; }
 .newsletter .agreement { margin: 10px auto; }
 
-/* ========= Foundation ========= */
 .foundationLogoContainer { width: 30vw; max-width: 400px; }
 .foundationLogo { width: 100%; margin: auto; object-fit: contain; }
 .foundationDataElement { width: 100%; flex-wrap: nowrap; flex-direction: row; font-size: 1.2rem; }
@@ -243,7 +238,6 @@ a.mailto { color: var(--second-color); margin: 0; }
 .reports { display: flex; flex-direction: column; align-items: flex-start; }
 .statut, .report { align-items: center; background-color: var(--second-color); border: none; color: var(--white); display: flex; font-family: var(--head-font); font-weight: 900; margin: 10px; padding: .25em .5em; text-decoration: none; text-transform: uppercase; }
 
-/* ========= Side Buttons ========= */
 .side-button {
   position: fixed; right: -210px; transform: translateY(-50%);
   transition: all .3s ease-in-out;
@@ -264,7 +258,6 @@ a.mailto { color: var(--second-color); margin: 0; }
 .close-button { position: absolute; top: 30px; right: 30px; background: transparent; border: none; display: flex; cursor: pointer; inline-size: 50px; block-size: 50px; padding: 0; align-items: center; box-shadow: none; }
 .close-button i { margin: auto; font-size: 36px; }
 
-/* ========= Ticker ========= */
 .ccw-ticker {
   position: sticky; top: 0; left: 0; right: 0;
   height: 4vh; min-height: 40px; padding: .6vh 0;
@@ -278,11 +271,9 @@ a.mailto { color: var(--second-color); margin: 0; }
 .ticker-item { display: inline-block; padding-right: 50px; font-family: 'Jost', sans-serif; font-weight: 700; font-size: clamp(12px, 2.4vh, 18px); }
 @keyframes ticker-marquee { from { transform: translateX(0); } to { transform: translateX(var(--ticker-distance, -50%)); } }
 
-/* ========= States ========= */
 .succed { color: var(--first-color); }
 .failed { color: var(--fourth-dark-color); }
 
-/* ========= Media Queries ========= */
 @media (max-width: 768px) {
   html { background-attachment: scroll; }
   body { font-size: 16px; }
@@ -320,7 +311,6 @@ a.mailto { color: var(--second-color); margin: 0; }
 @media (min-width: 1440px) { body { font-size: 18px; } }
 @media (min-width: 1821px) { .film { max-height: 60vh; } }
 
-/* ========= Animations ========= */
 @keyframes default-animation { 0% { opacity: 0; transform: scale(.96); } 100% { opacity: 1; transform: scale(1); } }
 
 header {
@@ -358,7 +348,6 @@ a.logo {
   align-items: center;
 }
 
-/* Navbar Styles */
 nav ul, .bm-menu ul {
   list-style: none;
   padding: 0;
@@ -391,7 +380,6 @@ nav ul, .bm-menu ul {
   border-bottom: 5px solid white;
 }
 
-/* Burger Menu Styles */
 .bm-burger-button {
   width: 32px;
   height: 32px;
@@ -415,7 +403,6 @@ nav ul, .bm-menu ul {
   z-index: -1;
 }
 
-/* Mobile Header Styles */
 .mobileHeader {
   max-width: 100vw;
 }
@@ -457,13 +444,12 @@ nav ul, .bm-menu ul {
   background: transparent;
   cursor: pointer;
 
-  border-radius: 6px;           /* 🔑 zaokrąglenie */
-  overflow: hidden;              /* 🔑 przycina rogi flagi */
+  border-radius: 6px;           
+  overflow: hidden;             
   box-shadow: 0 2px 6px rgba(0,0,0,.15);
   transition: transform .15s ease, box-shadow .15s ease;
 }
 
-/* Media Queries */
 @media (min-width: 1024px) {
   .desktopNavbar, .desktop {
       display: block;
@@ -588,7 +574,6 @@ nav ul, .bm-menu ul {
       display: block;
   }
 
-  /* Burger Animation */
   .burger span:first-child.open {
       transform: rotate(45deg);
   }
@@ -994,7 +979,7 @@ main.news {
   display: flex;
   justify-content: center;
   gap: var(--space-2);
-  justify-content: center;   /* centrowanie */
+  justify-content: center;   
 }
 
 .newsElement {

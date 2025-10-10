@@ -1,7 +1,4 @@
-// src/components/ListCalls.jsx
-import { useCallback, useEffect, useMemo, useState } from 'react';
-import { supabase } from './supabaseClient';
-import DataTable from './dataTable';
+import DataTable from "../pages/admin/dataTable";
 
 const toUrl = (v) => (/^https?:\/\//i.test(v) ? v : `https://${v}`);
 

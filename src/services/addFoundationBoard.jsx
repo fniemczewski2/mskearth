@@ -1,6 +1,3 @@
-// FoundationBoardForm.jsx
-import { useEffect, useId, useRef, useState } from 'react';
-import { supabase } from './supabaseClient';
 import useUploadFiles from './useUploadFiles';
 
 const BUCKET = 'mskearth';           // <- use your single bucket

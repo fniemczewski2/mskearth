@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState, useCallback } from "react";
-import { supabase, toPublicUrl } from "./supabaseClient";
-import DataTable from "./dataTable";
+import { toPublicUrl } from "./supabaseClient";
+import DataTable from "../pages/admin/dataTable";
 
 function ListArticles() {
   const [articles, setArticles] = useState([]);

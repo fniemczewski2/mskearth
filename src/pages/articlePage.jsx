@@ -1,8 +1,7 @@
-import { useEffect, useMemo, useRef, useState, useCallback } from "react";
 import { Link, useLocation, useParams } from "react-router-dom";
 import PropTypes from "prop-types";
 import DOMPurify from "dompurify";
-import { supabase, toPublicUrl } from "../services/supabaseClient";
+import { toPublicUrl } from "../services/supabaseClient";
 
 const LOCALE_CACHE = new Map();
 const SUPPORTED_LOCALES = new Set(["pl", "en", "ua"]);

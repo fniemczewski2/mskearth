@@ -1,7 +1,7 @@
 import { useId, useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faGoogle } from "@fortawesome/free-brands-svg-icons";
-import { supabase } from "./supabaseClient";
+import { supabase } from "../../services/supabaseClient";
 
 // Optional: pass onSignedIn={(session) => setIsAuthenticated(true)} from parent
 function SignInForm({ onSignedIn } = {}) {

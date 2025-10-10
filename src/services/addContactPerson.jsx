@@ -1,6 +1,3 @@
-import { useEffect, useId, useMemo, useState } from 'react';
-import { supabase } from './supabaseClient'; // from the client file I shared earlier
-
 const initialForm = {
   name: '',
   email: '',
