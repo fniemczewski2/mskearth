@@ -18,7 +18,7 @@
     width: min-content;
     display: flex;
     align-content: flex-start;
-    height: fit-content;
+    height: min-content;
 }
   
   .mute-button {
@@ -80,6 +80,12 @@
         transform: rotate(360deg);
       }
     }
+
+    @media all and (max-width: 768px) {
+        .film-container {
+          max-height: 36vh;
+        }
+      }
 
 
     @media all and (min-width: 769px) {
