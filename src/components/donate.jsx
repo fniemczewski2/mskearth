@@ -1,12 +1,13 @@
 import { useMemo, useState } from "react";
 
-export default function Donate() {
+export default function DonateStripe() {
   const amounts = useMemo(() => [10, 20, 50], []);
-  const [amount, setAmount] = useState(amounts[1]); 
+  const [amount, setAmount] = useState(amounts[1]); // default 25
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [consent, setConsent] = useState(false);
   const [busy, setBusy] = useState(false);
+  const [err, setErr] = useState("");
 
   const emailValid = !email || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 
@@ -16,6 +17,7 @@ export default function Donate() {
     if (!canPay) return;
 
     setBusy(true);
+    setErr("");
 
     try {
       const res = await fetch("/api/create-checkout-session", {
@@ -37,6 +39,7 @@ export default function Donate() {
 
       window.location = data.url;
     } catch (e) {
+      setErr(e.message || "Wystąpił błąd po stronie serwera.");
       setBusy(false);
     }
   }
