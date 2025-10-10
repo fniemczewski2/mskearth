@@ -17,12 +17,10 @@ function normalizeUrlOrNull(value) {
   const v = (value || '').trim();
   if (!v) return null;
   try {
-    // Allow users to paste without protocol
     const hasProtocol = /^https?:\/\//i.test(v);
     const url = new URL(hasProtocol ? v : `https://${v}`);
     return url.toString();
   } catch {
-    // Let native validation surface errors when pattern/type is used
     return v;
   }
 }
@@ -133,7 +131,6 @@ const CityForm = () => {
         placeholder="https://facebook.com/nazwa-grupy"
         value={form.facebook}
         onChange={onChange}
-        // simple URL hint (keeps native validation)
         pattern="https?://.*"
         aria-describedby={`${facebookId}-hint`}
       />

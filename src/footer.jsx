@@ -33,9 +33,7 @@ function Footer({ lang, handleLanguageChange: _handleLanguageChange }) {
         if (!active || !data) return;
         setMenuItems(data?.footer?.menuItems ?? []);
       } catch (e) {
-        // Fallback to empty menu if fetch fails
         if (active) setMenuItems([]);
-        // Optionally log e
       }
     })();
     return () => {
@@ -70,7 +68,7 @@ function FooterMenu({ menuItems, lang }) {
     <nav className="foot-menu">
       <ul>
         {menuItems.map((item, index) => {
-          const isPrivacy = item.label === 'Polityka prywatności'; // adjust if localized differently
+          const isPrivacy = item.label === 'Polityka prywatności';
           const link = isPrivacy
             ? '/polityka-prywatnosci.pdf'
             : (item.link ? item.link.replace(':lang', lang) : '#');
@@ -82,7 +80,6 @@ function FooterMenu({ menuItems, lang }) {
                   {item.label}
                 </a>
               ) : (
-                // If link starts with http, use <a>, else use <Link>
                 /^https?:\/\//i.test(link) ? (
                   <a href={link}>{item.label}</a>
                 ) : (

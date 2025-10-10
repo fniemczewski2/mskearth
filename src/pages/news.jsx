@@ -9,13 +9,11 @@ function News() {
   const [translations, setTranslations] = useState({ news: {} });
   const location = useLocation();
 
-  // język z URL (pl/en/ua)
   const language = useMemo(() => {
     const seg = location.pathname.split('/')[1] || 'pl';
     return ['pl', 'en', 'ua'].includes(seg) ? seg : 'pl';
   }, [location.pathname]);
 
-  // stały "teraz" do filtrowania przyszłych publikacji
   const nowTs = useMemo(() => Date.now(), []);
 
   const stripTags = (html = '') => html.replace(/<\/?[^>]+(>|$)/g, '');
@@ -60,7 +58,6 @@ function News() {
 
       if (error) throw error;
 
-      // zamiana storage paths -> publiczne URL-e (bucket: mskearth)
       const list = (data || []).map((a) => ({
         ...a,
         imgurl: Array.isArray(a.imgurl)
@@ -68,9 +65,8 @@ function News() {
           : [],
       }));
 
-      // filtrowanie wg accepted/published + dostępności tłumaczeń
       const filtered = list.filter((article) => {
-        if (article.accepted === false) return false; // null => TRUE (domyślnie akceptowany)
+        if (article.accepted === false) return false; 
         const pubTs = article.published ? new Date(article.published).getTime() : 0;
         if (pubTs > nowTs) return false;
 
@@ -98,8 +94,7 @@ function News() {
     fetchArticles();
   }, [fetchArticles]);
 
-  // pola językowe z DB (lowercase: titleen/subtitleen/contenten itd.)
-  const suffix = language === 'pl' ? '' : language; // '', 'en', 'ua'
+  const suffix = language === 'pl' ? '' : language; 
   const titleField = suffix ? `title${suffix}` : 'title';
   const subtitleField = suffix ? `subtitle${suffix}` : 'subtitle';
   const contentField = suffix ? `content${suffix}` : 'content';

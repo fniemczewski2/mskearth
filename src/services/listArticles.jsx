@@ -37,7 +37,6 @@ function ListArticles() {
 
         return {
           ...article,
-          // keep original fields for table cells:
           sourceLink: article.sourcelink || null,
           sourceText: article.sourcetext || null,
           imgurl: resolved,
@@ -45,7 +44,6 @@ function ListArticles() {
         };
       });
 
-      // newest first (already ordered, but keep it explicit)
       list.sort((a, b) => String(b.created).localeCompare(String(a.created)));
       setArticles(list);
     } catch (err) {
@@ -76,7 +74,7 @@ function ListArticles() {
         .single();
       if (getErr) throw getErr;
 
-      const nextAccepted = existing?.accepted ? false : true; // boolean toggle
+      const nextAccepted = existing?.accepted ? false : true; 
       const { error: updErr } = await supabase
         .from("articles")
         .update({ accepted: nextAccepted })
@@ -111,7 +109,6 @@ function ListArticles() {
   };
 
   const handleEditArticle = () => {
-    // TODO: navigate(`/admin/articles/${articleId}/edit`)
   };
 
   const toggleText = (id) => {
@@ -120,7 +117,6 @@ function ListArticles() {
     );
   };
 
-  // ✅ TanStack Table v8 column defs
   const columns = useMemo(
     () => [
       { header: "Tytuł", accessorKey: "title" },
@@ -243,7 +239,7 @@ function ListArticles() {
         ),
       },
     ],
-    [] // columns are static; row state is read from row.original
+    [] 
   );
 
   return (

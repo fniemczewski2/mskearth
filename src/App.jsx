@@ -56,7 +56,7 @@ export default function App() {
   const handleLanguageChange = (newLang) => {
     if (!LANGS.includes(newLang)) return;
     const parts = location.pathname.split('/');
-    parts[1] = newLang; // podmień segment języka
+    parts[1] = newLang; 
     navigate(parts.join('/'), { replace: true });
   };
 

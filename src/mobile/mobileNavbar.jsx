@@ -33,14 +33,12 @@ const MobileNavbar = forwardRef(function MobileNavbar(
   const firstFocusableRef = useRef(null);
   const lastFocusableRef = useRef(null);
 
-  // Expose nav ref to parent (for aria-controls target)
   useEffect(() => {
     if (!ref) return;
     if (typeof ref === 'function') ref(navRef.current);
     else ref.current = navRef.current;
   }, [ref]);
 
-  // Load menu items when URL language changes
   useEffect(() => {
     let active = true;
     (async () => {
@@ -50,13 +48,11 @@ const MobileNavbar = forwardRef(function MobileNavbar(
     return () => { active = false; };
   }, [language]);
 
-  // Focus trap when open
   useEffect(() => {
     if (!isOpen) return;
     const nav = navRef.current;
     if (!nav) return;
 
-    // focus first focusable
     const focusables = nav.querySelectorAll('a,button,[tabindex]:not([tabindex="-1"])');
     const first = focusables[0];
     const last = focusables[focusables.length - 1];
@@ -85,7 +81,6 @@ const MobileNavbar = forwardRef(function MobileNavbar(
     transform: isOpen ? 'translateY(0)' : 'translateY(-100%)',
   };
 
-  // helper to build language-aware internal links (your routes include language segment)
   const linkFor = (base) => `/${language}${base}`;
 
   return (
@@ -95,7 +90,7 @@ const MobileNavbar = forwardRef(function MobileNavbar(
       className="mobileNavbar"
       style={style}
       aria-label="Nawigacja mobilna"
-      hidden={!isOpen} /* keeps tab order clean when collapsed; CSS still handles animation */
+      hidden={!isOpen} 
     >
       <ul className="navbarItems" onClick={toggleOpen}>
         {menuItems.map((item, index) => (

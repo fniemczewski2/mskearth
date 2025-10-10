@@ -1,4 +1,3 @@
-// src/components/dataTable.jsx
 import { useMemo, useState } from "react";
 import PropTypes from "prop-types";
 import {
@@ -9,33 +8,28 @@ import {
 } from "@tanstack/react-table";
 
 function DataTable({
-  columns,            // ColumnDef[] (v8) or legacy v7-like defs
+  columns,           
   records,
   handleDelete,
   handleEdit,
   handleAccept = null,
   handlePinn = null,
   title,
-  fetch = () => {},   // safe default
+  fetch = () => {},  
 }) {
   const data = useMemo(() => records ?? [], [records]);
 
-  // --- Normalize user columns to v8 and ensure each has a stable id when header is non-string
   const userColumns = useMemo(() => {
     return (columns ?? []).map((col, idx) => {
-      // Accept v7 and v8 props
+
       const header = col.header ?? col.Header;
       const cell = col.cell ?? col.Cell;
       const accessorKey = col.accessorKey ?? col.accessor;
-
-      // Start with the original but normalized keys
       const base = { ...col, header, cell, accessorKey };
-
-      // TanStack v8 requires an id when header is not a plain string
       const headerIsString = typeof base.header === "string";
 
       if (!base.id) {
-        // Prefer accessorKey if it's a string; otherwise synthesize
+
         const fallbackId =
           (typeof accessorKey === "string" && accessorKey) ||
           (typeof base.header === "string" && base.header.toLowerCase().replace(/\s+/g, "_")) ||
@@ -44,7 +38,6 @@ function DataTable({
         if (!headerIsString) {
           return { ...base, id: fallbackId };
         }
-        // If header is a string and no id, not strictly required—but we can still add one for stability
         return { ...base, id: fallbackId };
       }
 
@@ -52,10 +45,10 @@ function DataTable({
     });
   }, [columns]);
 
-  // --- Internal actions column (always last) ---
+
   const actionsColumn = useMemo(
     () => ({
-      id: "actions",                 // explicit id (string header below, so safe)
+      id: "actions",                 
       header: "Akcje",
       enableSorting: false,
       cell: ({ row }) => {
@@ -106,7 +99,6 @@ function DataTable({
               onClick={() => handleEdit(id)}
               className="alterRecordBtn"
               type="button"
-              // Leave disabled if edit flow isn't ready; otherwise remove
               disabled
               aria-label="Edytuj rekord"
               title="Edytuj"
@@ -130,7 +122,6 @@ function DataTable({
     [handleAccept, handlePinn, handleEdit, handleDelete]
   );
 
-  // Combine columns + actions
   const cols = useMemo(() => [...userColumns, actionsColumn], [userColumns, actionsColumn]);
 
   const [sorting, setSorting] = useState([]);
@@ -142,7 +133,6 @@ function DataTable({
     onSortingChange: setSorting,
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
-    // You can set defaultColumn here if needed, e.g., enableSorting by default
   });
 
   return (
@@ -166,7 +156,7 @@ function DataTable({
             <tr key={headerGroup.id}>
               {headerGroup.headers.map((header) => {
                 const canSort = header.column.getCanSort();
-                const sorted = header.column.getIsSorted(); // 'asc' | 'desc' | false
+                const sorted = header.column.getIsSorted(); 
 
                 return (
                   <th

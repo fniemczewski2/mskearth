@@ -10,7 +10,6 @@ if (!supabaseUrl || !supabaseAnonKey) {
   );
 }
 
-// Reuse during Vite HMR
 export const supabase =
   globalThis.__supabase__ ??
   createClient(supabaseUrl, supabaseAnonKey, {

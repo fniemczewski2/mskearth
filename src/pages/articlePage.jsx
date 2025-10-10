@@ -10,13 +10,11 @@ export default function ArticlePage({ articles = [] }) {
   const { id } = useParams();
   const location = useLocation();
 
-  // język z 1. segmentu ścieżki
   const language = useMemo(() => {
     const seg = (location.pathname.split("/")[1] || "").toLowerCase();
     return SUPPORTED_LOCALES.has(seg) ? seg : "pl";
   }, [location.pathname]);
 
-  // znajdź w propsach (np. przekazanych z News), albo pobierz z Supabase
   const [article, setArticle] = useState(() =>
     articles.find((a) => String(a?.id) === String(id)) || null
   );
@@ -26,7 +24,6 @@ export default function ArticlePage({ articles = [] }) {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const carouselImgRef = useRef(null);
 
-  // tłumaczenia (cache)
   useEffect(() => {
     let isActive = true;
     (async () => {
@@ -48,7 +45,6 @@ export default function ArticlePage({ articles = [] }) {
     return () => { isActive = false; };
   }, [language]);
 
-  // jeśli nie znaleziono w propsach, pobierz z Supabase
   useEffect(() => {
     let active = true;
     (async () => {
@@ -72,7 +68,6 @@ export default function ArticlePage({ articles = [] }) {
         if (!data) {
           if (active) setArticle(null);
         } else {
-          // rozwiąż ścieżki obrazków -> publiczne URL-e
           const imgs = Array.isArray(data.imgurl) ? data.imgurl : (data.imgurl ? [data.imgurl] : []);
           const resolved = imgs.map((p) => toPublicUrl(p, "mskearth")).filter(Boolean);
           const normalized = { ...data, imgurl: resolved };
@@ -86,14 +81,11 @@ export default function ArticlePage({ articles = [] }) {
       }
     })();
     return () => { active = false; };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
 
-  // jeśli artykuł dostarczono później przez props (np. client cache)
   useEffect(() => {
     const found = articles.find((a) => String(a?.id) === String(id));
     if (found) {
-      // upewnij się, że obrazki są publicznymi URL-ami (jeśli przychodziły jako pathy)
       const imgs = Array.isArray(found.imgurl) ? found.imgurl : (found.imgurl ? [found.imgurl] : []);
       const hasHttp = imgs.some((u) => /^https?:\/\//i.test(u));
       const normalizedImgs = hasHttp ? imgs : imgs.map((p) => toPublicUrl(p, "mskearth")).filter(Boolean);
@@ -102,12 +94,10 @@ export default function ArticlePage({ articles = [] }) {
     }
   }, [articles, id]);
 
-  // reset pozycji karuzeli, gdy zmieni się artykuł/obrazy
   useEffect(() => {
     setCurrentImageIndex(0);
   }, [article?.id, article?.imgurl?.length]);
 
-  // Share / copy helpers
   const shareOrCopyUrl = useCallback(async () => {
     const url = window.location.href;
     try {
@@ -132,7 +122,6 @@ export default function ArticlePage({ articles = [] }) {
     }
   }, [t]);
 
-  // stany wczesne
   if (loading) {
     return (
       <div className="loader" aria-hidden="true" role="status" aria-live="polite" aria-busy="true">
@@ -151,7 +140,6 @@ export default function ArticlePage({ articles = [] }) {
     );
   }
 
-  // Lokalizacja pól: DB ma lowercase warianty
   const pick = (obj, base, en, ua) => {
     if (language === "en") return obj[en] ?? obj[base] ?? "";
     if (language === "ua") return obj[ua] ?? obj[base] ?? "";
@@ -173,10 +161,8 @@ export default function ArticlePage({ articles = [] }) {
     );
   }
 
-  // sanitize HTML
   const safeHtml = DOMPurify.sanitize(contentHtml);
 
-  // obrazki
   const imgs = Array.isArray(article.imgurl) ? article.imgurl : [];
   const hasImages = imgs.length > 0;
   const manyImages = imgs.length > 1;
@@ -194,11 +180,9 @@ export default function ArticlePage({ articles = [] }) {
     if (e.key === "ArrowRight") handleNextImage();
   };
 
-  // daty
   const createdISO = article.created || "";
   const createdDate = createdISO ? String(createdISO).split("T")[0] : "";
 
-  // akceptacja: boolean lub string
   const isAccepted =
     typeof article.accepted === "boolean" ? article.accepted : article.accepted !== "false";
 

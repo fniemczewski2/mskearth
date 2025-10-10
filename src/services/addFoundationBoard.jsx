@@ -1,6 +1,6 @@
 import useUploadFiles from './useUploadFiles';
 
-const BUCKET = 'mskearth';           // <- use your single bucket
+const BUCKET = 'mskearth';         
 const FOUNDATION_PREFIX = 'foundation';
 
 const initialForm = {
@@ -21,7 +21,6 @@ function FoundationBoardForm() {
   const [status, setStatus] = useState({ type: 'idle', message: '' });
   const [previewUrl, setPreviewUrl] = useState('');
 
-  // a11y ids
   const nameId = useId();
   const roleId = useId();
   const roleEnId = useId();
@@ -46,10 +45,9 @@ function FoundationBoardForm() {
   } = useUploadFiles(BUCKET);
 
   const firstPath = fileIds?.[0] || '';
-  const firstProgress = uploadProgress?.[0]; // 0 -> 100
+  const firstProgress = uploadProgress?.[0]; 
   const firstUploadError = errors?.[0]?.message;
 
-  // Public URL preview
   useEffect(() => {
     if (!firstPath) {
       setPreviewUrl('');
@@ -79,7 +77,7 @@ function FoundationBoardForm() {
       description_ua: (form.description_ua || '').trim() || null,
       phone: (form.phone || '').trim() || null,
       email: (form.email || '').trim() || null,
-      img_path: firstPath || null, // matches table column
+      img_path: firstPath || null, 
     };
 
     try {

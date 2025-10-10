@@ -6,7 +6,6 @@ import { supabase } from '../services/supabaseClient.jsx';
 
 const LOCALE_CACHE = new Map();
 
-// Canonical names exactly as in your DB:
 const DB_VOIVODESHIPS = [
   'dolnośląskie','kujawsko-pomorskie','lubelskie','lubuskie','łódzkie',
   'małopolskie','mazowieckie','opolskie','podkarpackie','podlaskie',
@@ -15,11 +14,9 @@ const DB_VOIVODESHIPS = [
 ];
 const DB_SET = new Set(DB_VOIVODESHIPS);
 
-// Best-effort normalization to DB form
 function toDbVoiv(value) {
   if (!value) return '';
   const v = String(value).trim().toLowerCase();
-  // quick diacritics fix for common ASCII inputs (fallback)
   const asciiMap = {
     lodzkie: 'łódzkie',
     slaskie: 'śląskie',
@@ -32,7 +29,6 @@ function toDbVoiv(value) {
   };
   if (DB_SET.has(v)) return v;
   if (asciiMap[v]) return asciiMap[v];
-  // replace underscores with hyphens, keep diacritics if present
   const normalized = v.replace(/_/g, '-');
   return DB_SET.has(normalized) ? normalized : v;
 }
@@ -45,7 +41,7 @@ export default function MapElement() {
   );
 
   const [t, setT] = useState({ paths: [], cities: {} });
-  const [selectedRegion, setSelectedRegion] = useState(null); // e.g., "wielkopolskie"
+  const [selectedRegion, setSelectedRegion] = useState(null); 
   const [selectedCity, setSelectedCity] = useState(null);
   const [recruitment, setRecruitment] = useState(null);
   const [showArticle, setShowArticle] = useState(false);
@@ -53,7 +49,6 @@ export default function MapElement() {
   const regionRef = useRef(null);
   const articleRef = useRef(null);
 
-  // ---- translations (with cache) ----
   useEffect(() => {
     let active = true;
     (async () => {
@@ -79,7 +74,6 @@ export default function MapElement() {
     return () => { active = false; };
   }, [language]);
 
-  // ---- recruitment link (Supabase) ----
   useEffect(() => {
     let active = true;
     (async () => {
@@ -100,7 +94,6 @@ export default function MapElement() {
     return () => { active = false; };
   }, []);
 
-  // ---- helpers/handlers ----
   const scrollTo = (el) => {
     if (!el?.current) return;
     try {
@@ -136,7 +129,6 @@ export default function MapElement() {
     setTimeout(() => scrollTo(articleRef), 0);
   };
 
-  // safe content pulls
   const content = Array.isArray(t.cities?.content) ? t.cities.content : [];
   const cta = t.cities?.cta || 'Załóż nową grupę';
   const h1 = t.cities?.h1 || 'Wybierz województwo';
@@ -153,11 +145,9 @@ export default function MapElement() {
           aria-label={t.cities?.mapLabel || 'Mapa województw'}
         >
           {t.paths.map((path, index) => {
-            // Prefer explicit canonical name from JSON; otherwise derive & normalize
             const canonicalVoiv =
               toDbVoiv(path.voivodeship || path.voiv || path.name || path.ariaLabel || path.id || `region-${index}`);
 
-            // Destructure to ensure "d" is applied; spread the rest if needed (fill, stroke, etc.)
             const { d, ...rest } = path;
 
             return (
@@ -183,7 +173,7 @@ export default function MapElement() {
       {selectedRegion ? (
         <div className="citiesInfo" ref={regionRef}>
           <Cities
-            selectedRegion={selectedRegion}   // e.g., "wielkopolskie"
+            selectedRegion={selectedRegion}  
             onSelectCity={setSelectedCity}
             selectedCity={selectedCity}
           />

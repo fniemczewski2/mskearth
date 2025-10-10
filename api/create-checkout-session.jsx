@@ -1,4 +1,3 @@
-// /api/create-checkout-session.js (ESM)
 import Stripe from "stripe";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, { apiVersion: "2024-06-20" });
@@ -10,7 +9,7 @@ export default async function handler(req, res) {
     const parsed = Number(amount);
     if (!Number.isFinite(parsed) || parsed <= 0) return res.status(400).json({ error: "Nieprawidłowa kwota." });
 
-    const unitAmount = Math.round(parsed * 100); // PLN → grosze
+    const unitAmount = Math.round(parsed * 100); 
 
     const session = await stripe.checkout.sessions.create({
       mode: "payment",

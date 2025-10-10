@@ -9,7 +9,6 @@ function isSubmitDisabled({ name, email, phone, cityId }) {
   return !name.trim() || !email.trim() || !phone.trim() || !cityId;
 }
 
-// remove *all* spaces from phone
 function normalizePhone(v) {
   return (v || '').replace(/\s+/g, '').trim();
 }
@@ -20,8 +19,6 @@ const ContactPersonForm = () => {
   const [loadingCities, setLoadingCities] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [status, setStatus] = useState({ type: 'idle', message: '' });
-
-  // a11y ids
   const nameId = useId();
   const emailId = useId();
   const phoneId = useId();
@@ -30,7 +27,6 @@ const ContactPersonForm = () => {
 
   useEffect(() => {
     refreshCities();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   async function refreshCities() {
@@ -48,7 +44,6 @@ const ContactPersonForm = () => {
       setCities(ordered);
       setStatus({ type: 'idle', message: ordered.length ? '' : 'Brak miast do wyboru.' });
 
-      // If previously selected city is gone, clear it
       setForm((prev) =>
         ordered.some((c) => c.id === prev.cityId) ? prev : { ...prev, cityId: '' }
       );
@@ -70,7 +65,6 @@ const ContactPersonForm = () => {
     setSubmitting(true);
     setStatus({ type: 'loading', message: 'Trwa zapisywanie…' });
 
-    // Find the city name by selected id
     const selectedCity = cities.find((c) => String(c.id) === String(form.cityId));
     const cityName = selectedCity?.name || '';
 
@@ -78,7 +72,7 @@ const ContactPersonForm = () => {
       name: form.name.trim(),
       email: form.email.trim(),
       phone: normalizePhone(form.phone),
-      city: cityName, // <-- store CITY NAME (not ID)
+      city: cityName,
     };
 
     try {
@@ -167,7 +161,6 @@ const ContactPersonForm = () => {
         placeholder="+48 123 456 789"
         value={form.phone}
         onChange={onChange}
-        // very lenient: allows +48 and common spacings/digits
         pattern="^(\+?\d{1,3})?[\s\-]?\d{2,3}([\s\-]?\d{2,3}){2,3}$"
         aria-describedby={`${phoneId}-hint`}
       />

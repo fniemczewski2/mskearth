@@ -10,14 +10,13 @@ function FinancialReportForm({ currentUserName }) {
   const [submitting, setSubmitting] = useState(false);
   const [status, setStatus] = useState({ type: 'idle', message: '' });
 
-  // new hook API
   const {
-    fileIds,           // array of storage paths
-    uploadFiles,       // (files[], { bucket, prefix, maxFiles })
-    uploadProgress,    // {0: 0..100}
-    uploading,         // boolean
-    errors,            // [{index, message}]
-    reset,             // reset state
+    fileIds,           
+    uploadFiles,       
+    uploadProgress,   
+    uploading,         
+    errors,           
+    reset,            
   } = useUploadFiles('mskearth');
 
   const firstPath = fileIds?.[0] || '';
@@ -26,7 +25,6 @@ function FinancialReportForm({ currentUserName }) {
 
   const currentYear = new Date().getFullYear();
 
-  // bubble up first upload error into status bar
   useEffect(() => {
     if (uploadError) {
       setStatus({ type: 'error', message: `Błąd uploadu: ${uploadError}` });
@@ -40,7 +38,7 @@ function FinancialReportForm({ currentUserName }) {
 
     const payload = {
       year: Number(year),
-      file_path: firstPath,                     // store STORAGE PATH
+      file_path: firstPath,                     
       author: currentUserName || 'Nieznany',
     };
 
@@ -50,7 +48,7 @@ function FinancialReportForm({ currentUserName }) {
 
       setYear('');
       if (fileInputRef.current) fileInputRef.current.value = null;
-      reset(); // clears uploaded file state
+      reset();
 
       setStatus({ type: 'success', message: 'Dodano pomyślnie.' });
     } catch (err) {
@@ -74,7 +72,6 @@ function FinancialReportForm({ currentUserName }) {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    // simple PDF guard
     const isPdf = file.type === 'application/pdf' || /\.pdf$/i.test(file.name);
     if (!isPdf) {
       setStatus({ type: 'error', message: 'Dozwolone są wyłącznie pliki PDF.' });
@@ -82,7 +79,6 @@ function FinancialReportForm({ currentUserName }) {
       return;
     }
 
-    // upload to mskearth:/financial-reports/[year]/<filename>
     await uploadFiles([file], {
       bucket: 'mskearth',
       prefix: `financial-reports/${(year || 'unknown').toString().trim()}`,

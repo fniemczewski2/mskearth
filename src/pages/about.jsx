@@ -25,7 +25,6 @@ export default function About() {
           if (!res.ok) throw new Error(`HTTP ${res.status}`);
           const data = await res.json();
 
-          // Backward + forward compatible normalization
           const normalized = {
             about_h1: data?.about_h1 ?? (Array.isArray(data?.about) ? data.about[0] : ''),
             about_paragraphs: Array.isArray(data?.about_paragraphs)

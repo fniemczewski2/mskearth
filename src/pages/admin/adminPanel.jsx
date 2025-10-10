@@ -12,7 +12,6 @@ function AdminPanel() {
   const [user, setUser] = useState(null);
 
   useEffect(() => {
-    // Hydrate session on mount
     const init = async () => {
       const {
         data: { session },
@@ -21,8 +20,6 @@ function AdminPanel() {
       setLoading(false);
     };
     init();
-
-    // Subscribe to auth changes
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, session) => {

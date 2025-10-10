@@ -1,14 +1,14 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 
 const API_URL = 'https://api.climateclock.world/v2/widget/clock.json';
-const ABS_SPEED = 80; // px per second (tweak to taste)
+const ABS_SPEED = 80;
 const MIN_DURATION = 20;
 const MAX_DURATION = 180;
 
 const ClimateNewsBar = () => {
   const [feed, setFeed] = useState([]);
   const trackRef = useRef(null);
-  const groupRef = useRef(null); // first (measured) group
+  const groupRef = useRef(null); 
 
   const fetchModules = useCallback(async () => {
     try {
@@ -24,24 +24,19 @@ const ClimateNewsBar = () => {
     }
   }, []);
 
-  // initial fetch
   useEffect(() => { fetchModules(); }, [fetchModules]);
 
-  // recalc animation distance & duration
   useEffect(() => {
     const trackEl = trackRef.current;
     const groupEl = groupRef.current;
     if (!trackEl || !groupEl || feed.length === 0) return;
 
     const compute = () => {
-      // width of ONE full set (the second copy is just for looping)
       const groupWidth = Math.ceil(groupEl.getBoundingClientRect().width);
       if (!groupWidth) return;
 
-      // move by exactly one group's width
       trackEl.style.setProperty('--ticker-distance', `${-groupWidth}px`);
 
-      // keep absolute speed roughly constant, clamp to sane bounds
       const durationSec = Math.min(
         MAX_DURATION,
         Math.max(MIN_DURATION, groupWidth / ABS_SPEED)
@@ -49,15 +44,12 @@ const ClimateNewsBar = () => {
       trackEl.style.setProperty('--duration', `${durationSec}s`);
     };
 
-    // compute after fonts are ready (important for clamp()/webfonts)
     if (document?.fonts?.ready) {
       document.fonts.ready.then(compute).catch(compute);
     } else {
-      // fallback
       setTimeout(compute, 0);
     }
 
-    // recompute on resize / content changes
     const ro = new ResizeObserver(compute);
     ro.observe(groupEl);
     window.addEventListener('resize', compute, { passive: true });
@@ -70,7 +62,6 @@ const ClimateNewsBar = () => {
 
   if (feed.length === 0) return null;
 
-  // render a single group once, then clone it for seamless loop
   const Group = ({ ariaHidden = false }) => (
     <div className="ticker-group" aria-hidden={ariaHidden || undefined}>
       {feed.map((item, idx) => (

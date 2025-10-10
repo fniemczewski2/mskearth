@@ -1,5 +1,4 @@
 const LocalContactPersonForm = () => {
-  // a11y ids
   const nameId = useId();
   const facebookId = useId();
   const emailId = useId();
@@ -7,20 +6,16 @@ const LocalContactPersonForm = () => {
   const cityId = useId();
   const statusId = useId();
 
-  // form state
   const [name, setName] = useState('');
   const [facebook, setFacebook] = useState('');
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
-  const [city, setCity] = useState(''); // store city name (matches your original schema)
-
-  // data + UI state
+  const [city, setCity] = useState(''); 
   const [cities, setCities] = useState([]);
   const [loadingCities, setLoadingCities] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [status, setStatus] = useState({ type: 'idle', message: '' });
 
-  // helpers
   const normalizeUrlOrNull = (v) => {
     const s = (v || '').trim();
     if (!s) return null;
@@ -40,7 +35,6 @@ const LocalContactPersonForm = () => {
       if (error) throw error;
       setCities(data || []);
       setStatus({ type: 'idle', message: '' });
-      // keep selected value if it still exists
       if (data && !data.some((c) => c.name === city)) setCity('');
     } catch (err) {
       console.error('Błąd pobierania miast:', err);
@@ -52,7 +46,6 @@ const LocalContactPersonForm = () => {
 
   useEffect(() => {
     fetchCities();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   async function onSubmit(e) {

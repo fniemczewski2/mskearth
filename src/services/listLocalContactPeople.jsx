@@ -15,8 +15,6 @@ function ListLocalContactPeople() {
         .select('id, name, facebook, phone, email, city, city_rel:cities(name)');
 
       if (error) throw error;
-
-      // Normalize city to a string regardless of schema (FK or plain text)
       const rows = (data || []).map((r) => ({
         id: r.id,
         name: r.name,
@@ -26,7 +24,6 @@ function ListLocalContactPeople() {
         city: r?.city_rel?.[0]?.name || r?.city_rel?.name || r.city || '',
       }));
 
-      // Optional: sort by city, then name (Polish locale)
       rows.sort((a, b) => {
         const byCity = (a.city || '').localeCompare(b.city || '', 'pl');
         if (byCity !== 0) return byCity;
@@ -44,7 +41,6 @@ function ListLocalContactPeople() {
 
   useEffect(() => {
     fetchLocalContactPeople();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handleDeleteLocalContactPerson = async (id) => {
@@ -59,7 +55,6 @@ function ListLocalContactPeople() {
   };
 
   const handleEditLocalContactPerson = () => {
-    // Podłącz tu modal/route do edycji, np. navigate(`/admin/local-contacts/${id}`)
   };
 
   const columns = useMemo(

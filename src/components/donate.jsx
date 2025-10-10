@@ -16,17 +16,13 @@ export default function Donate() {
     if (!canPay) return;
 
     setBusy(true);
-    setErr("");
 
     try {
-      // POST to our serverless API that creates a Stripe Checkout Session
       const res = await fetch("/api/create-checkout-session", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          // amount in PLN (number). Server will convert to grosze.
           amount,
-          // optional info – sent as metadata / customer_email to Stripe
           name: name || "",
           email: email || "",
           locale: navigator.language || "pl",
@@ -39,10 +35,8 @@ export default function Donate() {
         throw new Error(data?.error || "Nie udało się utworzyć płatności.");
       }
 
-      // Redirect straight to Stripe Checkout page
       window.location = data.url;
     } catch (e) {
-      setErr(e.message || "Wystąpił błąd po stronie serwera.");
       setBusy(false);
     }
   }

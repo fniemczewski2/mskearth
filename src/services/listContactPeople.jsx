@@ -24,7 +24,6 @@ function ListContactPeople() {
         city: r?.city_rel?.[0]?.name || r?.city_rel?.name || r.city || '',
       }));
 
-      // Sort by name (Polish locale)
       mapped.sort((a, b) => (a.name || '').localeCompare(b.name || '', 'pl'));
       setRows(mapped);
     } catch (err) {
@@ -37,7 +36,6 @@ function ListContactPeople() {
 
   useEffect(() => {
     fetchContactPeople();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handleDeleteContactPerson = async (id) => {
@@ -52,7 +50,6 @@ function ListContactPeople() {
   };
 
   const handleEditContactPerson = () => {
-    // Hook up your edit modal/route here, e.g. navigate(`/admin/contacts/${id}`)
   };
 
   const columns = useMemo(

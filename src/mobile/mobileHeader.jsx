@@ -24,7 +24,6 @@ function MobileHeader({ lang = 'pl', handleLanguageChange }) {
     return () => { body.style.overflow = prev; };
   }, [isOpen]);
 
-  // ESC to close
   useEffect(() => {
     if (!isOpen) return;
     const onKey = (e) => { if (e.key === 'Escape') closeMenu(); };
@@ -36,7 +35,6 @@ function MobileHeader({ lang = 'pl', handleLanguageChange }) {
     <>
       <header
         className={`mobileHeader ${isOpen ? 'is-open' : ''}`}
-        // prefer doing shadows in CSS; class toggled above if you need variations
       >
         <Link to={homeHref} className="mobile logo" aria-label="Strona główna">
           <img

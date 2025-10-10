@@ -12,7 +12,6 @@ function Main() {
   const [isLoading, setIsLoading] = useState(true);
   const [isInView, setIsInView] = useState(true);
 
-  // lazy-play only when hero video is in view
   useEffect(() => {
     const v = videoRef.current;
     if (!v || !('IntersectionObserver' in window)) return;
@@ -31,7 +30,6 @@ function Main() {
     return () => observerRef.current?.disconnect();
   }, []);
 
-  // keep React state in sync if something external changes mute
   useEffect(() => {
     const v = videoRef.current;
     if (!v) return;

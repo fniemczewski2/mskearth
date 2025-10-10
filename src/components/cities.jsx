@@ -17,7 +17,6 @@ function Cities({ selectedRegion, onSelectCity, selectedCity }) {
   const [peopleLoading, setPeopleLoading] = useState(false);
   const [peopleError, setPeopleError] = useState('');
 
-  // Load translations with simple in-memory cache
   useEffect(() => {
     let active = true;
     const load = async () => {
@@ -39,7 +38,6 @@ function Cities({ selectedRegion, onSelectCity, selectedCity }) {
     return () => { active = false; };
   }, [language]);
 
-  // Fetch cities for selected region
   useEffect(() => {
     let active = true;
     const fetchCityList = async () => {
@@ -51,7 +49,7 @@ function Cities({ selectedRegion, onSelectCity, selectedCity }) {
       try {
         const { data, error } = await supabase
           .from('cities')
-          .select('id,name,voivodeship,facebook,instagram,meetings') // adjust columns to your schema
+          .select('id,name,voivodeship,facebook,instagram,meetings') 
           .eq('voivodeship', selectedRegion)
           .order('name', { ascending: true });
         
@@ -70,7 +68,6 @@ function Cities({ selectedRegion, onSelectCity, selectedCity }) {
     return () => { active = false; };
   }, [selectedRegion]);
 
-  // Fetch contact people for selected city
   useEffect(() => {
     let active = true;
     const fetchContactPeople = async () => {
@@ -82,7 +79,7 @@ function Cities({ selectedRegion, onSelectCity, selectedCity }) {
       try {
         const { data, error } = await supabase
           .from('local_contact_people')
-          .select('id,name,facebook,city') // adjust to your schema
+          .select('id,name,facebook,city') 
           .eq('city', selectedCity.name)
           .order('name', { ascending: true });
 
@@ -227,7 +224,7 @@ Cities.propTypes = {
   onSelectCity: PropTypes.func,
   selectedCity: PropTypes.shape({
     id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
-    name: PropTypes.string,         // <-- this satisfies `selectedCity.name`
+    name: PropTypes.string,       
     voivodeship: PropTypes.string,
     facebook: PropTypes.string,
     instagram: PropTypes.string,

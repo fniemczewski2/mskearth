@@ -1,8 +1,8 @@
 import { v4 as uuid } from 'uuid';
 
 export default function useUploadFiles(defaultBucket = 'mskearth') {
-  const [fileIds, setFileIds] = useState([]);           // storage paths
-  const [uploadProgress, setUploadProgress] = useState({}); // index -> 0..100
+  const [fileIds, setFileIds] = useState([]);
+  const [uploadProgress, setUploadProgress] = useState({});
   const [allUploadsComplete, setAllUploadsComplete] = useState(true);
   const [errors, setErrors] = useState([]);
 
@@ -11,7 +11,6 @@ export default function useUploadFiles(defaultBucket = 'mskearth') {
     {
       bucket = defaultBucket,
       prefix = '',
-      // if provided, hard-limit how many files we accept in one go
       maxFiles,
     } = {}
   ) => {
@@ -25,7 +24,7 @@ export default function useUploadFiles(defaultBucket = 'mskearth') {
 
     setAllUploadsComplete(false);
     setErrors([]);
-    setUploadProgress({}); // reset
+    setUploadProgress({});
 
     const cleanedPrefix = String(prefix || '').replace(/^\/+|\/+$/g, '');
 

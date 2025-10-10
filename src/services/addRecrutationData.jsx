@@ -25,7 +25,6 @@ export function AddRecrutationData({ onAdd } = {}) {
     };
 
     try {
-      // Remove previous rows (keeps behavior of your original delete '*')
       await supabase.from('recruitments').delete().not('id', 'is', null);
 
       const { error } = await supabase.from('recruitments').insert(payload);
@@ -84,7 +83,6 @@ export function AddRecrutationData({ onAdd } = {}) {
   );
 }
 
-// ===================== AddRecrutationCallData =====================
 export function AddRecrutationCallData() {
   const dateId = useId();
   const timeId = useId();
@@ -103,9 +101,9 @@ export function AddRecrutationCallData() {
     setStatus({ type: 'loading', message: 'Zapisywanie…' });
 
     const payload = {
-      date,                      // YYYY-MM-DD
-      time,                      // HH:MM
-      link: toUrl(link),         // normalized URL
+      date,
+      time,
+      link: toUrl(link),         
     };
 
     try {

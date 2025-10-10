@@ -16,7 +16,6 @@ async function fetchLocale(lang) {
 }
 
 function Header({ lang, handleLanguageChange }) {
-  // Ustal język z propsa lub z URL (1. segment), fallback "pl"
   const location = useLocation();
   const effectiveLang = useMemo(() => {
     const seg = (location.pathname.split('/')[1] || '').toLowerCase();

@@ -1,15 +1,12 @@
-// ArticleForm.jsx
 import PropTypes from 'prop-types';
 import { v4 as uuid } from 'uuid';
 import useUploadFiles from './useUploadFiles';
 
 function ArticleForm({ currentUserName }) {
-  // pre-generate articleId so we can upload images into /articles/[articleId]
   const [articleId] = useState(uuid());
 
-  const todayISODate = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
+  const todayISODate = new Date().toISOString().split('T')[0]; 
 
-  // a11y ids
   const statusId = useId();
   const titlePlId = useId();
   const subtitlePlId = useId();
@@ -25,25 +22,19 @@ function ArticleForm({ currentUserName }) {
   const sourceLinkId = useId();
   const sourceTextId = useId();
   const fileId = useId();
-
-  // language tabs
   const [language, setLanguage] = useState('pl');
 
-  // content state
   const [pl, setPl] = useState({ title: '', subtitle: '', content: '' });
   const [en, setEn] = useState({ title: '', subtitle: '', content: '' });
   const [ua, setUa] = useState({ title: '', subtitle: '', content: '' });
 
-  // misc fields
   const [imgAlt, setImgAlt] = useState('');
   const [published, setPublished] = useState(todayISODate);
   const [sourceLink, setSourceLink] = useState('');
   const [sourceText, setSourceText] = useState('');
 
-  // uploads
   const { fileIds, uploadFiles, uploadProgress, errors: uploadErrors, reset: resetUploads } = useUploadFiles('mskearth');
 
-  // UI state
   const [submitting, setSubmitting] = useState(false);
   const [status, setStatus] = useState({ type: 'idle', message: '' });
 
@@ -108,8 +99,6 @@ function ArticleForm({ currentUserName }) {
     setSubmitting(true);
     setStatus({ type: 'loading', message: 'Trwa zapisywanie…' });
 
-    // Map to your DB column names EXACTLY as in schema
-    // titleen/subtitleen/contenten, titleua/... (all lowercase, no camelCase)
     const newRow = {
       id: articleId,
       title: pl.title.trim(),
@@ -121,12 +110,10 @@ function ArticleForm({ currentUserName }) {
       titleua: ua.title.trim() || null,
       subtitleua: ua.subtitle.trim() || null,
       contentua: ua.content.trim() || null,
-      imgurl: fileIds, // text[] of storage paths
+      imgurl: fileIds,
       imgalt: imgAlt.trim() || null,
       author: currentUserName || null,
-      // created uses DB default now()
-      published: published ? new Date(published).toISOString() : null, // timestamp with tz
-      // accepted defaults to true; pinned defaults to false
+      published: published ? new Date(published).toISOString() : null, 
       sourcelink: sourceLink.trim() || null,
       sourcetext: sourceText.trim() || null,
     };
@@ -136,7 +123,6 @@ function ArticleForm({ currentUserName }) {
       if (error) throw error;
 
       setStatus({ type: 'success', message: 'Dodano pomyślnie.' });
-      // reset form (keep articleId if you want to allow more images for same draft; here we clear uploads too)
       setPl({ title: '', subtitle: '', content: '' });
       setEn({ title: '', subtitle: '', content: '' });
       setUa({ title: '', subtitle: '', content: '' });
@@ -392,7 +378,7 @@ function ArticleForm({ currentUserName }) {
 }
 
 ArticleForm.propTypes = {
-  currentUserName: PropTypes.string, // optional
+  currentUserName: PropTypes.string, 
 };
 
 export default ArticleForm;

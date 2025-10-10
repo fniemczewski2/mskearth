@@ -19,7 +19,6 @@ export default function Foundation() {
   const [boardLoading, setBoardLoading] = useState(true);
   const [boardErr, setBoardErr] = useState('');
 
-  // translations
   useEffect(() => {
     let active = true;
     (async () => {
@@ -41,15 +40,14 @@ export default function Foundation() {
     return () => { active = false; };
   }, [language]);
 
-  // helper: build public Storage URL from a storage path in mskearth bucket
+
   const publicUrl = (path, bucket = STORAGE_BUCKET) => {
     if (!path) return '';
-    if (/^https?:\/\//i.test(path)) return path; // already full URL
+    if (/^https?:\/\//i.test(path)) return path;
     const { data } = supabase.storage.from(bucket).getPublicUrl(path);
     return data?.publicUrl || '';
   };
 
-  // financial reports: table `financial_reports` with columns: id, year int, file_path text (storage path)
   useEffect(() => {
     let active = true;
     (async () => {
@@ -63,7 +61,7 @@ export default function Foundation() {
         const items = (data || []).map(r => ({
           id: r.id,
           year: r.year,
-          file_path: publicUrl(r.file_path), // resolve storage path -> public URL
+          file_path: publicUrl(r.file_path),
         }));
         if (active) setFinancialReports(items);
       } catch (e) {
@@ -76,8 +74,6 @@ export default function Foundation() {
     return () => { active = false; };
   }, []);
 
-  // board members: table `foundation_board_members`
-  // fields: id, name, role, role_en, role_ua, phone, email, img_path, description, description_en, description_ua
   useEffect(() => {
     let active = true;
     (async () => {
@@ -114,7 +110,7 @@ export default function Foundation() {
       }
     })();
     return () => { active = false; };
-  }, [language]); // re-map localized fields when language changes
+  }, [language]); 
 
   const h1 = ['Fundacja Przyjaciół', 'Młodzieżowego Strajku Klimatycznego'];
   const h4 = ['Adres: ', 'KRS: ', 'NIP: ', 'REGON:', 'Telefon: ', 'Email: ', 'Numer\u00A0konta:  '];

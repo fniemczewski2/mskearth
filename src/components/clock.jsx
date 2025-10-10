@@ -1,4 +1,3 @@
-// src/services/clock.jsx (lub odpowiednia ścieżka)
 import { useState, useEffect, useCallback } from 'react';
 import { DateTime, Settings } from 'luxon';
 
@@ -13,7 +12,6 @@ function Clock() {
   });
   const [language, setLanguage] = useState(() => getLangFromPath());
 
-  // --- helpers ---
   function getLangFromPath() {
     return (window.location.pathname.split('/')[1] || 'pl').toLowerCase();
   }
@@ -31,9 +29,7 @@ function Clock() {
     }
   };
 
-  // --- nasłuchiwanie zmian URL (pushState/replaceState/popstate) -> aktualizacja języka ---
   useEffect(() => {
-    // emituj własne zdarzenie przy pushState/replaceState
     const wrapHistory = (type) => {
       const orig = history[type];
       return function (...args) {
@@ -54,20 +50,16 @@ function Clock() {
     window.addEventListener('locationchange', onLocationChange);
     window.addEventListener('popstate', onLocationChange);
 
-    // init
     onLocationChange();
 
     return () => {
-      // przywróć oryginalne metody i posprzątaj eventy
       history.pushState = originalPush;
       history.replaceState = originalReplace;
       window.removeEventListener('locationchange', onLocationChange);
       window.removeEventListener('popstate', onLocationChange);
     };
-    // pusty deps: patchujemy tylko raz
   }, []);
 
-  // --- pobierz tłumaczenia za każdym razem, gdy language się zmieni ---
   useEffect(() => {
     let cancelled = false;
     (async () => {
@@ -79,7 +71,6 @@ function Clock() {
       } catch (err) {
         console.error('Error loading translations:', err);
         if (!cancelled) {
-          // fallback PL
           setTranslations({
             clock: {
               title: 'Ziemia ociepli się o 1,5°C za:',
@@ -95,7 +86,6 @@ function Clock() {
     };
   }, [language]);
 
-  // --- pobierz moduły zegara i licz czas ---
   const fetchModules = useCallback(() => {
     fetch('https://api.climateclock.world/v2/widget/clock.json')
       .then((res) => res.json())

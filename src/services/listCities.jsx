@@ -60,10 +60,8 @@ function ListCities() {
   );
 
   const handleEditCity = useCallback(() => {
-    // TODO: open edit modal / navigate(`/admin/cities/${id}`)
   }, []);
-
-  // TanStack Table v8 columns
+  
   const columns = useMemo(
     () => [
       { header: 'ID', accessorKey: 'id' },

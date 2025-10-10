@@ -12,14 +12,12 @@ function ListFoundationBoardMembers() {
 
       if (error) throw error;
 
-      // Zamiana storage path -> public URL (bucket: mskearth)
       const list = (data || []).map((member) => ({
         ...member,
         img_path: member?.img_path ? toPublicUrl(member.img_path, "mskearth") : null,
         isExpanded: false,
       }));
 
-      // Sortuj po nazwisku (PL), null-safe
       list.sort((a, b) => (a.name || "").localeCompare(b.name || "", "pl"));
       setFoundationBoardMembers(list);
     } catch (err) {
@@ -45,10 +43,8 @@ function ListFoundationBoardMembers() {
   };
 
   const handleEditFoundationBoardMember = () => {
-    // TODO: open edit modal / navigate to edit route
   };
 
-  // ✅ TanStack v8 column defs
   const columns = useMemo(
     () => [
       { header: "ID", accessorKey: "id" },

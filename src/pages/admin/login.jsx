@@ -3,7 +3,6 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faGoogle } from "@fortawesome/free-brands-svg-icons";
 import { supabase } from "../../services/supabaseClient";
 
-// Optional: pass onSignedIn={(session) => setIsAuthenticated(true)} from parent
 function SignInForm({ onSignedIn } = {}) {
   const emailId = useId();
   const passwordId = useId();
@@ -41,14 +40,12 @@ function SignInForm({ onSignedIn } = {}) {
     }
   }
 
-  // Google OAuth — make sure the Google provider is configured in Supabase.
   async function handleGoogleSignIn(e) {
     e.preventDefault();
     if (submitting) return;
     setSubmitting(true);
     setStatus({ type: "loading", message: "Przekierowanie do Google…" });
 
-    // Choose your redirect URL (environment-based)
     const redirectTo =
       (typeof import.meta !== "undefined" && import.meta.env?.VITE_AUTH_CALLBACK_URL) ||
       process.env?.NEXT_PUBLIC_AUTH_CALLBACK_URL ||
@@ -60,7 +57,6 @@ function SignInForm({ onSignedIn } = {}) {
         options: { redirectTo },
       });
       if (error) throw error;
-      // Redirect follows; no further code runs in practice.
     } catch (err) {
       console.error("OAuth error:", err);
       setStatus({

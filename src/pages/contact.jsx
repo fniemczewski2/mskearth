@@ -15,12 +15,10 @@ function Contact() {
   const [loading, setLoading] = useState(true);
   const [err, setErr] = useState('');
 
-  // UI state for form submit
   const [submitting, setSubmitting] = useState(false);
   const [statusMsg, setStatusMsg] = useState('');
-  const [statusType, setStatusType] = useState(null); // "ok" | "error"
+  const [statusType, setStatusType] = useState(null); 
 
-  // Translations (with tiny in-memory cache)
   useEffect(() => {
     let active = true;
     (async () => {
@@ -42,7 +40,6 @@ function Contact() {
     return () => { active = false; };
   }, [language]);
 
-  // Fetch contact people from Supabase
   useEffect(() => {
     let active = true;
     (async () => {
@@ -50,7 +47,7 @@ function Contact() {
       setErr('');
       try {
         const { data, error } = await supabase
-          .from('contact_people') // adjust table if different
+          .from('contact_people')
           .select('id,name,city,phone,email')
           .order('city', { ascending: true })
           .order('name', { ascending: true });
@@ -78,7 +75,6 @@ function Contact() {
     const formEl = e.currentTarget;
     const fd = new FormData(formEl);
 
-    // Simple front-end validation
     const email = fd.get('email')?.toString().trim();
     const subject = fd.get('_subject')?.toString().trim();
     const message = fd.get('message')?.toString().trim();
@@ -95,7 +91,6 @@ function Contact() {
       return;
     }
 
-    // Optional anti-bot honeypot (hidden input named _hp)
     if (fd.get('_hp')) {
       setStatusMsg('Bot submission blocked.');
       setStatusType('error');

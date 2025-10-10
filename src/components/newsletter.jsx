@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 
 const LOCALE_CACHE = new Map();
-const FORM_ID = '7027392'; // your ConvertKit form id
+const FORM_ID = '7027392'; 
 const SUBSCRIBE_URL = `https://api.convertkit.com/v3/forms/${FORM_ID}/subscribe`;
 const REQUEST_TIMEOUT_MS = 15000;
 
@@ -13,15 +13,13 @@ export default function NewsletterForm() {
   const [t, setT] = useState({ newsletter: {} });
   const [email, setEmail] = useState('');
   const [consent, setConsent] = useState(false);
-  const [status, setStatus] = useState('idle'); // 'idle' | 'loading' | 'ok' | 'error'
+  const [status, setStatus] = useState('idle'); 
   const [errMsg, setErrMsg] = useState('');
 
-  // honeypot (anti-bot). If filled, we bail out silently as “validation failed”.
   const [company, setCompany] = useState('');
 
   const abortRef = useRef(null);
 
-  // i18n (cache per language)
   useEffect(() => {
     let active = true;
     (async () => {
@@ -54,7 +52,7 @@ export default function NewsletterForm() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (status === 'loading') return; // guard double-submit
+    if (status === 'loading') return; 
 
     setStatus('loading'); 
     setErrMsg('');
@@ -66,12 +64,10 @@ export default function NewsletterForm() {
       return; 
     }
 
-    // cancel any in-flight request
     if (abortRef.current) abortRef.current.abort();
     const controller = new AbortController();
     abortRef.current = controller;
 
-    // manual timeout: abort the fetch after N ms
     const timeoutId = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
 
     try {
@@ -82,9 +78,8 @@ export default function NewsletterForm() {
           Accept: 'application/json',
         },
         body: JSON.stringify({
-          api_key: import.meta.env.VITE_CONVERTKIT_PUBLIC_API_KEY, // CK public key is fine client-side
+          api_key: import.meta.env.VITE_CONVERTKIT_PUBLIC_API_KEY, 
           email,
-          // optional: first_name, fields: { locale: language }, tags: [12345]
         }),
         signal: controller.signal,
       });

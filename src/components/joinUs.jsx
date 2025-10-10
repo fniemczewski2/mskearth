@@ -15,7 +15,6 @@ export default function JoinUs() {
   const [loading, setLoading] = useState(true);
   const [err, setErr] = useState('');
 
-  // ------- translations -------
   useEffect(() => {
     let active = true;
     (async () => {
@@ -37,14 +36,12 @@ export default function JoinUs() {
     return () => { active = false; };
   }, [language]);
 
-  // ------- data fetch (Supabase) -------
   useEffect(() => {
     let active = true;
     (async () => {
       setLoading(true);
       setErr('');
       try {
-        // 1) Latest recruitment settings (one row)
         const { data: recData, error: recErr } = await supabase
           .from('recruitments')
           .select('id, instagram, form')
@@ -53,10 +50,9 @@ export default function JoinUs() {
           .maybeSingle();
         if (recErr) throw recErr;
 
-        // 2) All calls (we'll filter upcoming below)
         const { data: callData, error: callErr } = await supabase
           .from('recruitment_calls')
-          .select('id, date, time, link') // date: DATE, time: TIME WITHOUT TZ
+          .select('id, date, time, link') 
           .order('date', { ascending: true })
           .order('time', { ascending: true });
         if (callErr) throw callErr;
@@ -74,18 +70,15 @@ export default function JoinUs() {
     return () => { active = false; };
   }, []);
 
-  // ------- helpers -------
+
   const toLocalDate = (d, t) => {
-    // Accepts:
-    //  - d: "YYYY-MM-DD"
-    //  - t: "HH:mm" or "HH:mm:ss" (or null/empty -> "00:00")
     if (!d) return null;
     const timeStr = (t || '00:00').toString();
     const hhmm = /^\d{2}:\d{2}$/.test(timeStr)
       ? timeStr
       : (/^\d{2}:\d{2}:\d{2}$/.test(timeStr) ? timeStr.slice(0, 5) : '00:00');
     const dt = new Date(`${d}T${hhmm}`);
-    return isNaN(dt.getTime()) ? null : dt; // local time (no Z)
+    return isNaN(dt.getTime()) ? null : dt; 
   };
 
   const nearest = useMemo(() => {

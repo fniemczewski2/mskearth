@@ -58,10 +58,9 @@ function ListCalls() {
   );
 
   const handleEditCall = useCallback(() => {
-    // TODO: open modal / navigate(`/admin/calls/${id}`)
+
   }, []);
 
-  // ✅ TanStack Table v8 columns
   const columns = useMemo(
     () => [
       { header: 'ID', accessorKey: 'id' },
