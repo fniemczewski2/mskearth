@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import '../style/sideButtons.css';
 import JoinUs from '../pages/joinUs';
 import Donate from '../pages/donate';
 import NewsletterForm from '../pages/newsletter';

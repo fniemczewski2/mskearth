@@ -1,6 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useLocation } from 'react-router-dom';
-import '../style/newsletter.css';
 
 const LOCALE_CACHE = new Map();
 const FORM_ID = '7027392'; // your ConvertKit form id

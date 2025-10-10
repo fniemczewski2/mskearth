@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import '../style/cookies.css'; 
 
 function CookieConsent() {
     const [overlayVisible, setOverlayVisible] = useState(false);

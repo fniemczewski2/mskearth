@@ -15,16 +15,6 @@ import AdminPanel from './pages/adminPanel.jsx';
 import SideButtons from './services/sideButtons.jsx';
 import CookieConsent from './services/cookies.jsx';
 import './style/index.css';
-import './style/adminPanel.css';
-import './style/contact.css';
-import './style/footer.css';
-import './style/goals.css';
-import './style/header.css';
-import './style/map.css';
-import './style/news.css';
-import './style/foundation.css';
-import './style/joinUs.css';
-import './style/donate.css';
 
 const LANGS = ['pl', 'en', 'ua'];
 const DEFAULT_LANG = 'pl';

@@ -1,7 +1,6 @@
 // src/services/clock.jsx (lub odpowiednia ścieżka)
 import { useState, useEffect, useCallback } from 'react';
 import { DateTime, Settings } from 'luxon';
-import '../style/clock.css';
 
 Settings.defaultZone = 'utc';
 

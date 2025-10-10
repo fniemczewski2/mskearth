@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useRef, useState, useCallback } from 'react';
 import { useLocation } from 'react-router-dom';
 import clsx from 'clsx';
-import '../style/foundation.css';
 import { supabase } from '../services/supabaseClient';
 import Cities from './cities.jsx';
 

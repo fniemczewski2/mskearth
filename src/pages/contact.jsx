@@ -1,6 +1,4 @@
 import { useEffect, useMemo, useState } from 'react';
-import '../style/contact.css';
-import '../style/forms.css';
 import { useLocation } from 'react-router-dom';
 import { supabase } from '../services/supabaseClient';
 

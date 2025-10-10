@@ -1,5 +1,4 @@
 import { useEffect, useMemo, useRef, useState, lazy, Suspense } from 'react';
-import './style/main.css';
 import Clock from './services/clock.jsx';
 
 const JoinUs = lazy(() => import('./pages/joinUs.jsx'));

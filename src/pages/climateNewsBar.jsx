@@ -1,5 +1,4 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
-import '../style/climateNewsBar.css';
 
 const API_URL = 'https://api.climateclock.world/v2/widget/clock.json';
 const ABS_SPEED = 80; // px per second (tweak to taste)

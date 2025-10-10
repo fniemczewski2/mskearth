@@ -2,8 +2,6 @@ import { useEffect, useState, useMemo } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import MobileHeader from './mobile/mobileHeader';
 import ReactCountryFlag from 'react-country-flag';
-
-import './style/header.css';
 import ClimateNewsBar from './pages/climateNewsBar';
 
 async function fetchLocale(lang) {

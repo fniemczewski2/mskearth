@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import MobileNavbar from "./mobileNavbar";
-import '../style/header.css';
 
 function MobileHeader({ lang = 'pl', handleLanguageChange }) {
   const [isOpen, setOpen] = useState(false);

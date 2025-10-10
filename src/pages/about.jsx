@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import Goals from './goals';
-import '../style/goals.css';
 
 const LOCALE_CACHE = new Map();
 
