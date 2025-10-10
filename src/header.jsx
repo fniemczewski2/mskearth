@@ -112,7 +112,7 @@ function DesktopHeader({ lang, handleLanguageChange }) {
                     <ReactCountryFlag countryCode="GB" svg />
                   </button>
                 )}
-                {lang !== 'ua' && (
+                {/* {lang !== 'ua' && (
                   <button
                     type="button"
                     onClick={() => handleLanguageChange('ua')}
@@ -122,7 +122,7 @@ function DesktopHeader({ lang, handleLanguageChange }) {
                   >
                     <ReactCountryFlag countryCode="UA" svg />
                   </button>
-                )}
+                )} */}
               </span>
             </ul>
           </nav>

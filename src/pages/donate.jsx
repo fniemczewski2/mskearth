@@ -1,73 +1,55 @@
-import { useMemo, useState } from 'react';
+import React, { useMemo, useState } from "react";
 
-export default function DonateWidget() {
-  // preset amounts (PLN). Adjust as you like.
+export default function DonateStripe() {
+  // preset PLN amounts
   const amounts = useMemo(() => [10, 20, 50], []);
-  const [amount, setAmount] = useState(amounts[1]); // default 20 zł
-
-  const [name, setName] = useState('');
-  const [email, setEmail] = useState('');
-  const emailValid = !email || /^\S+@\S+\.\S+$/.test(email);
-
+  const [amount, setAmount] = useState(amounts[1]); // default 25
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
   const [consent, setConsent] = useState(false);
   const [busy, setBusy] = useState(false);
-  const [err, setErr] = useState('');
+  const [err, setErr] = useState("");
 
-  const canPay = consent && emailValid && !!email && !!amount && !busy;
+  // simple email validation (optional email allowed)
+  const emailValid = !email || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 
-const startPayment = async () => {
-  if (!canPay) return;
-  setBusy(true);
-  setErr('');
+  // canPay: positive amount, consent checked, email ok
+  const canPay = Boolean(amount > 0 && consent && emailValid && !busy);
 
-  try {
-    const extOrderId = `DON-${Date.now()}`;
+  async function startPayment() {
+    if (!canPay) return;
 
-    const resp = await fetch('/api/payments/create-order', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Accept': 'application/json', // nudge server/proxy to return JSON
-      },
-      body: JSON.stringify({
-        total: Number(amount),
-        email,
-        firstName: name || 'Donor',
-        description: `Darowizna ${amount} PLN`,
-        orderId: extOrderId,
-      }),
-    });
+    setBusy(true);
+    setErr("");
 
-    // ---- SAFE PARSE (handles empty/HTML responses) ----
-    const contentType = resp.headers.get('content-type') || '';
-    const raw = await resp.text();                // read once
-    const data = contentType.includes('application/json') && raw
-      ? (() => { try { return JSON.parse(raw); } catch { return null; } })()
-      : null;
+    try {
+      // POST to our serverless API that creates a Stripe Checkout Session
+      const res = await fetch("/api/create-checkout-session", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          // amount in PLN (number). Server will convert to grosze.
+          amount,
+          // optional info – sent as metadata / customer_email to Stripe
+          name: name || "",
+          email: email || "",
+          locale: navigator.language || "pl",
+          provider: "stripe",
+        }),
+      });
 
-    if (!resp.ok) {
-      const msg =
-        data?.details?.status?.statusCode ||
-        data?.error ||
-        data?.message ||
-        raw ||                             // maybe HTML/plain-text error from a proxy
-        `HTTP ${resp.status}`;
-      throw new Error(msg);
+      const data = await res.json();
+      if (!res.ok || !data?.url) {
+        throw new Error(data?.error || "Nie udało się utworzyć płatności.");
+      }
+
+      // Redirect straight to Stripe Checkout page
+      window.location = data.url;
+    } catch (e) {
+      setErr(e.message || "Wystąpił błąd po stronie serwera.");
+      setBusy(false);
     }
-
-    const redirectUri = data?.redirectUri;
-    if (!redirectUri) {
-      throw new Error('Brak redirectUri w odpowiedzi serwera.');
-    }
-
-    window.location.href = redirectUri;
-  } catch (e) {
-    console.error('Payment start error:', e);
-    setErr(e?.message || 'Wystąpił błąd. Spróbuj ponownie.');
-    setBusy(false);
   }
-};
-
 
   return (
     <>
@@ -79,7 +61,7 @@ const startPayment = async () => {
               key={v}
               type="button"
               onClick={() => setAmount(v)}
-              className={amount === v ? 'active' : undefined}
+              className={amount === v ? "active" : undefined}
               aria-pressed={amount === v}
             >
               {v}&nbsp;zł
@@ -108,7 +90,7 @@ const startPayment = async () => {
             type="email"
             autoComplete="email"
             inputMode="email"
-            aria-invalid={email && !emailValid ? 'true' : 'false'}
+            aria-invalid={email && !emailValid ? "true" : "false"}
           />
           {email && !emailValid && (
             <p role="alert" className="formError">Podaj poprawny adres e-mail.</p>
@@ -124,25 +106,18 @@ const startPayment = async () => {
           />
           <label className="agreement" htmlFor="donate-consent">
             Wyrażam zgodę na przetwarzanie moich danych osobowych w celu realizacji darowizny.
-            <br />Zostaniesz przekierowany/a na bezpieczną stronę płatności PayU.
+            <br />Zostaniesz przekierowany/a na bezpieczną stronę płatności Stripe.
           </label>
         </div>
-
-        {err && (
-          <p role="alert" className="formError" style={{ marginTop: 8 }}>
-            {err}
-          </p>
-        )}
-
         <div className="buttonContainer">
           <button
             type="button"
             className="primaryBtn"
             disabled={!canPay}
             onClick={startPayment}
-            aria-disabled={!canPay ? 'true' : 'false'}
+            aria-disabled={!canPay ? "true" : "false"}
           >
-            {busy ? 'Przekierowywanie…' : 'Wpłać'}
+            {busy ? "Przekierowywanie…" : "Wpłać"}
           </button>
         </div>
       </aside>

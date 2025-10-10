@@ -89,7 +89,7 @@ export default function App() {
       </Routes>
 
       <SideButtons />
-      <Footer lang={lang} />
+      <Footer lang={lang} handleLanguageChange={handleLanguageChange} />
     </React.StrictMode>
   );
 }

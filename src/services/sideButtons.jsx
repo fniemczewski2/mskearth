@@ -46,10 +46,10 @@ function SideButtons() {
                 <i className="bi bi-piggy-bank icon"></i>
                 <span className="description">{translations.buttons.donate || 'Donate'}</span>
             </aside>
-            <aside className="side-button" onClick={() => handleButtonClick('newsletter')}>
+            {/* <aside className="side-button" onClick={() => handleButtonClick('newsletter')}>
                 <i className="bi bi-envelope icon"></i>
                 <span className="description">{translations.buttons.newsletter || 'Newsletter'}</span>
-            </aside>
+            </aside> */}
             {overlayVisible && (
                 <div className="overlay" onClick={handleCloseOverlay}>
                     <div className="overlay-content" onClick={(e) => e.stopPropagation()}>
@@ -58,7 +58,7 @@ function SideButtons() {
                         </button>
                         {activeSection === 'joinUs' && <div id="joinUs"><JoinUs /></div>}
                         {activeSection === 'donate' && <div id="donate"><Donate /></div>}
-                        {activeSection === 'newsletter' && <div id="newsletter"><NewsletterForm /></div>}
+                        {/* {activeSection === 'newsletter' && <div id="newsletter"><NewsletterForm /></div>} */}
                     </div>
                 </div>
             )}

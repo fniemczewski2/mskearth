@@ -130,7 +130,7 @@ const MobileNavbar = forwardRef(function MobileNavbar(
                 <ReactCountryFlag countryCode="GB" svg aria-hidden="true" />
               </button>
             )}
-            {lang !== 'ua' && (
+            {/* {lang !== 'ua' && (
               <button
                 type="button"
                 onClick={() => handleLanguageChange('ua')}
@@ -140,7 +140,7 @@ const MobileNavbar = forwardRef(function MobileNavbar(
               >
                 <ReactCountryFlag countryCode="UA" svg aria-hidden="true" />
               </button>
-            )}
+            )} */}
           </span>
         </li>
       </ul>

@@ -211,7 +211,7 @@ export default function Foundation() {
           <h3>{t.foundation.polityka || 'Polityka ochrony dzieci przed skrzywdzeniem'}</h3>
           <a
             className="statut"
-            href="/som.pdf"
+            href="/podpk.pdf"
             target="_blank"
             rel="noopener noreferrer"
             aria-label="Pobierz politykę ochrony dzieci przed skrzywdzeniem (PDF)"
