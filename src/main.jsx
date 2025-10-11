@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState, lazy, Suspense } from 'react';
+import { useEffect, useRef, useState, lazy, Suspense } from 'react';
 import Clock from './components/clock.jsx';
 
 const JoinUs = lazy(() => import('./components/joinUs.jsx'));
