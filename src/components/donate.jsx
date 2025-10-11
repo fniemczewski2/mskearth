@@ -1,8 +1,9 @@
-import { useMemo, useState } from "react";
+import React, { useMemo, useState } from "react";
 
 export default function DonateStripe() {
-  const amounts = useMemo(() => [10, 20, 50], [])
-  const [amount, setAmount] = useState(amounts[1]);
+  // preset PLN amounts
+  const amounts = useMemo(() => [10, 20, 50], []);
+  const [amount, setAmount] = useState(amounts[1]); // default 25
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [consent, setConsent] = useState(false);
@@ -10,6 +11,7 @@ export default function DonateStripe() {
   const [err, setErr] = useState("");
 
   const emailValid = !email || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+
   const canPay = Boolean(amount > 0 && consent && emailValid && !busy);
 
   async function startPayment() {
@@ -23,29 +25,22 @@ export default function DonateStripe() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          amount, // w złotych (serwer konwertuje na grosze)
+          amount,
           name: name || "",
           email: email || "",
-          locale: (typeof navigator !== "undefined" && navigator.language) ? navigator.language : "pl",
+          locale: navigator.language || "pl",
           provider: "stripe",
         }),
       });
 
-      let data = null;
-      try {
-        data = await res.json();
-      } catch {
-        throw new Error("Nieprawidłowa odpowiedź serwera.");
-      }
-
+      const data = await res.json();
       if (!res.ok || !data?.url) {
         throw new Error(data?.error || "Nie udało się utworzyć płatności.");
       }
 
-      // Przekierowanie do Stripe Checkout
-      window.location.href = data.url;
+      window.location = data.url;
     } catch (e) {
-      setErr(e?.message || "Wystąpił błąd po stronie serwera.");
+      setErr(e.message || "Wystąpił błąd po stronie serwera.");
       setBusy(false);
     }
   }
@@ -53,7 +48,6 @@ export default function DonateStripe() {
   return (
     <>
       <h2>Wesprzyj nas!</h2>
-
       <aside className="donate">
         <div className="amounts">
           {amounts.map((v) => (
@@ -110,7 +104,11 @@ export default function DonateStripe() {
           </label>
         </div>
 
-        {err && <p role="alert" className="formError">{err}</p>}
+        {err && (
+          <p role="alert" className="formError" style={{ marginTop: 8 }}>
+            {err}
+          </p>
+        )}
 
         <div className="buttonContainer">
           <button

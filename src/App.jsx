@@ -68,7 +68,8 @@ export default function App() {
 
       <Routes>
           <Route index path="/" element={<Main />} />
-
+          <Route path="/pl" element={<Main />} />
+          <Route path="/en" element={<Main />} />
           <Route path="/aktualnosci" element={<News />} />
           <Route path="/o-nas" element={<About />} />
           <Route path="/miasta" element={<Map />} />
