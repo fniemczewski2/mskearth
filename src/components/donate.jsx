@@ -1,9 +1,40 @@
-import React, { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { useLocation } from "react-router-dom";
+
+const LOCALE_CACHE = new Map();
 
 export default function DonateStripe() {
+  const location = useLocation();
+  const language = useMemo(() => location.pathname.split("/")[1] || "pl", [location.pathname]);
+
+  const [t, setT] = useState({ donate: {} });
+
+  useEffect(() => {
+    let active = true;
+    (async () => {
+      try {
+        if (LOCALE_CACHE.has(language)) {
+          if (active) setT(LOCALE_CACHE.get(language));
+        } else {
+          const res = await fetch(`/locales/${language}.json`, { credentials: "same-origin" });
+          if (!res.ok) throw new Error(`HTTP ${res.status}`);
+          const data = await res.json();
+          LOCALE_CACHE.set(language, data);
+          if (active) setT(data);
+        }
+      } catch (e) {
+        console.error("DonateStripe i18n error:", e);
+        if (active) setT({ donate: {} });
+      }
+    })();
+    return () => {
+      active = false;
+    };
+  }, [language]);
+
   // preset PLN amounts
   const amounts = useMemo(() => [10, 20, 50], []);
-  const [amount, setAmount] = useState(amounts[1]); // default 25
+  const [amount, setAmount] = useState(amounts[1]);
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [consent, setConsent] = useState(false);
@@ -11,7 +42,6 @@ export default function DonateStripe() {
   const [err, setErr] = useState("");
 
   const emailValid = !email || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-
   const canPay = Boolean(amount > 0 && consent && emailValid && !busy);
 
   async function startPayment() {
@@ -28,28 +58,30 @@ export default function DonateStripe() {
           amount,
           name: name || "",
           email: email || "",
-          locale: navigator.language || "pl",
+          locale: navigator.language || language || "pl",
           provider: "stripe",
         }),
       });
 
       const data = await res.json();
       if (!res.ok || !data?.url) {
-        throw new Error(data?.error || "Nie udało się utworzyć płatności.");
+        throw new Error(data?.error || t.donate?.createPaymentFailed || "Nie udało się utworzyć płatności.");
       }
 
       window.location = data.url;
     } catch (e) {
-      setErr(e.message || "Wystąpił błąd po stronie serwera.");
+      setErr(e.message || t.donate?.serverError || "Wystąpił błąd po stronie serwera.");
       setBusy(false);
     }
   }
 
+  const currencySuffix = t.donate?.currencySuffix || "zł";
+
   return (
     <>
-      <h2>Wesprzyj nas!</h2>
+      <h2>{t.donate?.h2 || "Wesprzyj nas!"}</h2>
       <aside className="donate">
-        <div className="amounts">
+        <div className="amounts" role="group" aria-label={t.donate?.amountsAria || "Wybierz kwotę darowizny"}>
           {amounts.map((v) => (
             <button
               key={v}
@@ -58,36 +90,39 @@ export default function DonateStripe() {
               className={amount === v ? "active" : undefined}
               aria-pressed={amount === v}
             >
-              {v}&nbsp;zł
+              {v}{"\u00A0"}{currencySuffix}
             </button>
           ))}
         </div>
 
         <form onSubmit={(e) => e.preventDefault()}>
-          <label className="formLabel" htmlFor="donor-name">Imię:</label>
+          <label className="formLabel" htmlFor="donor-name">{t.donate?.nameLabel || "Imię:"}</label>
           <input
             id="donor-name"
             value={name}
             onChange={(e) => setName(e.target.value)}
             className="formField"
-            placeholder="Anna"
+            placeholder={t.donate?.namePlaceholder || "Anna"}
             autoComplete="name"
           />
 
-          <label className="formLabel" htmlFor="donor-email">E-mail:</label>
+          <label className="formLabel" htmlFor="donor-email">{t.donate?.emailLabel || "E-mail:"}</label>
           <input
             id="donor-email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             className="formField"
-            placeholder="jan@example.com"
+            placeholder={t.donate?.emailPlaceholder || "jan@example.com"}
             type="email"
             autoComplete="email"
             inputMode="email"
             aria-invalid={email && !emailValid ? "true" : "false"}
+            aria-describedby={email && !emailValid ? "donor-email-error" : undefined}
           />
           {email && !emailValid && (
-            <p role="alert" className="formError">Podaj poprawny adres e-mail.</p>
+            <p id="donor-email-error" role="alert" className="formError">
+              {t.donate?.invalidEmail || "Podaj poprawny adres e-mail."}
+            </p>
           )}
         </form>
 
@@ -99,8 +134,9 @@ export default function DonateStripe() {
             onChange={(e) => setConsent(e.target.checked)}
           />
           <label className="agreement" htmlFor="donate-consent">
-            Wyrażam zgodę na przetwarzanie moich danych osobowych w celu realizacji darowizny.
-            <br />Zostaniesz przekierowany/a na bezpieczną stronę płatności Stripe.
+            {t.donate?.consent || "Wyrażam zgodę na przetwarzanie moich danych osobowych w celu realizacji darowizny."}
+            <br />
+            {t.donate?.redirectNote || "Zostaniesz przekierowany/a na bezpieczną stronę płatności Stripe."}
           </label>
         </div>
 
@@ -117,8 +153,9 @@ export default function DonateStripe() {
             disabled={!canPay}
             onClick={startPayment}
             aria-disabled={!canPay ? "true" : "false"}
+            aria-busy={busy ? "true" : "false"}
           >
-            {busy ? "Przekierowywanie…" : "Wpłać"}
+            {busy ? (t.donate?.redirecting || "Przekierowywanie…") : (t.donate?.payCta || "Wpłać")}
           </button>
         </div>
       </aside>

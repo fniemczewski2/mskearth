@@ -1,10 +1,11 @@
+import { useMemo, useState, useEffect } from "react";
 import PropTypes from "prop-types";
 import { useLocation } from 'react-router-dom';
+import { supabase } from "../services/supabaseClient";
 
 const LOCALE_CACHE = new Map();
 
 function Cities({ selectedRegion, onSelectCity, selectedCity }) {
-  console.log(selectedRegion)
   const location = useLocation();
   const language = useMemo(() => location.pathname.split('/')[1] || 'pl', [location.pathname]);
 
