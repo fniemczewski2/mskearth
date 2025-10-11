@@ -1,4 +1,4 @@
-import { Link, useLocation, useParams } from "react-router-dom";
+import React, { Link, useLocation, useParams } from "react-router-dom";
 import PropTypes from "prop-types";
 import DOMPurify from "dompurify";
 import { toPublicUrl } from "../services/supabaseClient";

@@ -1,4 +1,4 @@
-import { useState, useRef, useMemo, useCallback, useEffect } from 'react';
+import React, { useState, useRef, useMemo, useCallback, useEffect } from 'react';
 import { useLocation, Link } from 'react-router-dom';
 import { toPublicUrl } from '../services/supabaseClient';
 import { supabase } from '../services/supabaseClient';
