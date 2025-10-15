@@ -9,7 +9,7 @@ export default async function handler(req, res) {
     const parsed = Number(amount);
     if (!Number.isFinite(parsed) || parsed <= 0) return res.status(400).json({ error: "Nieprawidłowa kwota." });
 
-    const unitAmount = Math.round(parsed * 100); // PLN → grosze
+    const unitAmount = Math.round(parsed * 100);
 
     const session = await stripe.checkout.sessions.create({
       mode: "payment",

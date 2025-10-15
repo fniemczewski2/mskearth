@@ -55,7 +55,6 @@ function Footer({ lang, handleLanguageChange: _handleLanguageChange }) {
         <SocialLink label="Link do kanału MSK na YouTube" link="https://www.youtube.com/@ModziezowyStrajkKlimatyczny" icon="bi bi-youtube" />
       </div>
 
-      {/* pass the computed language here */}
       <FooterMenu menuItems={menuItems} lang={effectiveLang} />
 
       <p>&copy; {new Date().getFullYear()} Młodzieżowy Strajk Klimatyczny - Fridays For Future Poland</p>

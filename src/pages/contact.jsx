@@ -129,10 +129,8 @@ function Contact() {
     <main className="contact">
       <h1>{t.contact?.h1 || 'Kontakt'}</h1>
 
-      {/* Contact form */}
       <aside className="form-container">
         <form id="form" className="contact-form" onSubmit={handleSubmit} noValidate>
-          {/* Honeypot (hidden) */}
           <input
             type="text"
             name="_hp"
@@ -197,7 +195,6 @@ function Contact() {
         </form>
       </aside>
 
-      {/* Contact persons */}
       <section className="contact-persons" aria-busy={loading ? 'true' : 'false'}>
         {loading && (
           <div className="loader" aria-hidden="true" role="status" aria-live="polite" aria-busy="true">

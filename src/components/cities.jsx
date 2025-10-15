@@ -168,7 +168,6 @@ function Cities({ selectedRegion, onSelectCity, selectedCity }) {
                 </>
               )}
 
-              {/* Contact people */}
               <div className="peopleData" aria-busy={peopleLoading ? 'true' : 'false'}>
                 {peopleLoading ? (
                   <div className="loader" aria-hidden="true" role="status" aria-live="polite" aria-busy="true">

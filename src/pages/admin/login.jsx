@@ -77,7 +77,6 @@ function SignInForm({ onSignedIn } = {}) {
         noValidate
         aria-describedby={status.message ? statusId : undefined}
       >
-        {/* Live status for SR users */}
         <p
           id={statusId}
           role="status"

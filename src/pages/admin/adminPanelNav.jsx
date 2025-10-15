@@ -2,19 +2,11 @@
 import { useCallback, useMemo, useState } from 'react';
 import PropTypes from 'prop-types';
 
-import CityForm from '../../services/addCity.jsx';
-import ArticleForm from '../../services/addArticle.jsx';
-import ListArticles from '../../services/listArticles.jsx';
-import LocalContactPersonForm from '../../services/addLocalContactPerson.jsx';
-import { AddRecrutationData, AddRecrutationCallData } from '../../services/addRecrutationData.jsx';
-import FinancialReportForm from '../../services/addFinancialReport.jsx';
-import FoundationBoardForm from '../../services/addFoundationBoard.jsx';
-import ListCities from '../../services/listCities.jsx';
-import ListCalls from '../../services/listCalls.jsx';
-import ListLocalContactPeople from '../../services/listLocalContactPeople.jsx';
-import ListFoundationBoardMembers from '../../services/listFoundationBoardMembers.jsx';
-import ContactPersonForm from '../../services/addContactPerson.jsx';
-import ListContactPeople from '../../services/listContactPeople.jsx';
+import ArticlesCMS from '../../components/admin/articlesCMS.jsx';
+import CitiesLocalCMS from '../../components/admin/citiesCMS.jsx';
+import FoundationCMS from '../../components/admin/foundationCMS.jsx';
+import ContactPeopleCMS from '../../components/admin/contactCMS.jsx';
+import RecruitmentCMS from '../../components/admin/recruitmentCMS.jsx';
 
 const TABS = [
   { id: 'recrutation', label: 'Rekrutacja' },
@@ -24,7 +16,7 @@ const TABS = [
   { id: 'contact', label: 'Kontakt' },
 ];
 
-function DataForms({ currentUserName }) {
+function AdminPanelNav({ currentUserName }) {
   const [formType, setFormType] = useState('articles');
 
   const handleKeyNav = useCallback(
@@ -50,53 +42,37 @@ function DataForms({ currentUserName }) {
       case 'recrutation':
         return (
           <>
-            <div className="formsContainer">
-              <AddRecrutationData />
-              <AddRecrutationCallData />
-            </div>
-            <ListCalls />
+            <RecruitmentCMS/>
           </>
         );
       case 'articles':
         return (
           <>
-            <ArticleForm currentUserName={currentUserName} />
-            <ListArticles currentUserName={currentUserName} />
+            <ArticlesCMS />
           </>
         );
       case 'map':
         return (
           <>
-            <div className="formsContainer">
-              <CityForm />
-              <LocalContactPersonForm />
-            </div>
-            <ListCities />
-            <ListLocalContactPeople />
+            <CitiesLocalCMS/>
           </>
         );
       case 'foundation':
         return (
           <>
-            <div className="formsContainer">
-              <FinancialReportForm currentUserName={currentUserName} />
-              <FoundationBoardForm />
-            </div>
-            <ListFoundationBoardMembers />
+            <FoundationCMS/>
           </>
         );
       case 'contact':
         return (
           <>
-            <ContactPersonForm />
-            <ListContactPeople />
+            <ContactPeopleCMS/>
           </>
         );
       default:
         return (
           <>
-            <ArticleForm currentUserName={currentUserName} />
-            <ListArticles currentUserName={currentUserName} />
+            <ArticlesCMS/>
           </>
         );
     }
@@ -141,8 +117,8 @@ function DataForms({ currentUserName }) {
   );
 }
 
-DataForms.propTypes = {
-  currentUserName: PropTypes.string, // pass if you need author attribution
+AdminPanelNav.propTypes = {
+  currentUserName: PropTypes.string, 
 };
 
-export default DataForms;
+export default AdminPanelNav;

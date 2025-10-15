@@ -134,7 +134,6 @@ export default function NewsletterForm() {
           noValidate
           aria-busy={busy ? 'true' : 'false'}
         >
-          {/* Honeypot: bots fill visible inputs eagerly; this one is hidden off-screen */}
           <label htmlFor="company" style={{ position: 'absolute', left: '-9999px' }}>
             Company
           </label>
@@ -190,8 +189,7 @@ export default function NewsletterForm() {
             {busy ? (t.newsletter?.pending || 'Przetwarzanie…') : (t.newsletter?.submit || 'Zapisz się')}
             &nbsp;<i className="bi bi-envelope icon newsletterIcon" aria-hidden="true" />
           </button>
-
-          {/* Status messages */}
+          
           {busy && (
             <div className="loader" aria-hidden="true" role="status" aria-live="polite" aria-busy="true">
               <span className="spinner" aria-hidden="true" />

@@ -82,8 +82,6 @@ export default function About() {
           </article>
         )}
       </section>
-
-      {/* Goals already handles its own i18n + loading */}
       <Goals />
     </main>
   );

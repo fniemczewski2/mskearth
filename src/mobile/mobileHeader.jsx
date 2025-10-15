@@ -64,7 +64,6 @@ function MobileHeader({ lang = 'pl', handleLanguageChange }) {
         </button>
       </header>
 
-      {/* Make sure MobileNavbar sets id="mobile-nav" on its root element */}
       <MobileNavbar
         id="mobile-nav"
         isOpen={isOpen}

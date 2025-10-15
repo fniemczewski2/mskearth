@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { supabase } from "../../services/supabaseClient";
-import DataForms from "./dataForms";
+import AdminPanelNav from "./adminPanelNav"
 
 function AdminPanel() {
   const [email, setEmail] = useState("");
@@ -85,7 +85,6 @@ function AdminPanel() {
     <main className="adminPanel">
       <h1>Panel administracyjny</h1>
 
-      {/* Status + errors for screen readers */}
       <div role="status" aria-live="polite" className="status">
         {loading ? "Ładowanie…" : statusMsg}
       </div>
@@ -166,7 +165,7 @@ function AdminPanel() {
               </button>
             </h2>
           </section>
-          <DataForms currentUserName={displayName} />
+          <AdminPanelNav currentUserName={displayName} />
         </>
       )}
     </main>

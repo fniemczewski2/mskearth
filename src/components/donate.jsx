@@ -32,7 +32,6 @@ export default function DonateStripe() {
     };
   }, [language]);
 
-  // preset PLN amounts
   const amounts = useMemo(() => [10, 20, 50], []);
   const [amount, setAmount] = useState(amounts[1]);
   const [name, setName] = useState("");

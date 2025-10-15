@@ -116,7 +116,6 @@ export default function JoinUs() {
 
         {!loading && !err && (
           <ul>
-            {/* Instagram */}
             <li className="joinUsActionContainer">
               <div className="joinUsAction heading">
                 <p className="joinUsActionHeader">
@@ -184,7 +183,6 @@ export default function JoinUs() {
               </li>
             )}
 
-            {/* Cities */}
             <li className="joinUsActionContainer">
               <div className="joinUsAction">
                 <p className="joinUsActionHeader">
