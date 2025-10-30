@@ -194,7 +194,7 @@ button:focus,
 
 .donate-form { display: flex; flex-direction: column; align-items: flex-end; width: 80vw; }
 .donate .agreement { margin: 10px auto;}
-.amounts { display: flex; flex-wrap: wrap; justify-content: space-around; margin: 10px 0;}
+.amounts { display: flex; flex-wrap: nowrap; justify-content: space-around; margin: 10px 0;}
 
 form { max-width: 800px; }
 .formLabel { color: var(--first-color); display: block; text-align: left; margin: 10px 0 0; }
@@ -284,16 +284,19 @@ a.mailto { color: var(--second-color); margin: 0; }
   section, aside { margin: 0; width: 100%; }
   button, a { font-size: 1rem; margin: 5px 10px; }
   .film-container { max-height: 36vh; }
-  .donateButton { font-size: 16px; }
+
   .joinUsButton, .donateButton, .newsletterButton { border-radius: 10px; margin: 10px 5px; font-size: 20px; }
   .joinUsAction { flex-direction: column; margin: auto; width: 100%; font-size: 16px; }
   .joinUsAction i { font-size: 1.5rem; }
   .joinUsActionContainer { margin: 10px auto; flex-direction: column; }
-  .joinUsButton i, .donateButton i { font-size: 16px; }
+  .joinUsButton i, .donateButton i { font-size: 12px; }
   .formField, .formLabel, .agreementContainer { max-width: 400px; }
   .side-button { display: none; }
   .foundation p, .foundation a {font-size: 1rem;}
   .foundationLogoContainer {display: none; width: 0}
+  .amounts button, a.joinUsButton, a.donateButton { font-size: 14px; padding: 12px 16px; }
+  .amounts button:first-of-type { margin-left: 0; }
+  .amounts button:last-of-type { margin-right: 0; }
 }
 @media (min-width: 769px) {
   .film { max-height: 36vh; }
@@ -1110,6 +1113,7 @@ main.news {
   place-items: center;
 }
 .carousel-button {
+  padding: 0 !important;
   position: absolute;
   top: 50%;
   translate: 0 -50%;

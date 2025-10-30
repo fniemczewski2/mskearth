@@ -1,12 +1,14 @@
 import { useState } from "react";
 import { v4 as uuid } from "uuid";
-import { supabase } from "./supabaseClient";
+import { supabase } from "../supabaseClient";
 
-export function toPublicUrl(path, bucket = "mskearth") {
+export async function toPublicUrl(path, bucket = "mskearth") {
   if (!path) return "";
-  const { data } = supabase.storage.from(bucket).getPublicUrl(path);
+  const { data, error } = await supabase.storage.from(bucket).getPublicUrl(path);
+  if (error) throw error;
   return data?.publicUrl || "";
 }
+
 
 export async function getSignedUrl(path, { bucket = "mskearth", expiresIn = 3600 } = {}) {
   const { data, error } = await supabase.storage.from(bucket).createSignedUrl(path, expiresIn);

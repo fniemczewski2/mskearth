@@ -1,8 +1,8 @@
+import { useMemo, useState, useRef, useEffect, useCallback } from "react";
 import { Link, useLocation, useParams } from "react-router-dom";
 import PropTypes from "prop-types";
 import DOMPurify from "dompurify";
-import { toPublicUrl } from "../services/supabaseClient";
-
+import { getArticleById } from "../services/db/article";
 const LOCALE_CACHE = new Map();
 const SUPPORTED_LOCALES = new Set(["pl", "en", "ua"]);
 
@@ -25,74 +25,39 @@ export default function ArticlePage({ articles = [] }) {
   const carouselImgRef = useRef(null);
 
   useEffect(() => {
-    let isActive = true;
     (async () => {
       try {
         if (LOCALE_CACHE.has(language)) {
-          if (isActive) setT(LOCALE_CACHE.get(language));
+           setT(LOCALE_CACHE.get(language));
         } else {
           const res = await fetch(`/locales/${language}.json`, { credentials: "same-origin" });
           if (!res.ok) throw new Error(`HTTP ${res.status}`);
           const data = await res.json();
           LOCALE_CACHE.set(language, data);
-          if (isActive) setT(data);
+          setT(data);
         }
       } catch (err) {
         console.error("Error loading translations:", err);
-        if (isActive) setT({ articlePage: {} });
+        setT({ articlePage: {} });
       }
     })();
-    return () => { isActive = false; };
   }, [language]);
 
   useEffect(() => {
-    let active = true;
     (async () => {
-      if (article) return;
       setLoading(true);
       try {
-        const { data, error } = await supabase
-          .from("articles")
-          .select(`
-            id, accepted, created, published,
-            imgurl, imgalt, author,
-            sourcetext, sourcelink,
-            title, subtitle, content,
-            titleen, subtitleen, contenten,
-            titleua, subtitleua, contentua
-          `)
-          .eq("id", id)
-          .maybeSingle();
-        if (error) throw error;
-
-        if (!data) {
-          if (active) setArticle(null);
-        } else {
-          const imgs = Array.isArray(data.imgurl) ? data.imgurl : (data.imgurl ? [data.imgurl] : []);
-          const resolved = imgs.map((p) => toPublicUrl(p, "mskearth")).filter(Boolean);
-          const normalized = { ...data, imgurl: resolved };
-          if (active) setArticle(normalized);
-        }
+        getArticleById(id).then((data) => {
+          setArticle(data);
+        });
       } catch (err) {
         console.error("Fetch article error:", err);
-        if (active) setArticle(null);
+        setArticle(null);
       } finally {
-        if (active) setLoading(false);
+        setLoading(false);
       }
     })();
-    return () => { active = false; };
   }, [id]);
-
-  useEffect(() => {
-    const found = articles.find((a) => String(a?.id) === String(id));
-    if (found) {
-      const imgs = Array.isArray(found.imgurl) ? found.imgurl : (found.imgurl ? [found.imgurl] : []);
-      const hasHttp = imgs.some((u) => /^https?:\/\//i.test(u));
-      const normalizedImgs = hasHttp ? imgs : imgs.map((p) => toPublicUrl(p, "mskearth")).filter(Boolean);
-      setArticle({ ...found, imgurl: normalizedImgs });
-      setLoading(false);
-    }
-  }, [articles, id]);
 
   useEffect(() => {
     setCurrentImageIndex(0);

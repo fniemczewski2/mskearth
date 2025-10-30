@@ -1,4 +1,4 @@
-import { useState, useRef, useMemo, useCallback, useEffect } from 'react';
+import { Fragment, useState, useRef, useMemo, useCallback, useEffect } from 'react';
 import { useLocation, Link } from 'react-router-dom';
 import { toPublicUrl } from '../services/supabaseClient';
 import { supabase } from '../services/supabaseClient';
@@ -114,7 +114,7 @@ function News() {
             : sanitizedContent;
 
         return (
-          <React.Fragment key={article.id}>
+          <Fragment key={article.id}>
             <article
               className="newsElement"
               ref={(el) => (articleRefs.current[index] = el)}
@@ -145,7 +145,7 @@ function News() {
                 </div>
               </div>
             </article>
-          </React.Fragment>
+          </Fragment>
         );
       })}
     </main>

@@ -32,7 +32,7 @@ const emptyForm = {
   sourcelink: "",
   sourcetext: "",
   accepted: false,
-  published: false,
+  published: new Date().toISOString(),
   pinned: false,
 };
 
