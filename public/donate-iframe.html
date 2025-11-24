@@ -1,0 +1,765 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Content-Security-Policy" content="frame-ancestors 'self' https://sites.google.com https://*.google.com">
+    <title>Wesprzyj MSK</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Jost:wght@400;600;700;900&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --first-color: #4CAF50;
+            --second-color: #2E7D32;
+            --white: #ffffff;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Jost', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: transparent;
+            padding: 20px;
+            color: #333;
+        }
+
+        h2 {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+            text-align: center;
+            color: var(--second-color);
+        }
+
+        /* Donation Progress Section */
+        .donate {
+            max-width: 768px;
+            margin: 0 auto;
+        }
+
+        .donation-progress {
+            margin-bottom: 2rem;
+        }
+
+        .progress-loading {
+            text-align: center;
+            padding: 2rem;
+        }
+
+        .spinner {
+            display: inline-block;
+            width: 40px;
+            height: 40px;
+            border: 4px solid #e2e8f0;
+            border-radius: 50%;
+            border-top-color: var(--first-color);
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .sr-only {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            white-space: nowrap;
+            border-width: 0;
+        }
+
+        .progress-stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+            text-align: center;
+            margin-top: 10px;
+        }
+
+        .stat-item {
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+        }
+
+        .stat-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--second-color);
+            line-height: 1.2;
+        }
+
+        .stat-label {
+            font-size: 0.875rem;
+            color: var(--second-color);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        /* Progress Bar */
+        .progress-bar-container {
+            position: relative;
+            width: 100%;
+            height: 32px;
+            background-color: var(--white);
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.3);
+            margin-bottom: 1rem;
+        }
+
+        .progress-bar-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--first-color) 0%, var(--second-color) 100%);
+            border-radius: 16px;
+            transition: width 0.6s ease-in-out;
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            padding-right: 0.75rem;
+            position: relative;
+            box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3);
+        }
+
+        .progress-percentage {
+            font-weight: 700;
+            color: white;
+            font-size: 0.875rem;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+            z-index: 1;
+            position: relative;
+        }
+
+        /* Amount Buttons */
+        .amounts {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .amounts button {
+            padding: 0.875rem 1rem;
+            background-color: var(--white);
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            color: var(--second-color);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            flex: 1;
+        }
+
+        .amounts button:hover,
+        .amounts button.active {
+            background-color: var(--second-color);
+            color: white;
+            border-color: var(--second-color);
+        }
+
+        .amounts button:focus {
+            outline: 2px solid var(--first-color);
+            outline-offset: 2px;
+        }
+
+        .amount {
+            font-size: 1.5rem;
+            min-width: 64px;
+            margin: 0;
+        }
+
+        .desc {
+            font-size: 0.7rem;
+            margin: 0;
+        }
+
+        /* Custom Amount */
+        .custom-amount-container {
+            margin-bottom: 1rem;
+            animation: slideDown 0.3s ease-out;
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .input-with-suffix {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
+        .input-with-suffix input {
+            padding-right: 3rem;
+        }
+
+        .input-suffix {
+            position: absolute;
+            right: 1rem;
+            color: #64748b;
+            font-weight: 600;
+            pointer-events: none;
+        }
+
+        /* Form */
+        .formLabel {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            color: var(--second-color);
+        }
+
+        .formField {
+            width: 100%;
+            padding: 0.75rem;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 1rem;
+            margin-bottom: 1rem;
+            transition: border-color 0.2s;
+        }
+
+        .formField:focus {
+            outline: none;
+            border-color: var(--first-color);
+        }
+
+        .formField:invalid {
+            border-color: #ef4444;
+        }
+
+        .formError {
+            color: #ef4444;
+            font-size: 0.875rem;
+            margin-top: 0.25rem;
+        }
+
+        /* Checkbox */
+        .agreementContainer {
+            display: flex;
+            gap: 0.75rem;
+            margin-bottom: 1.5rem;
+            align-items: flex-start;
+        }
+
+        .agreementContainer input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            margin-top: 0.125rem;
+            cursor: pointer;
+            flex-shrink: 0;
+        }
+
+        .agreement {
+            font-size: 0.875rem;
+            color: #64748b;
+            line-height: 1.5;
+            cursor: pointer;
+        }
+
+        /* Submit Button */
+        .buttonContainer {
+            margin-bottom: 1.5rem;
+        }
+
+        .buttonContainer .primaryBtn {
+            width: 100%;
+            padding: 1rem 1.5rem;
+            font-size: 1.125rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--first-color) 0%, var(--second-color) 100%);
+            border: none;
+            border-radius: 8px;
+            color: white;
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 12px #cccccc;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .primaryBtn p {
+            margin: 0 auto;
+        }
+
+        .buttonContainer .primaryBtn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, #cccccc, transparent);
+            transition: left 0.5s ease;
+        }
+
+        .buttonContainer .primaryBtn:hover::before {
+            left: 100%;
+        }
+
+        .buttonContainer .primaryBtn:hover:not(:disabled) {
+            transform: translateY(-2px);
+        }
+
+        .buttonContainer .primaryBtn:disabled {
+            background: #9ca3af;
+            cursor: not-allowed;
+            box-shadow: none;
+        }
+
+        /* Trust Indicators */
+        .trust-indicators {
+            display: flex;
+            justify-content: space-around;
+            gap: 0.5rem;
+            padding-top: 1rem;
+            border-top: 1px solid #e0e0e0;
+        }
+
+        .trust-text {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.875rem;
+            color: var(--second-color);
+            margin: 0;
+        }
+
+        .trust-text i {
+            color: var(--first-color);
+            font-size: 1.125rem;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            body {
+                padding: 10px;
+            }
+
+            .progress-stats {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .progress-stats .stat-item:last-of-type {
+                display: none;
+            }
+
+            .amounts {
+                flex-direction: column;
+            }
+
+            .amounts button {
+                flex-direction: row;
+                width: 100%;
+                justify-content: flex-start;
+                gap: 1rem;
+            }
+
+            .amount {
+                font-size: 1rem;
+                width: fit-content;
+            }
+
+            .stat-value {
+                font-size: 1.25rem;
+            }
+
+            .progress-bar-container {
+                height: 28px;
+            }
+
+            .progress-percentage {
+                font-size: 0.75rem;
+            }
+
+            .trust-indicators {
+                flex-direction: column;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .stat-value {
+                font-size: 1.125rem;
+            }
+
+            .buttonContainer .primaryBtn {
+                font-size: 1rem;
+                padding: 0.875rem 1.25rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div>
+        <h2 id="title">Wesprzyj nas!</h2>
+        <aside class="donate">
+            <!-- Progress Section -->
+            <div class="donation-progress" role="region" aria-label="Postęp zbiórki">
+                <div class="progress-loading" id="loading" role="status" aria-live="polite">
+                    <span class="spinner" aria-hidden="true"></span>
+                    <span class="sr-only">Ładowanie statystyk...</span>
+                </div>
+
+                <div id="progress-content" style="display: none;">
+                    <div class="progress-stats">
+                        <div class="stat-item">
+                            <span class="stat-value" id="current-amount">0 zł</span>
+                            <span class="stat-label">zebrane</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-value" id="goal-amount">10,000 zł</span>
+                            <span class="stat-label">cel</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-value" id="donors-count">0</span>
+                            <span class="stat-label">darczyńców</span>
+                        </div>
+                    </div>
+
+                    <div class="progress-bar-container" 
+                         role="progressbar" 
+                         aria-valuenow="0" 
+                         aria-valuemin="0" 
+                         aria-valuemax="100"
+                         id="progress-container">
+                        <div class="progress-bar-fill" id="progress-bar" style="width: 0%">
+                            <span class="progress-percentage" id="progress-text">0%</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Amount Selection -->
+            <div class="amounts" role="group" aria-label="Wybierz kwotę darowizny" id="amounts-group">
+                <button type="button" class="amount-btn" data-amount="70">
+                    <p class="amount">70 zł</p>
+                    <p class="desc">godzina warsztatu dla 1 klasy</p>
+                </button>
+                <button type="button" class="amount-btn active" data-amount="130">
+                    <p class="amount">130 zł</p>
+                    <p class="desc">dzień warsztatów dla 1 szkoły</p>
+                </button>
+                <button type="button" class="amount-btn" data-amount="200">
+                    <p class="amount">200 zł</p>
+                    <p class="desc">szkolenie osoby prowadzącej</p>
+                </button>
+                <button type="button" class="custom-btn" id="custom-btn">
+                    Inna kwota
+                </button>
+            </div>
+
+            <!-- Custom Amount -->
+            <div class="custom-amount-container" id="custom-container" style="display: none;">
+                <label class="formLabel" for="custom-amount">Wpisz kwotę:</label>
+                <div class="input-with-suffix">
+                    <input type="number" 
+                           id="custom-amount" 
+                           class="formField"
+                           min="1" 
+                           step="1"
+                           placeholder="50"
+                           inputmode="numeric">
+                    <span class="input-suffix">zł</span>
+                </div>
+            </div>
+
+            <!-- Form -->
+            <form id="donate-form">
+                <label class="formLabel" for="donor-name">Imię:</label>
+                <input type="text" 
+                       id="donor-name" 
+                       class="formField"
+                       placeholder="Anna"
+                       autocomplete="name">
+
+                <label class="formLabel" for="donor-email">E-mail:</label>
+                <input type="email" 
+                       id="donor-email" 
+                       class="formField"
+                       placeholder="jan@example.com"
+                       required
+                       autocomplete="email"
+                       inputmode="email">
+                <p id="email-error" class="formError" style="display: none;">
+                    Podaj poprawny adres e-mail.
+                </p>
+
+                <div class="agreementContainer">
+                    <input type="checkbox" 
+                           id="consent" 
+                           required>
+                    <label for="consent" class="agreement">
+                        Wyrażam zgodę na przetwarzanie moich danych osobowych w celu realizacji darowizny.
+                    </label>
+                </div>
+
+                <p id="error-message" class="formError" role="alert" style="display: none; margin-bottom: 1rem;"></p>
+
+                <div class="buttonContainer">
+                    <button type="submit" 
+                            class="primaryBtn" 
+                            id="submit-btn"
+                            disabled>
+                        <p id="submit-text">Wpłać 130 zł</p>
+                    </button>
+                </div>
+            </form>
+
+            <!-- Trust Indicators -->
+            <div class="trust-indicators">
+                <p class="trust-text">
+                    <i class="bi bi-shield-check" aria-hidden="true"></i>
+                    Bezpieczna płatność przez Stripe
+                </p>
+                <p class="trust-text">
+                    <i class="bi bi-receipt" aria-hidden="true"></i>
+                    Otrzymasz potwierdzenie na email
+                </p>
+            </div>
+        </aside>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script>
+        // Configuration - ZMIEŃ TO NA SWOJE WARTOŚCI
+        const SUPABASE_URL = 'https://qhgyxyxnatbcxzclwisj.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFoZ3l4eXhuYXRiY3h6Y2x3aXNqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk3MTMyMTksImV4cCI6MjA3NTI4OTIxOX0.Nu3ycNrfdWEP9D8A7ogTqPtavSmRkTSjYuRERYBv-uo';
+        const API_URL = 'https://msk.earth/api'; // Twój API URL
+
+        // Initialize Supabase client
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        // State
+        let selectedAmount = 130;
+        let showCustom = false;
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            loadDonationStats();
+            setupAmountButtons();
+            setupForm();
+        });
+
+        // Load donation stats
+        async function loadDonationStats() {
+            try {
+                // Fetch from Supabase
+                const { data: donations, error } = await supabase
+                    .from('donations')
+                    .select('amount, donor_email')
+                    .eq('status', 'completed');
+
+                if (error) throw error;
+
+                const currentAmount = donations.reduce((sum, d) => sum + (d.amount || 0), 0);
+                const donorsCount = new Set(donations.map(d => d.donor_email).filter(Boolean)).size;
+
+                const { data: settings } = await supabase
+                    .from('fundraising_settings')
+                    .select('goal_amount')
+                    .eq('active', true)
+                    .limit(1)
+                    .single();
+
+                const goalAmount = settings?.goal_amount || 10000;
+
+                updateProgress(currentAmount, goalAmount, donorsCount);
+            } catch (error) {
+                console.error('Error loading stats:', error);
+                // Use defaults
+                updateProgress(0, 10000, 0);
+            }
+        }
+
+        // Update progress display
+        function updateProgress(current, goal, donors) {
+            const percentage = Math.min((current / goal) * 100, 100);
+
+            document.getElementById('loading').style.display = 'none';
+            document.getElementById('progress-content').style.display = 'block';
+
+            document.getElementById('current-amount').textContent = formatAmount(current) + ' zł';
+            document.getElementById('goal-amount').textContent = formatAmount(goal) + ' zł';
+            document.getElementById('donors-count').textContent = donors;
+            document.getElementById('progress-bar').style.width = percentage + '%';
+            document.getElementById('progress-text').textContent = Math.round(percentage) + '%';
+            document.getElementById('progress-container').setAttribute('aria-valuenow', Math.round(percentage));
+        }
+
+        // Format amount
+        function formatAmount(num) {
+            return new Intl.NumberFormat('pl-PL').format(Math.round(num));
+        }
+
+        // Setup amount buttons
+        function setupAmountButtons() {
+            const amountBtns = document.querySelectorAll('.amount-btn');
+            const customBtn = document.getElementById('custom-btn');
+            const customContainer = document.getElementById('custom-container');
+            const customInput = document.getElementById('custom-amount');
+
+            amountBtns.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    amountBtns.forEach(b => b.classList.remove('active'));
+                    customBtn.classList.remove('active');
+                    btn.classList.add('active');
+                    
+                    selectedAmount = parseInt(btn.dataset.amount);
+                    showCustom = false;
+                    customContainer.style.display = 'none';
+                    customInput.value = '';
+                    
+                    updateSubmitButton();
+                });
+            });
+
+            customBtn.addEventListener('click', () => {
+                amountBtns.forEach(b => b.classList.remove('active'));
+                customBtn.classList.add('active');
+                
+                showCustom = true;
+                customContainer.style.display = 'block';
+                customInput.focus();
+                
+                updateSubmitButton();
+            });
+
+            customInput.addEventListener('input', () => {
+                selectedAmount = parseFloat(customInput.value) || 0;
+                updateSubmitButton();
+            });
+        }
+
+        // Setup form
+        function setupForm() {
+            const form = document.getElementById('donate-form');
+            const emailInput = document.getElementById('donor-email');
+            const consentCheckbox = document.getElementById('consent');
+
+            emailInput.addEventListener('input', validateForm);
+            consentCheckbox.addEventListener('change', validateForm);
+
+            form.addEventListener('submit', handleSubmit);
+        }
+
+        // Validate form
+        function validateForm() {
+            const email = document.getElementById('donor-email').value;
+            const consent = document.getElementById('consent').checked;
+            const emailValid = !email || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+
+            document.getElementById('email-error').style.display = 
+                email && !emailValid ? 'block' : 'none';
+
+            const finalAmount = showCustom ? 
+                parseFloat(document.getElementById('custom-amount').value) || 0 : 
+                selectedAmount;
+
+            const canSubmit = finalAmount > 0 && consent && emailValid && email;
+            document.getElementById('submit-btn').disabled = !canSubmit;
+        }
+
+        // Update submit button text
+        function updateSubmitButton() {
+            const finalAmount = showCustom ? 
+                parseFloat(document.getElementById('custom-amount').value) || 0 : 
+                selectedAmount;
+            
+            document.getElementById('submit-text').textContent = 
+                `Wpłać ${formatAmount(finalAmount)} zł`;
+            
+            validateForm();
+        }
+
+        // Handle form submission
+        async function handleSubmit(e) {
+            e.preventDefault();
+
+            const name = document.getElementById('donor-name').value;
+            const email = document.getElementById('donor-email').value;
+            const finalAmount = showCustom ? 
+                parseFloat(document.getElementById('custom-amount').value) : 
+                selectedAmount;
+
+            const submitBtn = document.getElementById('submit-btn');
+            const submitText = document.getElementById('submit-text');
+            const errorMsg = document.getElementById('error-message');
+
+            // Disable button and show loading
+            submitBtn.disabled = true;
+            submitText.innerHTML = '<span class="spinner"></span> Przekierowywanie...';
+            errorMsg.style.display = 'none';
+
+            try {
+                // Create Stripe session
+                const response = await fetch(`${API_URL}/create-checkout-session`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        amount: finalAmount,
+                        name: name || '',
+                        email: email,
+                        locale: 'pl',
+                        provider: 'stripe'
+                    })
+                });
+
+                const data = await response.json();
+
+                if (!response.ok || !data.url) {
+                    throw new Error(data.error || 'Nie udało się utworzyć płatności');
+                }
+
+                // Save to Supabase
+                try {
+                    await supabase.from('donations').insert({
+                        amount: finalAmount,
+                        donor_name: name || 'Anonymous',
+                        donor_email: email,
+                        status: 'pending',
+                        stripe_session_id: data.sessionId,
+                        currency: 'PLN',
+                        created_at: new Date().toISOString()
+                    });
+                } catch (dbError) {
+                    console.error('DB error:', dbError);
+                    // Continue anyway
+                }
+
+                // Redirect to Stripe
+                window.location.href = data.url;
+
+            } catch (error) {
+                console.error('Error:', error);
+                errorMsg.textContent = error.message || 'Wystąpił błąd po stronie serwera';
+                errorMsg.style.display = 'block';
+                submitBtn.disabled = false;
+                submitText.textContent = `Wpłać ${formatAmount(finalAmount)} zł`;
+            }
+        }
+    </script>
+</body>
+</html>
