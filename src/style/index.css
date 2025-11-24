@@ -126,7 +126,7 @@ button,
   text-decoration: none;
 }
 
-.primaryBtn, .cta { background-color: var(--fourth-color) !important; color: var(--white) !important; }
+.primaryBtn, .cta { text-align: center; background-color: var(--fourth-color) !important; color: var(--white) !important; }
 
 button:hover,
 button:focus,
@@ -192,8 +192,9 @@ button:focus,
 .joinUs ul { width: 100%; }
 .formField, .formLabel, .agreementContainer { width: 100%; }
 
+
+
 .donate-form { display: flex; flex-direction: column; align-items: flex-end; width: 80vw; }
-.donate .agreement { margin: 10px auto;}
 .amounts { display: flex; flex-wrap: nowrap; justify-content: space-around; margin: 10px 0;}
 
 form { max-width: 800px; }
@@ -204,8 +205,8 @@ form { max-width: 800px; }
   width: 100%; height: auto;
 }
 .formField#content { display: flex; height: 5rem; align-items: flex-end; }
-.agreement { font-size: clamp(8px, 0.85vh, 1.2vw); width: fit-content; margin: 5px var(--margin-big) 5px 0; }
-.agreementContainer { display: flex; flex-wrap: nowrap; justify-content: space-between; margin: 5px 0; }
+.agreement { font-size: clamp(10px, 0.7rem, 1.2vh); width: fit-content; }
+.agreementContainer { display: flex; flex-wrap: nowrap; justify-content: left; margin: 5px 0; }
 .form-container { height: min-content; margin-top: 0; width: max(320px, 20vw); }
 .form-container input[type="checkbox"] { inline-size: 20px; block-size: 20px; margin: auto 5px; color: var(--first-color); }
 .buttonContainer { display: flex; justify-content: flex-end; width: 100%; margin-bottom: 12px; }
@@ -294,9 +295,7 @@ a.mailto { color: var(--second-color); margin: 0; }
   .side-button { display: none; }
   .foundation p, .foundation a {font-size: 1rem;}
   .foundationLogoContainer {display: none; width: 0}
-  .amounts button, a.joinUsButton, a.donateButton { font-size: 14px; padding: 12px 16px; }
-  .amounts button:first-of-type { margin-left: 0; }
-  .amounts button:last-of-type { margin-right: 0; }
+  .amounts button, a.joinUsButton, a.donateButton { font-size: 14px; padding: 12px 16px; margin: 0 }
 }
 @media (min-width: 769px) {
   .film { max-height: 36vh; }
