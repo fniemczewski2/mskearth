@@ -19,7 +19,7 @@ export default async function handler(req, res) {
   if (allowedOrigins.includes(origin) || origin?.includes('google.com')) {
     res.setHeader('Access-Control-Allow-Origin', origin);
   } else {
-    res.setHeader('Access-Control-Allow-Origin', 'https://msk.earth');
+    res.setHeader('Access-Control-Allow-Origin', 'https://www.msk.earth');
   }
 
   res.setHeader('Access-Control-Allow-Credentials', 'true');
@@ -51,7 +51,7 @@ export default async function handler(req, res) {
 
     const unitAmount = Math.round(parsed * 100);
 
-    console.log(`💰 Creating Stripe session: ${amount} PLN for ${email}`);
+    console.log(`Creating Stripe session: ${amount} PLN for ${email}`);
 
     const session = await stripe.checkout.sessions.create({
       mode: "payment",
@@ -69,8 +69,8 @@ export default async function handler(req, res) {
       }],
       customer_email: email,
       locale: locale || "auto",
-      success_url: `${process.env.SITE_URL || 'https://msk.earth'}/donate/success`,
-      cancel_url: `${process.env.SITE_URL || 'https://msk.earth'}/donate/cancel`,
+      success_url: `${process.env.SITE_URL || 'https://www.msk.earth'}/donate/success`,
+      cancel_url: `${process.env.SITE_URL || 'https://www.msk.earth'}/donate/cancel`,
       metadata: { 
         donor_name: name || "", 
         donor_email: email, 
