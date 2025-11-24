@@ -1,0 +1,281 @@
+/* Donation Progress Section */
+.donate {
+    max-width: 768px;
+}
+.progress-stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+  text-align: center;
+  margin-top: 10px;
+}
+
+.stat-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.stat-value {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--second-color);
+  line-height: 1.2;
+}
+
+.stat-label {
+  font-size: 0.875rem;
+  color: var(--second-color);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* Progress Bar */
+.progress-bar-container {
+  position: relative;
+  width: 100%;
+  height: 32px;
+  background-color: var(--white);
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.3);
+  margin-bottom: 1rem;
+}
+
+.progress-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--first-color) 0%, var(--second-color) 100%);
+  border-radius: 16px;
+  transition: width 0.6s ease-in-out;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding-right: 0.75rem;
+  position: relative;
+  box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3);
+}
+
+.progress-percentage {
+  font-weight: 700;
+  color: white;
+  font-size: 0.875rem;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+  z-index: 1;
+  position: relative;
+}
+
+/* Custom Amount Input */
+.custom-amount-container {
+  margin-bottom: 1rem;
+  animation: slideDown 0.3s ease-out;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.input-with-suffix {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.input-with-suffix input {
+  padding-right: 3rem;
+}
+
+.input-suffix {
+  position: absolute;
+  right: 1rem;
+  color: #64748b;
+  font-weight: 600;
+  pointer-events: none;
+}
+
+/* Amount Buttons Enhancement */
+.amounts {
+ display: flex;
+ gap: 1rem;
+}
+
+.amounts button {
+  padding: 0.875rem 1rem;
+  background-color: var(--white);
+  font-weight: 600;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  color: var(--second-color);
+  flex-direction: column;
+  justify-content: center;
+  flex: 1
+}
+
+.amount {
+    font-size: 1.5rem;
+    min-width: 64px;
+}
+
+.desc {
+    font-size: 0.7rem;
+}
+
+.amounts button:hover, .amounts button.active {
+  background-color: var(--second-color);
+  color: white;
+}
+
+.amounts button:focus {
+  outline: none;
+  color: white;
+}
+
+/* Primary Button Enhancement */
+.buttonContainer .primaryBtn {
+  width: 100%;
+  padding: 1rem 1.5rem;
+  font-size: 1.125rem;
+  font-weight: 700;
+  background: linear-gradient(135deg, var(--first-color) 0%, var(--second-color) 100%);
+  border: none;
+  border-radius: 8px;
+  color: white;
+  cursor: pointer;
+  justify-items: center;
+  text-align: center;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 12px #cccccc;
+  position: relative;
+  overflow: hidden;
+}
+
+.primaryBtn p {
+    margin: 0 auto;
+}
+
+.buttonContainer .primaryBtn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    #cccccc,
+    transparent
+  );
+  transition: left 0.5s ease;
+}
+
+.buttonContainer .primaryBtn:hover::before {
+  left: 100%;
+}
+
+/* Trust Indicators */
+.trust-indicators {
+  display: flex;
+  justify-content: space-around;
+  gap: 0.5rem;
+}
+
+.trust-text {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+  color: var(--second-color);
+  margin: 0;
+}
+
+.trust-text i {
+  color: var(--first-color);
+  font-size: 1.125rem;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+
+    .progress-stats {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .progress-stats .stat-item:last-of-type {
+        display: none;
+    }
+
+
+    .amounts {
+        flex-direction: column;
+    }
+
+    .amounts button {
+        flex-direction: row;
+        width: 100%;
+    }
+
+    .amount {
+        font-size: 1rem;
+        width: fit-content;
+    }
+    .desc {
+        font-size: 0.7rem;
+    }
+
+
+  .stat-value {
+    font-size: 1.25rem;
+  }
+
+  .amounts {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .progress-bar-container {
+    height: 28px;
+  }
+
+  .progress-percentage {
+    font-size: 0.75rem;
+  }
+  .trust-indicators {
+    flex-direction: column;
+  }
+}
+
+@media (max-width: 480px) {
+  .amounts {
+    grid-template-columns: 1fr;
+  }
+
+  .stat-value {
+    font-size: 1.125rem;
+  }
+
+  .buttonContainer .primaryBtn {
+    font-size: 1rem;
+    padding: 0.875rem 1.25rem;
+  }
+}
+
+/* Accessibility - Screen Reader Only */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}

@@ -234,7 +234,7 @@ export function LocalContactsCMS() {
       facebook: row.facebook || "",
       phone: row.phone || "",
       email: row.email || "",
-      city: cities.find((c) => c.name === row.city)?.id || "",
+      city: row.city || "",
     });
   };
   const cancelEdit = () => { setEditingId(null); setForm({ name: "", facebook: "", phone: "", email: "", city: "" }); };
@@ -242,7 +242,7 @@ export function LocalContactsCMS() {
   async function handleSubmit(e) {
     e.preventDefault(); setSaving(true); setErr("");
     try {
-      const payload = { ...form, city: form.city || null };
+      const payload = { ...form };
       if (editingId) await updateLocalContact(editingId, payload);
       else await createLocalContact(payload);
       await load(); cancelEdit();
@@ -320,7 +320,7 @@ export function LocalContactsCMS() {
             <select className="cms-input" value={form.city || ""} onChange={(e) => setForm((f) => ({ ...f, city: e.target.value }))}>
               <option value="">— wybierz —</option>
               {cities.map((c) => (
-                <option key={c.id} value={c.id}>{c.name}</option>
+                <option key={c.id} value={c.name}>{c.name}</option>
               ))}
             </select>
           </label>
