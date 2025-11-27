@@ -41,7 +41,7 @@
         "meetings": "Meetings: ",
         "contactPeople": "Contact People: ",
         "error": "Unfortunately, we do not yet have a local group in this voivodeship. We encourage you to start one.",
-        "content": ["Start a new group", "Is there no MSK group in your area?", "You can start a new one – don't worry, we'll help you with everything.", "Thanks to you, MSK will be able to reach a new place and new people!", "Write to us at", "Instagram", "You can also contact us directly", "Check"]
+        "content": ["Start a new group", "Is there no MSK group in your area?", "You can start a new one – don't worry, we'll help you with everything.", "Thanks to you, MSK will be able to reach a new place and new people!", "Text us at", "Instagram", "You can also contact us directly", "Check"]
       },
       "foundation": {
         "address": "Address: ",

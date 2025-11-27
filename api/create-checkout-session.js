@@ -11,7 +11,8 @@ export default async function handler(req, res) {
     'https://www.msk.earth',
     'https://fpmsk.org.pl',
     'https://www.fpmsk.org.pl',
-    'https://sites.google.com'
+    'https://sites.google.com',
+    'http://localhost:5173',
   ];
 
   const origin = req.headers.origin;

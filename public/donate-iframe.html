@@ -495,7 +495,7 @@
                        placeholder="Anna"
                        autocomplete="name">
 
-                <label class="formLabel" for="donor-email">E-mail:</label>
+                <label class="formLabel" for="donor-email">E-mail: <span style="color: #ef4444;">*</span></label>
                 <input type="email" 
                        id="donor-email" 
                        class="formField"
@@ -512,7 +512,15 @@
                            id="consent" 
                            required>
                     <label for="consent" class="agreement">
-                        Wyrażam zgodę na przetwarzanie moich danych osobowych w celu realizacji darowizny.
+                        <span style="color: #ef4444;">*</span> Wyrażam zgodę na przetwarzanie moich danych osobowych w celu realizacji darowizny.
+                    </label>
+                </div>
+
+                <div class="agreementContainer">
+                    <input type="checkbox" 
+                           id="newsletter">
+                    <label for="newsletter" class="agreement">
+                        Wyrażam zgodę na wysyłanie mi informacji o działalności fundacji na podany adres email.
                     </label>
                 </div>
 
@@ -544,10 +552,10 @@
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
-        // Configuration - ZMIEŃ TO NA SWOJE WARTOŚCI
+        // Configuration
         const SUPABASE_URL = 'https://qhgyxyxnatbcxzclwisj.supabase.co';
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFoZ3l4eXhuYXRiY3h6Y2x3aXNqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk3MTMyMTksImV4cCI6MjA3NTI4OTIxOX0.Nu3ycNrfdWEP9D8A7ogTqPtavSmRkTSjYuRERYBv-uo';
-        const API_URL = 'https://www.msk.earth/api'; // Twój API URL
+        const API_URL = 'https://www.msk.earth/api';
 
         // Initialize Supabase client
         const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
@@ -566,7 +574,6 @@
         // Load donation stats
         async function loadDonationStats() {
             try {
-                // Fetch from Supabase
                 const { data: donations, error } = await supabase
                     .from('donations')
                     .select('amount, donor_email')
@@ -589,7 +596,6 @@
                 updateProgress(currentAmount, goalAmount, donorsCount);
             } catch (error) {
                 console.error('Error loading stats:', error);
-                // Use defaults
                 updateProgress(0, 10000, 0);
             }
         }
@@ -700,6 +706,7 @@
 
             const name = document.getElementById('donor-name').value;
             const email = document.getElementById('donor-email').value;
+            const newsletter = document.getElementById('newsletter').checked;
             const finalAmount = showCustom ? 
                 parseFloat(document.getElementById('custom-amount').value) : 
                 selectedAmount;
@@ -710,6 +717,7 @@
 
             // Disable button and show loading
             submitBtn.disabled = true;
+            const originalText = submitText.textContent;
             submitText.innerHTML = '<span class="spinner"></span> Przekierowywanie...';
             errorMsg.style.display = 'none';
 
@@ -722,6 +730,7 @@
                         amount: finalAmount,
                         name: name || '',
                         email: email,
+                        newsletter: newsletter,
                         locale: 'pl',
                         provider: 'stripe'
                     })
@@ -739,6 +748,7 @@
                         amount: finalAmount,
                         donor_name: name || 'Anonymous',
                         donor_email: email,
+                        newsletter: newsletter,
                         status: 'pending',
                         stripe_session_id: data.sessionId,
                         currency: 'PLN',
@@ -746,18 +756,43 @@
                     });
                 } catch (dbError) {
                     console.error('DB error:', dbError);
-                    // Continue anyway
                 }
 
-                // Redirect to Stripe
-                window.location.href = data.url;
+                // Redirect to Stripe - FIXED for iframe compatibility
+                try {
+                    if (window.top && window.top !== window) {
+                        window.top.location.href = data.url;
+                    } else {
+                        window.location.href = data.url;
+                    }
+                } catch (e) {
+                    console.warn('Top redirect blocked, trying parent:', e);
+                    try {
+                        if (window.parent && window.parent !== window) {
+                            window.parent.location.href = data.url;
+                        } else {
+                            window.location.href = data.url;
+                        }
+                    } catch (e2) {
+                        console.warn('Parent redirect blocked, opening new window:', e2);
+                        const newWindow = window.open(data.url, '_blank');
+                        if (!newWindow) {
+                            throw new Error('Popup zablokowany. Proszę zezwolić na wyskakujące okna dla tej strony.');
+                        }
+                        submitText.textContent = 'Otwarto okno płatności';
+                        setTimeout(() => {
+                            submitBtn.disabled = false;
+                            submitText.textContent = originalText;
+                        }, 3000);
+                    }
+                }
 
             } catch (error) {
                 console.error('Error:', error);
-                errorMsg.textContent = error.message || 'Wystąpił błąd po stronie serwera';
+                errorMsg.textContent = error.message || 'Wystąpił błąd. Spróbuj ponownie.';
                 errorMsg.style.display = 'block';
                 submitBtn.disabled = false;
-                submitText.textContent = `Wpłać ${formatAmount(finalAmount)} zł`;
+                submitText.textContent = originalText;
             }
         }
     </script>
