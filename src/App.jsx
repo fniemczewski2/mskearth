@@ -15,6 +15,7 @@ import AdminPanel from './pages/admin/adminPanel.jsx';
 import SideButtons from './components/sideButtons.jsx';
 import CookieConsent from './components/cookies.jsx';
 import './style/index.css';
+import ThankYou from './pages/thankyou.jsx';
 
 const LANGS = ['pl', 'en'];
 const DEFAULT_LANG = 'pl';
@@ -76,6 +77,7 @@ export default function App() {
           <Route path="/fundacja" element={<Foundation />} />
           <Route path="/kontakt" element={<Contact />} />
           <Route path="/aktualnosci/:id" element={<ArticlePage articles={articles} />} />
+          <Route path="/dziekujemy" element={<ThankYou />} />
           <Route path="*" element={<Navigate to="." replace />} />
       </Routes>
 

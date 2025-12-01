@@ -549,7 +549,6 @@
             </div>
         </aside>
     </div>
-
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
         // Configuration
@@ -571,31 +570,59 @@
             setupForm();
         });
 
-        // Load donation stats
+        // Load donation stats - FIXED
         async function loadDonationStats() {
             try {
+                
                 const { data: donations, error } = await supabase
                     .from('donations')
-                    .select('amount, donor_email')
-                    .eq('status', 'completed');
+                    .select('amount, donor_email, status');
 
-                if (error) throw error;
+                if (error) {
+                    console.error('Supabase error:', error);
+                    throw error;
+                }
 
-                const currentAmount = donations.reduce((sum, d) => sum + (d.amount || 0), 0);
-                const donorsCount = new Set(donations.map(d => d.donor_email).filter(Boolean)).size;
+                const completedDonations = donations.filter(d => 
+                    d.status === 'completed' || 
+                    d.status === 'paid' || 
+                    d.status === 'succeeded'
+                );
+                const currentAmount = completedDonations.reduce((sum, d) => {
+                    const amount = parseFloat(d.amount) || 0;
+                    return sum + amount;
+                }, 0);
 
-                const { data: settings } = await supabase
-                    .from('fundraising_settings')
-                    .select('goal_amount')
-                    .eq('active', true)
-                    .limit(1)
-                    .single();
+                const donorsCount = new Set(
+                    completedDonations
+                        .map(d => d.donor_email)
+                        .filter(email => email && email.trim() !== '')
+                ).size;
 
-                const goalAmount = settings?.goal_amount || 10000;
+                let goalAmount = 10000; // Default goal
+                
+                try {
+                    const { data: settings, error: settingsError } = await supabase
+                        .from('fundraising_settings')
+                        .select('goal_amount')
+                        .eq('active', true)
+                        .maybeSingle(); // Use maybeSingle instead of single
+
+                    if (settingsError) {
+                        console.warn('Settings error:', settingsError);
+                    }
+
+                    if (settings && settings.goal_amount) {
+                        goalAmount = parseFloat(settings.goal_amount) || 10000;
+                    }
+                } catch (settingsErr) {
+                    console.warn('Could not load settings, using default goal:', settingsErr);
+                }
 
                 updateProgress(currentAmount, goalAmount, donorsCount);
             } catch (error) {
                 console.error('Error loading stats:', error);
+                // Show error but still display the form
                 updateProgress(0, 10000, 0);
             }
         }
@@ -700,7 +727,7 @@
             validateForm();
         }
 
-        // Handle form submission
+        // Handle form submission - FIXED
         async function handleSubmit(e) {
             e.preventDefault();
 
@@ -741,24 +768,34 @@
                 if (!response.ok || !data.url) {
                     throw new Error(data.error || 'Nie udało się utworzyć płatności');
                 }
-
-                // Save to Supabase
                 try {
-                    await supabase.from('donations').insert({
-                        amount: finalAmount,
-                        donor_name: name || 'Anonymous',
-                        donor_email: email,
-                        newsletter: newsletter,
-                        status: 'pending',
-                        stripe_session_id: data.sessionId,
+                    const donationData = {
+                        amount: finalAmount.toString(), 
                         currency: 'PLN',
+                        donor_name: name || null,
+                        donor_email: email || null,
+                        status: 'pending',
+                        stripe_session_id: data.sessionId || null,
+                        stripe_payment_intent_id: null,
+                        newsletter: newsletter || null,
                         created_at: new Date().toISOString()
-                    });
+                    };
+
+                    const { data: inserted, error: dbError } = await supabase
+                        .from('donations')
+                        .insert(donationData)
+                        .select()
+                        .single();
+
+                    if (dbError) {
+                        console.error('DB error:', dbError);
+                    } 
                 } catch (dbError) {
                     console.error('DB error:', dbError);
+                    // Don't fail the whole process if DB insert fails
                 }
 
-                // Redirect to Stripe - FIXED for iframe compatibility
+                // Redirect to Stripe
                 try {
                     if (window.top && window.top !== window) {
                         window.top.location.href = data.url;

@@ -6,7 +6,7 @@ import { supabase } from '../supabaseClient';
  * @returns {Object} { goalAmount, currentAmount, donorsCount, loading, error }
  */
 export function useDonationStats() {
-  const [goalAmount, setGoalAmount] = useState(10000); // Default: 10,000 zł
+  const [goalAmount, setGoalAmount] = useState(10000);
   const [currentAmount, setCurrentAmount] = useState(0);
   const [donorsCount, setDonorsCount] = useState(0);
   const [loading, setLoading] = useState(true);
@@ -20,39 +20,46 @@ export function useDonationStats() {
         setLoading(true);
         setError(null);
         
-        // Fetch all successful donations from Supabase
         const { data: donations, error: donationsError } = await supabase
           .from('donations')
-          .select('amount, donor_email, created_at')
-          .eq('status', 'completed');
+          .select('amount, donor_email, status');
 
         if (donationsError) throw donationsError;
 
         if (active && donations) {
-          // Calculate total amount
-          const total = donations.reduce((sum, d) => sum + (d.amount || 0), 0);
+          const completedDonations = donations.filter(d => 
+            d.status === 'completed' || 
+            d.status === 'paid' || 
+            d.status === 'succeeded'
+          );
+
+
+          const total = completedDonations.reduce((sum, d) => {
+            const amount = typeof d.amount === 'string' ? parseFloat(d.amount) : d.amount;
+            return sum + (amount || 0);
+          }, 0);
           
-          // Count unique donors by email
           const uniqueDonors = new Set(
-            donations
+            completedDonations
               .map(d => d.donor_email)
-              .filter(Boolean) // Remove null/undefined emails
+              .filter(email => email && email !== null)
           ).size;
           
           setCurrentAmount(total);
           setDonorsCount(uniqueDonors);
         }
+        try {
+          const { data: settings, error: settingsError } = await supabase
+            .from('fundraising_settings')
+            .select('goal_amount')
+            .eq('active', true)
+            .maybeSingle(); 
 
-        // Fetch current fundraising goal
-        const { data: settings, error: settingsError } = await supabase
-          .from('fundraising_settings')
-          .select('goal_amount')
-          .eq('active', true)
-          .limit(1)
-          .single();
-
-        if (!settingsError && settings && active) {
-          setGoalAmount(settings.goal_amount || 10000);
+          if (!settingsError && settings?.goal_amount && active) {
+            setGoalAmount(parseFloat(settings.goal_amount) || 10000);
+          }
+        } catch (settingsErr) {
+          console.warn('Could not load settings, using default goal');
         }
 
       } catch (e) {
@@ -70,7 +77,6 @@ export function useDonationStats() {
     // Initial fetch
     fetchDonationStats();
 
-    // Set up real-time updates
     const channel = supabase
       .channel('donations_realtime')
       .on(
@@ -79,10 +85,8 @@ export function useDonationStats() {
           event: '*', // Listen to INSERT, UPDATE, DELETE
           schema: 'public',
           table: 'donations',
-          filter: 'status=eq.completed' // Only trigger on completed donations
         },
         (payload) => {
-          console.log('Donation update received:', payload);
           if (active) {
             fetchDonationStats();
           }

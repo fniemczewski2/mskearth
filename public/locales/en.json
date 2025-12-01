@@ -150,6 +150,25 @@
           { "label": "Contact", "link": "/:lang/kontakt" }
         ]
       },
+      "thankyou": {
+        "title": "Thank you for your support!",
+        "subtitle": "Your donation makes a huge difference to our work.",
+        "confirmation": "Payment confirmation has been sent to your email address.",
+        "description": [
+          "Thanks to you, we can continue climate education in schools and organize climate action.",
+          "Your support helps us reach young people and build a movement for climate justice."
+        ],
+        "supportTitle": "It's a huge support",
+        "shareTitle": "Share with others",
+        "shareSubtitle": "Help us reach more people",
+        "shareText": "I'm supporting Youth Climate Strike!",
+        "nextSteps": "What's next?",
+        "step1": "Check your email - you'll receive payment confirmation",
+        "step2": "Follow us on social media",
+        "step3": "Become a volunteer or join a local group",
+        "backHome": "Back to homepage",
+        "getInvolved": "Learn more"
+      },
       "paths": [
         {
           "id": "dolnośląskie",

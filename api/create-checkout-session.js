@@ -52,8 +52,6 @@ export default async function handler(req, res) {
 
     const unitAmount = Math.round(parsed * 100);
 
-    console.log(`Creating Stripe session: ${amount} PLN for ${email}`);
-
     const session = await stripe.checkout.sessions.create({
       mode: "payment",
       currency: "pln",
@@ -79,15 +77,13 @@ export default async function handler(req, res) {
       },
     });
 
-    console.log(`✅ Session created: ${session.id}`);
-
     return res.status(200).json({ 
       url: session.url,
       sessionId: session.id
     });
 
   } catch (err) {
-    console.error("❌ Stripe error:", err);
+    console.error("Stripe error:", err);
     
     return res.status(500).json({ 
       error: "Błąd serwera podczas tworzenia płatności.",

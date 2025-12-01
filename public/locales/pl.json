@@ -149,6 +149,25 @@
           { "label": "Kontakt", "link": "/:lang/kontakt" }
         ]
       },
+      "thankyou": {
+        "title": "Dziękujemy za wsparcie!",
+        "subtitle": "Twoja darowizna ma ogromne znaczenie dla naszej działalności.",
+        "confirmation": "Potwierdzenie płatności zostało wysłane na Twój adres email.",
+        "description": [
+          "Dzięki Tobie możemy kontynuować edukację klimatyczną w szkołach i organizować działania na rzecz klimatu.",
+          "Twoje wsparcie pomaga nam docierać do młodych ludzi i budować ruch na rzecz sprawiedliwości klimatycznej."
+        ],
+        "supportTitle": "To ogromne wsparcie",
+        "shareTitle": "Podziel się z innymi",
+        "shareSubtitle": "Pomóż nam dotrzeć do większej liczby osób",
+        "shareText": "Wspieram Młodzieżowy Strajk Klimatyczny!",
+        "nextSteps": "Co dalej?",
+        "step1": "Sprawdź swoją skrzynkę email - otrzymasz potwierdzenie płatności",
+        "step2": "Obserwuj nas w mediach społecznościowych",
+        "step3": "Zostań wolontariuszem lub dołącz do lokalnej grupy",
+        "backHome": "Wróć do strony głównej",
+        "getInvolved": "Dowiedz się więcej"
+      },
       "paths": [
         {
           "id": "dolnośląskie",

@@ -1691,4 +1691,24 @@ footer h2 {
   }
 }
 
+.thankyou {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  padding: 20px 5px;
+  min-height: 80vh;
+}
 
+.thankyou > aside {
+  margin: 5px 0;
+}
+
+.share-buttons {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 20px;
+  flex-wrap: wrap;
+  margin: 20px 0 10px 0;
+}

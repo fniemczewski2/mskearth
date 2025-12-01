@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useLocation } from "react-router-dom";
 import { supabase } from "../services/supabaseClient";
-import { useDonationStats } from "../services/db/donationStats"; // Import the custom hook
+import { useDonationStats } from "../services/db/donationStats";
 import "../style/donate.css"
 
 const LOCALE_CACHE = new Map();
@@ -12,7 +12,6 @@ export default function DonateStripe() {
 
   const [t, setT] = useState({ donate: {} });
   
-  // Use custom hook for donation stats - automatically fetches and updates in real-time
   const { goalAmount, currentAmount, donorsCount, loading } = useDonationStats();
 
   // Translation loading
@@ -31,7 +30,7 @@ export default function DonateStripe() {
             data = text ? JSON.parse(text) : {};
           } catch (parseError) {
             console.error("JSON parse error:", parseError);
-            throw new Error(t.donate?.createPaymentFailed || "Nie udało się utworzyć płatności.");
+            data = { donate: {} };
           }
           LOCALE_CACHE.set(language, data);
           if (active) setT(data);
@@ -46,14 +45,19 @@ export default function DonateStripe() {
     };
   }, [language]);
 
-  const amounts = useMemo(() => [{amount: 70, desc: "godzina warsztatu dla\u00A01\u00A0klasy"}, {amount: 130, desc: "dzień warsztatów dla\u00A01\u00A0szkoły"}, {amount: 200, desc: "szkolenie osoby prowadzącej"}]);
+  const amounts = useMemo(() => [
+    { amount: 70, desc: "godzina warsztatu dla\u00A01\u00A0klasy" },
+    { amount: 130, desc: "dzień warsztatów dla\u00A01\u00A0szkoły" },
+    { amount: 200, desc: "szkolenie osoby prowadzącej" }
+  ], []);
 
-  const [amount, setAmount] = useState(amounts[1].amount); // Default to second amount (medium)
+  const [amount, setAmount] = useState(amounts[1].amount);
   const [customAmount, setCustomAmount] = useState("");
   const [showCustom, setShowCustom] = useState(false);
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [consent, setConsent] = useState(false);
+  const [newsletter, setNewsletter] = useState(false);
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState("");
 
@@ -61,7 +65,7 @@ export default function DonateStripe() {
   
   // Use custom amount if provided, otherwise use selected amount
   const finalAmount = showCustom && customAmount ? parseFloat(customAmount) : amount;
-  const canPay = Boolean(finalAmount > 0 && consent && emailValid && !busy);
+  const canPay = Boolean(finalAmount > 0 && consent && emailValid && email && !busy);
 
   // Calculate progress percentage
   const progressPercentage = Math.min((currentAmount / goalAmount) * 100, 100);
@@ -73,6 +77,15 @@ export default function DonateStripe() {
     setErr("");
 
     try {
+      console.log('Creating checkout session...');
+      const isInIframe = window.self !== window.top;
+      const successUrl = isInIframe 
+        ? 'https://fpmsk.org.pl/dziekujemy'
+        : `${window.location.origin}/${language}/dziekujemy`;
+      const cancelUrl = isInIframe
+        ? 'https://fpmsk.org.pl/donate'
+        : `${window.location.origin}/${language}/wesprzyj`;
+
       // Create Stripe checkout session
       const res = await fetch("/api/create-checkout-session", {
         method: "POST",
@@ -81,38 +94,52 @@ export default function DonateStripe() {
           amount: finalAmount,
           name: name || "",
           email: email || "",
+          newsletter: newsletter,
           locale: navigator.language || language || "pl",
           provider: "stripe",
+          successUrl: successUrl, 
+          cancelUrl: cancelUrl,   
         }),
       });
 
       const data = await res.json();
+      console.log('API response:', data);
+
       if (!res.ok || !data?.url) {
         throw new Error(data?.error || t.donate?.createPaymentFailed || "Nie udało się utworzyć płatności.");
       }
 
-      // Save pending donation to Supabase
-      // (Will be updated to 'completed' via webhook after successful payment)
-      const { error: insertError } = await supabase
-        .from('donations')
-        .insert({
-          amount: finalAmount,
-          donor_name: name || 'Anonymous',
-          donor_email: email,
-          status: 'pending',
-          stripe_session_id: data.sessionId, // Store session ID for webhook
+      // Save pending donation
+      try {
+        const donationData = {
+          amount: finalAmount.toString(),
           currency: 'PLN',
+          donor_name: name || null,
+          donor_email: email || null,
+          status: 'pending',
+          stripe_session_id: data.sessionId || null,
+          stripe_payment_intent_id: null,
+          newsletter: newsletter || null,
           created_at: new Date().toISOString()
-        });
+        };
 
-      if (insertError) {
-        console.error('Error saving donation to database:', insertError);
-        // Continue anyway - webhook will handle it
+        console.log('Saving to Supabase:', donationData);
+
+        const { error: insertError } = await supabase
+          .from('donations')
+          .insert(donationData);
+
+        if (insertError) {
+          console.error('Error saving donation:', insertError);
+        }
+      } catch (dbError) {
+        console.error('DB error:', dbError);
       }
 
       // Redirect to Stripe
-      window.location = data.url;
+      window.location.href = data.url;
     } catch (e) {
+      console.error('Payment error:', e);
       setErr(e.message || t.donate?.serverError || "Wystąpił błąd po stronie serwera.");
       setBusy(false);
     }
@@ -226,7 +253,9 @@ export default function DonateStripe() {
         )}
 
         <form onSubmit={(e) => e.preventDefault()}>
-          <label className="formLabel" htmlFor="donor-name">{t.donate?.nameLabel || "Imię:"}</label>
+          <label className="formLabel" htmlFor="donor-name">
+            {t.donate?.nameLabel || "Imię:"}
+          </label>
           <input
             id="donor-name"
             value={name}
@@ -236,7 +265,9 @@ export default function DonateStripe() {
             autoComplete="name"
           />
 
-          <label className="formLabel" htmlFor="donor-email">{t.donate?.emailLabel || "E-mail:"}</label>
+          <label className="formLabel" htmlFor="donor-email">
+            {t.donate?.emailLabel || "E-mail:"} <span style={{ color: '#ef4444' }}>*</span>
+          </label>
           <input
             id="donor-email"
             value={email}
@@ -266,12 +297,24 @@ export default function DonateStripe() {
             required
           />
           <label className="agreement" htmlFor="donate-consent">
-            {t.donate?.consent || "Wyrażam zgodę na przetwarzanie moich danych osobowych w celu realizacji darowizny."}
+            <span style={{ color: '#ef4444' }}>*</span> {t.donate?.consent || "Wyrażam zgodę na przetwarzanie moich danych osobowych w celu realizacji darowizny."}
+          </label>
+        </div>
+
+        <div className="agreementContainer">
+          <input
+            id="donate-newsletter"
+            type="checkbox"
+            checked={newsletter}
+            onChange={(e) => setNewsletter(e.target.checked)}
+          />
+          <label className="agreement" htmlFor="donate-newsletter">
+            {t.donate?.newsletter || "Wyrażam zgodę na wysyłanie mi informacji o działalności fundacji na podany adres email."}
           </label>
         </div>
 
         {err && (
-          <p role="alert" className="formError" style={{ marginTop: 8 }}>
+          <p role="alert" className="formError" style={{ marginTop: 8, marginBottom: 16 }}>
             {err}
           </p>
         )}
