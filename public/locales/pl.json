@@ -51,7 +51,8 @@
         "board": "Zarząd",
         "documents": "Dokumenty",
         "financialReports": "Sprawozdania finansowe",
-        "statut": "statut"
+        "statut": "statut",
+        "childProtection": "Polityka ochrony dzieci przed skrzywdzeniem"
       },
       "contact": {
         "h1": "zapraszamy do\u00A0kontaktu!",
@@ -85,7 +86,16 @@
         "redirecting": "Przekierowywanie…",
         "createPaymentFailed": "Nie udało się utworzyć płatności.",
         "serverError": "Wystąpił błąd po stronie serwera.",
-        "currencySuffix": "zł"
+        "currencySuffix": "zł",
+          "collected": "Zebrane",
+          "goal": "Cel",
+          "donors": "Darczyńcy",
+          "newsletter": "Wyrażam zgodę na wysyłanie mi informacji o działalności fundacji na podany adres email.",
+          "customAmount": "Inna kwota",
+          "amountPlaceholder": "Wpisz kwotę",
+          "secure": "Bezpieczna płatność obsługiwana przez Stripe.",
+          "receipt": "Otrzymasz potwierdzenie na Twój adres e-mail.",
+          "descriptions": [ "Godzina warsztatu dla jednej klasy", "Dzień warsztatów dla jednej szkoły", "Szkolenie osoby prowadzącej"]
       },
       "buttons": {
         "joinUs": "Dołącz do nas",
@@ -101,8 +111,8 @@
       },
       "clock": {
         "title": "Ziemia ociepli się o 1.5°C za:",
-        "years": " lata ",
-        "days": " dni "
+        "years": "lata",
+        "days": "dni"
       },
       "news": {
         "h1": "Aktualności",

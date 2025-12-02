@@ -46,9 +46,9 @@ export default function DonateStripe() {
   }, [language]);
 
   const amounts = useMemo(() => [
-    { amount: 70, desc: "godzina warsztatu dla\u00A01\u00A0klasy" },
-    { amount: 130, desc: "dzień warsztatów dla\u00A01\u00A0szkoły" },
-    { amount: 200, desc: "szkolenie osoby prowadzącej" }
+    { id: 0, amount: 70, desc: "godzina warsztatu dla\u00A01\u00A0klasy" },
+    { id: 1, amount: 130, desc: "dzień warsztatów dla\u00A01\u00A0szkoły" },
+    { id: 2, amount: 200, desc: "szkolenie osoby prowadzącej" }
   ], []);
 
   const [amount, setAmount] = useState(amounts[1].amount);
@@ -204,7 +204,7 @@ export default function DonateStripe() {
         <div className="amounts" role="group" aria-label={t.donate?.amountsAria || "Wybierz kwotę darowizny"}>
           {amounts.map((v) => (
             <button
-              key={v.amount}
+              key={v.id}
               type="button"
               onClick={() => {
                 setAmount(v.amount);
@@ -215,7 +215,7 @@ export default function DonateStripe() {
               aria-pressed={!showCustom && amount === v.amount}
             >
               <p className="amount">{v.amount}{"\u00A0"}{currencySuffix}</p>
-              <p className="desc">{v.desc}</p>
+              <p className="desc">{t.donate?.descriptions?.[v.id] || v.desc}</p>
             </button>
           ))}
           <button

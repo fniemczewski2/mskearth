@@ -203,7 +203,7 @@ export default function Foundation() {
           </a>
         </article>
         <article>
-          <h3>{t.foundation.polityka || 'Polityka ochrony dzieci przed skrzywdzeniem'}</h3>
+          <h3>{t.foundation.childProtection|| 'Polityka ochrony dzieci przed skrzywdzeniem'}</h3>
           <a
             className="statut"
             href="/podpk.pdf"

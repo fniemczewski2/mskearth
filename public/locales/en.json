@@ -50,7 +50,8 @@
         "board": "Board",
         "documents": "Documents",
         "financialReports": "Financial Reports",
-        "statut": "Statute"
+        "statut": "Statute",
+        "childProtection": "Child Protection Policy"
       },
       "contact": {
         "h1": "Feel free to contact us!",
@@ -72,6 +73,9 @@
       },
         "donate": {
           "h2": "Support us!",
+          "collected": "Collected so far",
+          "goal": "Goal",
+          "donors": "Donors",
           "amountsAria": "Select a donation amount",
           "nameLabel": "Name:",
           "namePlaceholder": "Anna",
@@ -79,12 +83,18 @@
           "emailPlaceholder": "john@example.com",
           "invalidEmail": "Please enter a valid email address.",
           "consent": "I consent to the processing of my personal data for the purpose of making a donation.",
+          "newsletter": "I want to receive the Friends of the Youth Climate Strike Foundation newsletter.",
           "redirectNote": "You will be redirected to a secure Stripe payment page.",
           "payCta": "Donate",
           "redirecting": "Redirecting…",
           "createPaymentFailed": "Failed to create payment.",
           "serverError": "A server error occurred.",
-          "currencySuffix": "PLN"
+          "currencySuffix": "PLN",
+          "customAmount": "Other amount",
+          "amountPlaceholder": "Enter amount",
+          "secure": "Secure payment powered by Stripe.",
+          "receipt": "Payment receipt will be sent to your email.",
+          "descriptions": [ "Hour of workshop for one class", "Day of workshops for one school", "Training of the person conducting"]
         },
       "buttons": {
         "joinUs": "Join Us",
@@ -102,8 +112,8 @@
       },
       "clock": {
         "title": "Earth will warm by 1.5°C in:",
-        "years": " years ",
-        "days": " days "
+        "years": "years",
+        "days": "days"
       },
       "news": {
         "h1": "News",

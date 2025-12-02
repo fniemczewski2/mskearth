@@ -13,6 +13,7 @@ export default async function handler(req, res) {
     'https://www.fpmsk.org.pl',
     'https://sites.google.com',
     'http://localhost:5173',
+    'http://localhost:3000',
   ];
 
   const origin = req.headers.origin;
@@ -39,7 +40,25 @@ export default async function handler(req, res) {
   }
 
   try {
-    const { amount, name, email, locale } = req.body || {};
+    const { 
+      amount, 
+      name, 
+      email, 
+      locale, 
+      newsletter,
+      successUrl, 
+      cancelUrl 
+    } = req.body || {};
+    
+    console.log('Payment request received:', { 
+      amount, 
+      email, 
+      name, 
+      newsletter,
+      successUrl, 
+      cancelUrl 
+    });
+
     const parsed = Number(amount);
     
     if (!Number.isFinite(parsed) || parsed <= 0) {
@@ -51,6 +70,13 @@ export default async function handler(req, res) {
     }
 
     const unitAmount = Math.round(parsed * 100);
+    const finalSuccessUrl = successUrl || `${process.env.SITE_URL || 'https://www.msk.earth'}/pl/dziekujemy`;
+    const finalCancelUrl = cancelUrl || `${process.env.SITE_URL || 'https://www.msk.earth'}/pl/wesprzyj`;
+
+    console.log('Creating Stripe session with URLs:', {
+      success: finalSuccessUrl,
+      cancel: finalCancelUrl
+    });
 
     const session = await stripe.checkout.sessions.create({
       mode: "payment",
@@ -68,14 +94,18 @@ export default async function handler(req, res) {
       }],
       customer_email: email,
       locale: locale || "auto",
-      success_url: `${process.env.SITE_URL || 'https://www.msk.earth'}/donate/success`,
-      cancel_url: `${process.env.SITE_URL || 'https://www.msk.earth'}/donate/cancel`,
+      success_url: finalSuccessUrl,
+      cancel_url: finalCancelUrl,
       metadata: { 
         donor_name: name || "", 
-        donor_email: email, 
-        source: "mskearth-iframe" 
+        donor_email: email,
+        newsletter: newsletter ? "true" : "false", 
+        amount: parsed.toString(),
+        source: "mskearth" 
       },
     });
+
+    console.log('Stripe session created:', session.id);
 
     return res.status(200).json({ 
       url: session.url,
@@ -87,7 +117,8 @@ export default async function handler(req, res) {
     
     return res.status(500).json({ 
       error: "Błąd serwera podczas tworzenia płatności.",
-      details: process.env.NODE_ENV === 'development' ? err.message : undefined
+      message: err.message,
+      details: process.env.NODE_ENV === 'development' ? err.stack : undefined
     });
   }
 }

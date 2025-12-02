@@ -129,9 +129,10 @@ function Clock() {
           </div>
           <div className="clock-time">
             {remaining.years}
-            <span>{translations.clock?.years || ''}</span>
+            <span>&nbsp;{translations.clock?.years || ''}&nbsp;</span>
             {pad(remaining.days, 3)}
-            <span>{translations.clock?.days || ''}</span>
+            <span>&nbsp;{translations.clock?.days || ''}&nbsp;</span>
+            <br/>
             {pad(remaining.hours, 2)}
             <span>:</span>
             {pad(remaining.minutes, 2)}
