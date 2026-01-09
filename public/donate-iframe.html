@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="Content-Security-Policy" content="frame-ancestors 'self' https://sites.google.com https://*.google.com">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌱</text></svg>">
     <title>Wesprzyj MSK</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -20,6 +20,7 @@
             margin: 0;
             padding: 0;
             box-sizing: border-box;
+            font-family: 'Jost', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
         }
 
         body {
@@ -28,6 +29,15 @@
             padding: 20px;
             color: #333;
         }
+
+        p, button, label, input {
+            font-family: 'Jost', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+        }
+
+        button, button p {
+            text-transform: uppercase;
+        }
+        
 
         h2 {
             font-size: 2rem;
@@ -456,11 +466,11 @@
             <div class="amounts" role="group" aria-label="Wybierz kwotę darowizny" id="amounts-group">
                 <button type="button" class="amount-btn" data-amount="70">
                     <p class="amount">70 zł</p>
-                    <p class="desc">godzina warsztatu dla 1 klasy</p>
+                    <p class="desc">godzina warsztatu dla&nbsp;1&nbsp;klasy</p>
                 </button>
                 <button type="button" class="amount-btn active" data-amount="130">
                     <p class="amount">130 zł</p>
-                    <p class="desc">dzień warsztatów dla 1 szkoły</p>
+                    <p class="desc">dzień warsztatów dla&nbsp;1&nbsp;szkoły</p>
                 </button>
                 <button type="button" class="amount-btn" data-amount="200">
                     <p class="amount">200 zł</p>
@@ -551,17 +561,23 @@
     </div>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
-        // Configuration
-        const SUPABASE_URL = 'https://qhgyxyxnatbcxzclwisj.supabase.co';
-        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFoZ3l4eXhuYXRiY3h6Y2x3aXNqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk3MTMyMTksImV4cCI6MjA3NTI4OTIxOX0.Nu3ycNrfdWEP9D8A7ogTqPtavSmRkTSjYuRERYBv-uo';
-        const API_URL = 'https://www.msk.earth/api';
+        (function() {
+            'use strict';
+            
+            // Configuration
+            const SUPABASE_URL = 'https://qhgyxyxnatbcxzclwisj.supabase.co';
+            const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFoZ3l4eXhuYXRiY3h6Y2x3aXNqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk3MTMyMTksImV4cCI6MjA3NTI4OTIxOX0.Nu3ycNrfdWEP9D8A7ogTqPtavSmRkTSjYuRERYBv-uo';
+            const API_URL = 'https://www.msk.earth/api';
 
-        // Initialize Supabase client
-        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+            // Initialize Supabase client
+            const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-        // State
-        let selectedAmount = 130;
-        let showCustom = false;
+            // State
+            let selectedAmount = 130;
+            let showCustom = false;
+
+            // Check if we're in an iframe
+            const isInIframe = window.self !== window.top;
 
         // Initialize
         document.addEventListener('DOMContentLoaded', () => {
@@ -570,11 +586,11 @@
             setupForm();
         });
 
-        // Load donation stats - FIXED
+        // Load donation stats
         async function loadDonationStats() {
             try {
                 
-                const { data: donations, error } = await supabase
+                const { data: donations, error } = await supabaseClient
                     .from('donations')
                     .select('amount, donor_email, status');
 
@@ -602,11 +618,11 @@
                 let goalAmount = 10000; // Default goal
                 
                 try {
-                    const { data: settings, error: settingsError } = await supabase
+                    const { data: settings, error: settingsError } = await supabaseClient
                         .from('fundraising_settings')
                         .select('goal_amount')
                         .eq('active', true)
-                        .maybeSingle(); // Use maybeSingle instead of single
+                        .maybeSingle();
 
                     if (settingsError) {
                         console.warn('Settings error:', settingsError);
@@ -622,7 +638,6 @@
                 updateProgress(currentAmount, goalAmount, donorsCount);
             } catch (error) {
                 console.error('Error loading stats:', error);
-                // Show error but still display the form
                 updateProgress(0, 10000, 0);
             }
         }
@@ -727,7 +742,7 @@
             validateForm();
         }
 
-        // Handle form submission - FIXED
+        // Handle form submission with improved iframe redirect handling
         async function handleSubmit(e) {
             e.preventDefault();
 
@@ -742,7 +757,6 @@
             const submitText = document.getElementById('submit-text');
             const errorMsg = document.getElementById('error-message');
 
-            // Disable button and show loading
             submitBtn.disabled = true;
             const originalText = submitText.textContent;
             submitText.innerHTML = '<span class="spinner"></span> Przekierowywanie...';
@@ -768,6 +782,8 @@
                 if (!response.ok || !data.url) {
                     throw new Error(data.error || 'Nie udało się utworzyć płatności');
                 }
+
+                // Store donation in database
                 try {
                     const donationData = {
                         amount: finalAmount.toString(), 
@@ -781,7 +797,7 @@
                         created_at: new Date().toISOString()
                     };
 
-                    const { data: inserted, error: dbError } = await supabase
+                    const { data: inserted, error: dbError } = await supabaseClient
                         .from('donations')
                         .insert(donationData)
                         .select()
@@ -792,36 +808,29 @@
                     } 
                 } catch (dbError) {
                     console.error('DB error:', dbError);
-                    // Don't fail the whole process if DB insert fails
                 }
 
-                // Redirect to Stripe
-                try {
-                    if (window.top && window.top !== window) {
-                        window.top.location.href = data.url;
+                // IMPROVED REDIRECT LOGIC FOR IFRAMES
+                if (isInIframe) {
+                    // If in iframe, try to open in new tab/window
+                    const newWindow = window.open(data.url, '_blank');
+                    if (!newWindow || newWindow.closed || typeof newWindow.closed === 'undefined') {
+                        // Popup blocked or failed, show message
+                        errorMsg.innerHTML = 'Zablokowano wyskakujące okno. <a href="' + data.url + '" target="_blank" style="color: var(--first-color); text-decoration: underline;">Kliknij tutaj, aby otworzyć płatność</a>';
+                        errorMsg.style.display = 'block';
+                        submitBtn.disabled = false;
+                        submitText.textContent = originalText;
                     } else {
-                        window.location.href = data.url;
-                    }
-                } catch (e) {
-                    console.warn('Top redirect blocked, trying parent:', e);
-                    try {
-                        if (window.parent && window.parent !== window) {
-                            window.parent.location.href = data.url;
-                        } else {
-                            window.location.href = data.url;
-                        }
-                    } catch (e2) {
-                        console.warn('Parent redirect blocked, opening new window:', e2);
-                        const newWindow = window.open(data.url, '_blank');
-                        if (!newWindow) {
-                            throw new Error('Popup zablokowany. Proszę zezwolić na wyskakujące okna dla tej strony.');
-                        }
-                        submitText.textContent = 'Otwarto okno płatności';
+                        // Successfully opened new window
+                        submitText.textContent = 'Płatność otwarta w nowej karcie';
                         setTimeout(() => {
                             submitBtn.disabled = false;
                             submitText.textContent = originalText;
                         }, 3000);
                     }
+                } else {
+                    // Not in iframe, direct redirect
+                    window.location.href = data.url;
                 }
 
             } catch (error) {
@@ -832,6 +841,7 @@
                 submitText.textContent = originalText;
             }
         }
+        })();
     </script>
 </body>
 </html>

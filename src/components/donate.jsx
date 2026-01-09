@@ -78,13 +78,26 @@ export default function DonateStripe() {
 
     try {
       console.log('Creating checkout session...');
-      const isInIframe = window.self !== window.top;
+      
+      // Better iframe detection that works on mobile
+      let isInIframe = false;
+      try {
+        isInIframe = window.self !== window.top;
+      } catch (e) {
+        // If we can't access window.top due to cross-origin, we're definitely in an iframe
+        isInIframe = true;
+      }
+
+      // Always use absolute URLs for better mobile compatibility
+      const baseUrl = window.location.origin;
       const successUrl = isInIframe 
         ? 'https://fpmsk.org.pl/dziekujemy'
-        : `${window.location.origin}/${language}/dziekujemy`;
+        : `${baseUrl}/${language}/dziekujemy`;
       const cancelUrl = isInIframe
-        ? 'https://fpmsk.org.pl/donate'
-        : `${window.location.origin}/${language}/wesprzyj`;
+        ? 'https://fpmsk.org.pl/wesprzyj'
+        : `${baseUrl}/${language}/wesprzyj`;
+
+      console.log('Payment URLs:', { successUrl, cancelUrl, isInIframe });
 
       // Create Stripe checkout session
       const res = await fetch("/api/create-checkout-session", {
@@ -117,13 +130,10 @@ export default function DonateStripe() {
           donor_name: name || null,
           donor_email: email || null,
           status: 'pending',
-          stripe_session_id: data.sessionId || null,
+          stripe_session_id: data?.sessionId || null,
           stripe_payment_intent_id: null,
-          newsletter: newsletter || null,
-          created_at: new Date().toISOString()
+          newsletter: newsletter,
         };
-
-        console.log('Saving to Supabase:', donationData);
 
         const { error: insertError } = await supabase
           .from('donations')
@@ -131,13 +141,28 @@ export default function DonateStripe() {
 
         if (insertError) {
           console.error('Error saving donation:', insertError);
-        }
+        } 
       } catch (dbError) {
         console.error('DB error:', dbError);
       }
 
-      // Redirect to Stripe
-      window.location.href = data.url;
+      // Mobile-friendly redirect
+      // Use a small delay to ensure data is saved
+      await new Promise(resolve => setTimeout(resolve, 100));
+      
+      // For mobile browsers, especially iOS, use top-level navigation
+      if (isInIframe) {
+        // Try to break out of iframe for payment
+        try {
+          window.top.location.href = data.url;
+        } catch (e) {
+          // Fallback if top.location is blocked
+          window.location.href = data.url;
+        }
+      } else {
+        // Direct navigation for normal page loads
+        window.location.href = data.url;
+      }
     } catch (e) {
       console.error('Payment error:', e);
       setErr(e.message || t.donate?.serverError || "Wystąpił błąd po stronie serwera.");
