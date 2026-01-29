@@ -12,7 +12,7 @@ export default async function handler(req, res) {
     'https://fpmsk.org.pl',
     'https://www.fpmsk.org.pl',
     'https://sites.google.com',
-    'http://localhost:5174',
+    'http://localhost:5173',
     'http://localhost:3000',
   ];
 
@@ -48,7 +48,7 @@ export default async function handler(req, res) {
       newsletter,
       successUrl, 
       cancelUrl,
-      payment_type = 'onetime' // NEW: 'onetime' or 'recurring'
+      payment_type = 'onetime' // 'onetime' or 'recurring'
     } = req.body || {};
     
     console.log('Payment request received:', { 
@@ -102,10 +102,34 @@ export default async function handler(req, res) {
       // RECURRING PAYMENT (SUBSCRIPTION)
       console.log('Creating recurring payment session');
 
+      // IMPORTANT: Create a customer first for subscriptions
+      let customer;
+      
+      // Check if customer already exists
+      const existingCustomers = await stripe.customers.list({
+        email: email,
+        limit: 1
+      });
+
+      if (existingCustomers.data.length > 0) {
+        customer = existingCustomers.data[0];
+        console.log('Found existing customer:', customer.id);
+      } else {
+        // Create new customer
+        customer = await stripe.customers.create({
+          email: email,
+          name: name || undefined,
+          metadata: {
+            source: 'mskearth',
+            newsletter: newsletter ? 'true' : 'false'
+          }
+        });
+        console.log('Created new customer:', customer.id);
+      }
+
       // Create or get product for recurring donations
       let product;
       try {
-        // Try to find existing product
         const products = await stripe.products.list({
           limit: 1,
           active: true,
@@ -118,7 +142,6 @@ export default async function handler(req, res) {
         if (existingProduct) {
           product = existingProduct;
         } else {
-          // Create new product
           product = await stripe.products.create({
             name: 'Regularne wsparcie MSK',
             description: 'Miesięczna darowizna na cele statutowe',
@@ -129,7 +152,6 @@ export default async function handler(req, res) {
         }
       } catch (err) {
         console.error('Error finding/creating product:', err);
-        // Fallback: create new product
         product = await stripe.products.create({
           name: 'Regularne wsparcie MSK',
           description: 'Miesięczna darowizna na cele statutowe',
@@ -157,12 +179,11 @@ export default async function handler(req, res) {
       // Create subscription checkout session
       session = await stripe.checkout.sessions.create({
         mode: 'subscription',
-        currency: 'pln',
+        customer: customer.id, // Use customer ID instead of customer_email
         line_items: [{
           price: price.id,
           quantity: 1,
         }],
-        customer_email: email,
         locale: locale || 'auto',
         success_url: finalSuccessUrl,
         cancel_url: finalCancelUrl,
@@ -171,7 +192,7 @@ export default async function handler(req, res) {
           description: name ? `Regularna darowizna od ${name}` : 'Regularna darowizna',
         },
         metadata,
-        // Allow customers to update their payment method
+        // Now we can use customer_update because we have a customer
         customer_update: {
           address: 'auto',
         },
@@ -197,7 +218,7 @@ export default async function handler(req, res) {
           },
           quantity: 1,
         }],
-        customer_email: email,
+        customer_email: email, // For one-time payments, customer_email is fine
         locale: locale || 'auto',
         success_url: finalSuccessUrl,
         cancel_url: finalCancelUrl,
