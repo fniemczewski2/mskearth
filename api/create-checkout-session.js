@@ -12,7 +12,7 @@ export default async function handler(req, res) {
     'https://fpmsk.org.pl',
     'https://www.fpmsk.org.pl',
     'https://sites.google.com',
-    'http://localhost:5173',
+    'http://localhost:5174',
     'http://localhost:3000',
   ];
 
@@ -47,7 +47,8 @@ export default async function handler(req, res) {
       locale, 
       newsletter,
       successUrl, 
-      cancelUrl 
+      cancelUrl,
+      payment_type = 'onetime' // NEW: 'onetime' or 'recurring'
     } = req.body || {};
     
     console.log('Payment request received:', { 
@@ -55,6 +56,7 @@ export default async function handler(req, res) {
       email, 
       name, 
       newsletter,
+      payment_type,
       successUrl, 
       cancelUrl 
     });
@@ -69,47 +71,151 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: "Nieprawidłowy adres email." });
     }
 
+    // Validate payment_type
+    if (!['onetime', 'recurring'].includes(payment_type)) {
+      return res.status(400).json({ error: "Nieprawidłowy typ płatności." });
+    }
+
     const unitAmount = Math.round(parsed * 100);
     const finalSuccessUrl = successUrl || `${process.env.SITE_URL || 'https://www.msk.earth'}/pl/dziekujemy`;
     const finalCancelUrl = cancelUrl || `${process.env.SITE_URL || 'https://www.msk.earth'}/pl/wesprzyj`;
 
     console.log('Creating Stripe session with URLs:', {
       success: finalSuccessUrl,
-      cancel: finalCancelUrl
+      cancel: finalCancelUrl,
+      payment_type
     });
 
-    const session = await stripe.checkout.sessions.create({
-      mode: "payment",
-      currency: "pln",
-      line_items: [{
-        price_data: {
-          currency: "pln",
-          product_data: { 
-            name: "Darowizna na cele statutowe MSK", 
-            description: name ? `Darowizna od ${name}` : "Darowizna" 
-          },
-          unit_amount: unitAmount,
+    // Common metadata
+    const metadata = { 
+      donor_name: name || "", 
+      donor_email: email,
+      newsletter: newsletter ? "true" : "false", 
+      amount: parsed.toString(),
+      source: "mskearth",
+      payment_type
+    };
+
+    let session;
+
+    if (payment_type === 'recurring') {
+      // RECURRING PAYMENT (SUBSCRIPTION)
+      console.log('Creating recurring payment session');
+
+      // Create or get product for recurring donations
+      let product;
+      try {
+        // Try to find existing product
+        const products = await stripe.products.list({
+          limit: 1,
+          active: true,
+        });
+        
+        const existingProduct = products.data.find(
+          p => p.metadata?.type === 'recurring_donation'
+        );
+
+        if (existingProduct) {
+          product = existingProduct;
+        } else {
+          // Create new product
+          product = await stripe.products.create({
+            name: 'Regularne wsparcie MSK',
+            description: 'Miesięczna darowizna na cele statutowe',
+            metadata: {
+              type: 'recurring_donation'
+            }
+          });
+        }
+      } catch (err) {
+        console.error('Error finding/creating product:', err);
+        // Fallback: create new product
+        product = await stripe.products.create({
+          name: 'Regularne wsparcie MSK',
+          description: 'Miesięczna darowizna na cele statutowe',
+          metadata: {
+            type: 'recurring_donation'
+          }
+        });
+      }
+
+      // Create price for this specific amount
+      const price = await stripe.prices.create({
+        product: product.id,
+        unit_amount: unitAmount,
+        currency: 'pln',
+        recurring: {
+          interval: 'month',
+          interval_count: 1
         },
-        quantity: 1,
-      }],
-      customer_email: email,
-      locale: locale || "auto",
-      success_url: finalSuccessUrl,
-      cancel_url: finalCancelUrl,
-      metadata: { 
-        donor_name: name || "", 
-        donor_email: email,
-        newsletter: newsletter ? "true" : "false", 
-        amount: parsed.toString(),
-        source: "mskearth" 
-      },
-    });
+        metadata: {
+          amount: parsed.toString(),
+          created_for: email
+        }
+      });
 
-    console.log('Stripe session created:', session.id);
+      // Create subscription checkout session
+      session = await stripe.checkout.sessions.create({
+        mode: 'subscription',
+        currency: 'pln',
+        line_items: [{
+          price: price.id,
+          quantity: 1,
+        }],
+        customer_email: email,
+        locale: locale || 'auto',
+        success_url: finalSuccessUrl,
+        cancel_url: finalCancelUrl,
+        subscription_data: {
+          metadata,
+          description: name ? `Regularna darowizna od ${name}` : 'Regularna darowizna',
+        },
+        metadata,
+        // Allow customers to update their payment method
+        customer_update: {
+          address: 'auto',
+        },
+        // Collect billing address
+        billing_address_collection: 'auto',
+      });
+
+    } else {
+      // ONE-TIME PAYMENT
+      console.log('Creating one-time payment session');
+
+      session = await stripe.checkout.sessions.create({
+        mode: 'payment',
+        currency: 'pln',
+        line_items: [{
+          price_data: {
+            currency: 'pln',
+            product_data: { 
+              name: 'Darowizna na cele statutowe MSK', 
+              description: name ? `Darowizna od ${name}` : 'Darowizna' 
+            },
+            unit_amount: unitAmount,
+          },
+          quantity: 1,
+        }],
+        customer_email: email,
+        locale: locale || 'auto',
+        success_url: finalSuccessUrl,
+        cancel_url: finalCancelUrl,
+        payment_intent_data: {
+          metadata
+        },
+        metadata,
+        // Collect billing address for one-time payments too
+        billing_address_collection: 'auto',
+      });
+    }
+
+    console.log('Stripe session created:', session.id, 'Type:', payment_type);
 
     return res.status(200).json({ 
       url: session.url,
-      sessionId: session.id
+      sessionId: session.id,
+      payment_type
     });
 
   } catch (err) {

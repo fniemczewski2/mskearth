@@ -38,7 +38,6 @@
             text-transform: uppercase;
         }
         
-
         h2 {
             font-size: 2rem;
             font-weight: 700;
@@ -149,6 +148,61 @@
             text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
             z-index: 1;
             position: relative;
+        }
+
+        /* Payment Type Toggle */
+        .payment-type-toggle {
+            display: flex;
+            gap: 1rem;
+            background: #f8f9fa;
+            padding: 0.5rem;
+            border-radius: 12px;
+            margin-bottom: 1rem;
+        }
+
+        .payment-type-toggle button {
+            flex: 1;
+            padding: 1rem;
+            background: transparent;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            color: var(--second-color);
+        }
+
+        .payment-type-toggle button.active {
+            background: white;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .payment-type-toggle button:hover:not(.active) {
+            background: rgba(255, 255, 255, 0.5);
+        }
+
+        .recurring-info {
+            padding-bottom: 1rem;
+            border-radius: 8px;
+            display: none;
+        }
+
+        .recurring-info.active {
+            display: block;
+            animation: slideDown 0.3s ease-out;
+        }
+
+        .recurring-info p {
+            margin: 0;
+            font-size: 0.875rem;
+            color: var(--second-color);
+            line-height: 1.5;
+        }
+
+        .recurring-info i {
+            color: var(--first-color);
+            margin-right: 0.5rem;
         }
 
         /* Amount Buttons */
@@ -377,6 +431,11 @@
                 display: none;
             }
 
+            .payment-type-toggle {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+
             .amounts {
                 flex-direction: column;
             }
@@ -462,19 +521,38 @@
                 </div>
             </div>
 
+            <!-- Payment Type Toggle -->
+            <div class="payment-type-toggle">
+                <button type="button" id="onetime-btn" class="active">
+                    Jednorazowa wpłata
+                </button>
+                <button type="button" id="recurring-btn">
+                    Regularne wsparcie
+                </button>
+            </div>
+
+            <!-- Recurring Payment Info -->
+            <div class="recurring-info" id="recurring-info">
+                <p>
+                    <i class="bi bi-info-circle"></i>
+                    Twoja karta będzie automatycznie obciążana co miesiąc. 
+                    Możesz anulować subskrypcję w każdej chwili z poziomu panelu Stripe lub kontaktując się z nami.
+                </p>
+            </div>
+
             <!-- Amount Selection -->
             <div class="amounts" role="group" aria-label="Wybierz kwotę darowizny" id="amounts-group">
                 <button type="button" class="amount-btn" data-amount="70">
                     <p class="amount">70 zł</p>
-                    <p class="desc">godzina warsztatu dla&nbsp;1&nbsp;klasy</p>
+                    <p class="desc" id="desc-70">godzina warsztatu dla&nbsp;1&nbsp;klasy</p>
                 </button>
                 <button type="button" class="amount-btn active" data-amount="130">
                     <p class="amount">130 zł</p>
-                    <p class="desc">dzień warsztatów dla&nbsp;1&nbsp;szkoły</p>
+                    <p class="desc" id="desc-130">dzień warsztatów dla&nbsp;1&nbsp;szkoły</p>
                 </button>
                 <button type="button" class="amount-btn" data-amount="200">
                     <p class="amount">200 zł</p>
-                    <p class="desc">szkolenie osoby prowadzącej</p>
+                    <p class="desc" id="desc-200">szkolenie osoby prowadzącej</p>
                 </button>
                 <button type="button" class="custom-btn" id="custom-btn">
                     Inna kwota
@@ -575,6 +653,7 @@
             // State
             let selectedAmount = 130;
             let showCustom = false;
+            let isRecurring = false; // NEW: Track if recurring payment is selected
 
             // Check if we're in an iframe
             const isInIframe = window.self !== window.top;
@@ -582,9 +661,52 @@
         // Initialize
         document.addEventListener('DOMContentLoaded', () => {
             loadDonationStats();
+            setupPaymentTypeToggle(); // NEW
             setupAmountButtons();
             setupForm();
         });
+
+        // NEW: Setup payment type toggle
+        function setupPaymentTypeToggle() {
+            const onetimeBtn = document.getElementById('onetime-btn');
+            const recurringBtn = document.getElementById('recurring-btn');
+            const recurringInfo = document.getElementById('recurring-info');
+
+            onetimeBtn.addEventListener('click', () => {
+                onetimeBtn.classList.add('active');
+                recurringBtn.classList.remove('active');
+                recurringInfo.classList.remove('active');
+                isRecurring = false;
+                updateDescriptions();
+                updateSubmitButton();
+            });
+
+            recurringBtn.addEventListener('click', () => {
+                recurringBtn.classList.add('active');
+                onetimeBtn.classList.remove('active');
+                recurringInfo.classList.add('active');
+                isRecurring = true;
+                updateDescriptions();
+                updateSubmitButton();
+            });
+        }
+
+        // NEW: Update button descriptions for recurring payments
+        function updateDescriptions() {
+            const desc70 = document.getElementById('desc-70');
+            const desc130 = document.getElementById('desc-130');
+            const desc200 = document.getElementById('desc-200');
+
+            if (isRecurring) {
+                desc70.textContent = 'miesięcznie';
+                desc130.textContent = 'miesięcznie';
+                desc200.textContent = 'miesięcznie';
+            } else {
+                desc70.textContent = 'godzina warsztatu dla 1 klasy';
+                desc130.textContent = 'dzień warsztatów dla 1 szkoły';
+                desc200.textContent = 'szkolenie osoby prowadzącej';
+            }
+        }
 
         // Load donation stats
         async function loadDonationStats() {
@@ -736,8 +858,12 @@
                 parseFloat(document.getElementById('custom-amount').value) || 0 : 
                 selectedAmount;
             
-            document.getElementById('submit-text').textContent = 
-                `Wpłać ${formatAmount(finalAmount)} zł`;
+            // MODIFIED: Add different text for recurring
+            const buttonText = isRecurring 
+                ? `Wpłacaj ${formatAmount(finalAmount)} zł miesięcznie`
+                : `Wpłać ${formatAmount(finalAmount)} zł`;
+            
+            document.getElementById('submit-text').textContent = buttonText;
             
             validateForm();
         }
@@ -763,7 +889,7 @@
             errorMsg.style.display = 'none';
 
             try {
-                // Create Stripe session
+                // MODIFIED: Add payment_type parameter
                 const response = await fetch(`${API_URL}/create-checkout-session`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -773,7 +899,8 @@
                         email: email,
                         newsletter: newsletter,
                         locale: 'pl',
-                        provider: 'stripe'
+                        provider: 'stripe',
+                        payment_type: isRecurring ? 'recurring' : 'onetime' // NEW
                     })
                 });
 
@@ -794,6 +921,7 @@
                         stripe_session_id: data.sessionId || null,
                         stripe_payment_intent_id: null,
                         newsletter: newsletter || null,
+                        payment_type: isRecurring ? 'recurring' : 'onetime', // NEW
                         created_at: new Date().toISOString()
                     };
 

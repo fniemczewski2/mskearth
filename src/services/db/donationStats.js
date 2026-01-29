@@ -3,6 +3,7 @@ import { supabase } from '../supabaseClient';
 
 /**
  * Custom hook to fetch and track donation statistics in real-time
+ * Handles both one-time and recurring donations (recorded as individual donations)
  * @returns {Object} { goalAmount, currentAmount, donorsCount, loading, error }
  */
 export function useDonationStats() {
@@ -20,6 +21,7 @@ export function useDonationStats() {
         setLoading(true);
         setError(null);
         
+        // Fetch all donations (including recurring ones recorded as individual donations)
         const { data: donations, error: donationsError } = await supabase
           .from('donations')
           .select('amount, donor_email, status');
@@ -27,18 +29,20 @@ export function useDonationStats() {
         if (donationsError) throw donationsError;
 
         if (active && donations) {
+          // Filter completed donations
           const completedDonations = donations.filter(d => 
             d.status === 'completed' || 
             d.status === 'paid' || 
             d.status === 'succeeded'
           );
 
-
+          // Calculate total amount (includes both one-time and recurring donations)
           const total = completedDonations.reduce((sum, d) => {
             const amount = typeof d.amount === 'string' ? parseFloat(d.amount) : d.amount;
             return sum + (amount || 0);
           }, 0);
           
+          // Count unique donors
           const uniqueDonors = new Set(
             completedDonations
               .map(d => d.donor_email)
@@ -48,6 +52,8 @@ export function useDonationStats() {
           setCurrentAmount(total);
           setDonorsCount(uniqueDonors);
         }
+
+        // Fetch goal amount from settings
         try {
           const { data: settings, error: settingsError } = await supabase
             .from('fundraising_settings')
@@ -77,6 +83,8 @@ export function useDonationStats() {
     // Initial fetch
     fetchDonationStats();
 
+    // Subscribe to real-time changes
+    // This will update stats whenever a new donation is added (one-time or recurring)
     const channel = supabase
       .channel('donations_realtime')
       .on(
@@ -87,6 +95,7 @@ export function useDonationStats() {
           table: 'donations',
         },
         (payload) => {
+          console.log('Donation table changed:', payload);
           if (active) {
             fetchDonationStats();
           }
