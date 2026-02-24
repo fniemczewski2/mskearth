@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-dark: #362E04;
+            --brand-light: #F8F2D2;
+        }
+
+        * {
+            margin: 0; padding: 0; box-sizing: border-box;
+            font-family: 'Montserrat', sans-serif;
+        }
+
+        /* Kontener 500x100 */
+        .mini-donate-widget {
+            width: clamp(300px, 100%, 1200px);
+            height: 100px;
+            background: var(--bg-dark);
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            padding: 10px 12px;
+            gap: 10px;
+            color: var(--brand-light);
+            display: flex;
+            justify-content: space-around;
+        }
+
+        /* Sekcja 1: Dane i Zgody */
+        .data-section {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            width: 40%;
+        }
+
+        .input-mini {
+            width: 100%;
+            padding: 4px 6px;
+            border: 1px solid rgba(248, 242, 210, 0.3);
+            border-radius: 4px;
+            font-size: 9px;
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--brand-light);
+            outline: none;
+        }
+
+        .agreements {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .checkbox-container {
+            display: flex;
+            align-items: flex-start;
+            gap: 4px;
+            font-size: 6px;
+            cursor: pointer;
+            line-height: 1.1;
+        }
+
+        .checkbox-container input {
+            width: 8px;
+            height: 8px;
+            accent-color: var(--brand-light);
+            cursor: pointer;
+            margin-top: 1px;
+        }
+
+        /* Sekcja 2: Typ płatności */
+        .type-toggle {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            min-width: 85px;
+        }
+
+        .type-toggle button {
+            padding: 5px;
+            font-size: 8px;
+            font-weight: 700;
+            border: 1px solid var(--brand-light);
+            border-radius: 5px;
+            background: transparent;
+            cursor: pointer;
+            text-transform: uppercase;
+            color: var(--brand-light);
+        }
+
+        .type-toggle button.active {
+            background: var(--brand-light);
+            color: var(--bg-dark);
+        }
+
+        /* Sekcja 3: Kwoty */
+        .amount-options {
+            display: flex;
+            gap: 4px;
+            flex: 1;
+        }
+
+        .amount-options button {
+            flex: 1;
+            height: 40px;
+            border: 2px solid var(--brand-light);
+            border-radius: 8px;
+            background: transparent;
+            font-weight: 800;
+            font-size: 12px;
+            color: var(--brand-light);
+            cursor: pointer;
+        }
+
+        .amount-options button.active {
+            background: var(--brand-light);
+            color: var(--bg-dark);
+        }
+
+        /* Sekcja 4: Submit */
+        .action-area {
+            min-width: 110px;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .submit-mini {
+            width: 100%;
+            padding: 10px 4px;
+            background: var(--brand-light);
+            color: var(--bg-dark);
+            border: none;
+            border-radius: 6px;
+            font-weight: 800;
+            font-size: 10px;
+            text-transform: uppercase;
+            cursor: pointer;
+        }
+
+        .submit-mini:disabled {
+            background: #5a5436;
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .recurring-badge {
+            font-size: 7px;
+            text-align: center;
+            text-transform: uppercase;
+            opacity: 0;
+            transition: 0.3s;
+        }
+        .recurring-badge.active { opacity: 0.8; }
+        .pay-container {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            width: 30%;
+        }
+    </style>
+</head>
+<body>
+
+<div class="mini-donate-widget">
+    <div class="data-section">
+        <input type="text" id="mini-name" class="input-mini" placeholder="Imię">
+        <input type="email" id="mini-email" class="input-mini" placeholder="E-mail">
+        <div class="agreements">
+            <label class="checkbox-container">
+                <input type="checkbox" id="mini-consent"> Wyrażam zgodę na przetwarzanie moich danych osobowych w celu realizacji darowizny, zgodnie z polityką prywatności.
+            </label>
+            <label class="checkbox-container">
+                <input type="checkbox" id="mini-newsletter"> Wyrażam zgodę na wysyłanie mi informacji o działalności fundacji na podany adres email.
+            </label>
+        </div>
+    </div>
+
+    <div class="type-toggle">
+        <button id="btn-once" class="active">Jednorazowo</button>
+        <button id="btn-monthly">Co miesiąc</button>
+    </div>
+
+    <div class="pay-container">
+        <div class="amount-options">
+        <button class="amt-btn" data-amount="30">30 zł</button>
+        <button class="amt-btn active" data-amount="50">50 zł</button>
+        <button class="amt-btn" data-amount="100">100 zł</button>
+        </div>
+        <button id="mini-submit" class="submit-mini" disabled>Wpłacam</button>
+    </div>
+</div>
+
+<script>
+    (function() {
+        let selectedAmount = 50;
+        let isRecurring = false;
+        const API_URL = 'https://www.msk.earth/api';
+
+        const elements = {
+            once: document.getElementById('btn-once'),
+            monthly: document.getElementById('btn-monthly'),
+            amounts: document.querySelectorAll('.amt-btn'),
+            submit: document.getElementById('mini-submit'),
+            email: document.getElementById('mini-email'),
+            name: document.getElementById('mini-name'),
+            consent: document.getElementById('mini-consent'),
+            newsletter: document.getElementById('mini-newsletter'),
+            badge: document.getElementById('badge')
+        };
+
+        function validate() {
+            const emailValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(elements.email.value);
+            const consentGiven = elements.consent.checked;
+            elements.submit.disabled = !(emailValid && consentGiven);
+        }
+
+        function updateUI() {
+            elements.submit.textContent = `Wpłacam ${selectedAmount} zł`;
+            validate();
+        }
+
+        elements.once.onclick = () => { isRecurring = false; elements.once.classList.add('active'); elements.monthly.classList.remove('active'); elements.badge.classList.remove('active'); updateUI(); };
+        elements.monthly.onclick = () => { isRecurring = true; elements.monthly.classList.add('active'); elements.once.classList.remove('active'); elements.badge.classList.add('active'); updateUI(); };
+
+        elements.amounts.forEach(btn => {
+            btn.onclick = () => {
+                elements.amounts.forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                selectedAmount = btn.dataset.amount;
+                updateUI();
+            };
+        });
+
+        [elements.email, elements.consent].forEach(el => el.onchange = validate);
+        elements.email.oninput = validate;
+
+        elements.submit.onclick = async () => {
+            elements.submit.disabled = true;
+            elements.submit.textContent = "...";
+            try {
+                const response = await fetch(`${API_URL}/create-checkout-session`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        amount: selectedAmount,
+                        name: elements.name.value,
+                        email: elements.email.value,
+                        newsletter: elements.newsletter.checked,
+                        payment_type: isRecurring ? 'recurring' : 'onetime',
+                        locale: 'pl'
+                    })
+                });
+                const data = await response.json();
+                if (data.url) window.top.location.href = data.url;
+            } catch (e) {
+                alert("Błąd.");
+                updateUI();
+            }
+        };
+
+        updateUI();
+    })();
+</script>
+</body>
+</html>
