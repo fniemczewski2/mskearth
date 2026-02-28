@@ -18,7 +18,7 @@
         /* Kontener */
         .mini-donate-widget {
             width: clamp(200px, 100%, 1200px);
-            min-height: 100px; /* Zmiana z height na min-height dla elastyczności */
+            min-height: 100px; 
             background: var(--bg-dark);
             display: flex;
             align-items: center;
@@ -57,17 +57,20 @@
             display: flex;
             align-items: flex-start;
             gap: 4px;
-            font-size: 8px;
+            font-size: 11px;
             cursor: pointer;
             line-height: 1.1;
+            margin-top: 6px;
         }
 
         .checkbox-container input {
-            width: 8px;
-            height: 8px;
+            width: 11px;
+            height: 11px;
             accent-color: var(--brand-light);
             cursor: pointer;
             margin-top: 1px;
+            border: 0;
+            outline: none;
         }
 
         /* Sekcja 2: Typ płatności */
@@ -82,12 +85,12 @@
             font-size: 16px;
             font-weight: 700;
             border: 2px solid var(--brand-light);
-            border-radius: 5px;
+            border-radius: 8px;
             background: transparent;
             cursor: pointer;
-            text-transform: uppercase;
             color: var(--brand-light);
             padding: 8px;
+            text-transform: uppercase;
         }
 
         .type-toggle button.active {
@@ -134,10 +137,9 @@
             background: var(--brand-light);
             color: var(--bg-dark);
             border: none;
-            border-radius: 6px;
+            border-radius: 8px;
             font-weight: 800;
             font-size: 18px;
-            text-transform: uppercase;
             cursor: pointer;
             padding: 8px;
         }
@@ -187,6 +189,15 @@
                 flex: 1;
                 padding: 8px;
             }
+            .type-toggle button {
+                font-size: 14px;
+            }
+            .amount-options button {
+                font-size: 16px;
+            }
+            button.submit-mini {
+                font-size: 16px;
+            }
         }
     </style>
 </head>
@@ -198,24 +209,24 @@
         <input type="email" id="mini-email" class="input-mini" placeholder="E-mail">
         <div class="agreements">
             <label class="checkbox-container">
-                <input type="checkbox" id="mini-consent"> Wyrażam zgodę na przetwarzanie moich danych osobowych w celu realizacji darowizny, zgodnie z polityką prywatności.
+                <input type="checkbox" id="mini-consent"> Wyrażam zgodę na&nbsp;przetwarzanie moich danych osobowych w&nbsp;celu realizacji darowizny, zgodnie z&nbsp;polityką prywatności.
             </label>
             <label class="checkbox-container">
-                <input type="checkbox" id="mini-newsletter"> Wyrażam zgodę na wysyłanie mi informacji o działalności fundacji na podany adres email.
+                <input type="checkbox" id="mini-newsletter"> Wyrażam zgodę na&nbsp;wysyłanie mi informacji o&nbsp;działalności fundacji na&nbsp;podany adres email.
             </label>
         </div>
     </div>
 
     <div class="type-toggle">
-        <button id="btn-once" class="active">Jednorazowo</button>
-        <button id="btn-monthly">Co miesiąc</button>
+        <button id="btn-once" class="active">jednorazowo</button>
+        <button id="btn-monthly">co&nbsp;miesiąc</button>
     </div>
 
     <div class="pay-container">
         <div class="amount-options">
-            <button class="amt-btn" data-amount="30">30 zł</button>
-            <button class="amt-btn active" data-amount="50">50 zł</button>
-            <button class="amt-btn" data-amount="100">100 zł</button>
+            <button class="amt-btn" data-amount="30">30&nbsp;zł</button>
+            <button class="amt-btn active" data-amount="50">50&nbsp;zł</button>
+            <button class="amt-btn" data-amount="100">100&nbsp;zł</button>
         </div>
         <button id="mini-submit" class="submit-mini" disabled>Wpłacam</button>
     </div>
@@ -246,7 +257,7 @@
         }
 
         function updateUI() {
-            elements.submit.textContent = `Wpłacam ${selectedAmount} zł`;
+            elements.submit.textContent = `Wpłacam\u00a0${selectedAmount} zł`;
             validate();
         }
 
