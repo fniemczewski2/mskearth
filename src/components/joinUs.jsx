@@ -142,8 +142,8 @@ export default function JoinUs() {
               <li className="joinUsActionContainer">
                 <div className="joinUsAction">
                   <p className="joinUsActionHeader">
-                    <i className="bi bi-pencil-square joinUsIcon" aria-hidden="true"></i>
-                    {t.joinUs?.filloutForm || 'Wypełnij formularz'}
+                    <i className="bi bi-play-btn-fill joinUsIcon" aria-hidden="true"></i>
+                    {t.joinUs?.filloutForm || 'Obejrzyj film'}
                   </p>
                   <a
                     className="joinUsButton"
@@ -156,44 +156,6 @@ export default function JoinUs() {
                 </div>
               </li>
             )}
-
-            {nearest && (
-              <li className="joinUsActionContainer">
-                <div className="joinUsAction heading">
-                  <p className="joinUsActionHeader">
-                    <i className="bi bi-person-video3 joinUsIcon" aria-hidden="true"></i>
-                    {t.joinUs?.meeting || 'Spotkanie online'}&nbsp;
-                  </p>
-                </div>
-                <div className="joinUsAction data">
-                  <p className="joinUsActionDetails">
-                    {formatDate(nearest.when)} {t.joinUs?.h || 'o'}&nbsp;{formatTime(nearest.when)}
-                  </p>
-                  {nearest.link && (
-                    <a
-                      className="joinUsButton"
-                      target="_blank"
-                      href={nearest.link}
-                      rel="noopener nofollow"
-                    >
-                      Link&nbsp;<i className="bi bi-box-arrow-up-right" aria-hidden="true"></i>
-                    </a>
-                  )}
-                </div>
-              </li>
-            )}
-
-            <li className="joinUsActionContainer">
-              <div className="joinUsAction">
-                <p className="joinUsActionHeader">
-                  <i className="bi bi-geo-alt joinUsIcon" aria-hidden="true"></i>
-                  {t.joinUs?.find || 'Znajdź swoją grupę'}
-                </p>
-                <Link className="joinUsButton" to={`/${language}/miasta`}>
-                  {t.joinUs?.check || 'Sprawdź'}&nbsp;<i className="bi bi-search" aria-hidden="true"></i>
-                </Link>
-              </div>
-            </li>
           </ul>
         )}
       </aside>
