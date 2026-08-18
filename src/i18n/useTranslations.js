@@ -1,12 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 
-/**
- * Wspolny hook i18n. Zastepuje szesc kopii tego samego kodu
- * (donate, newsletter, thankyou, articlePage, contact, cookies),
- * kazda z wlasnym cache i wlasna obsluga bledow.
- */
-
 export const SUPPORTED_LANGS = new Set(['pl', 'en', 'ua']);
 export const DEFAULT_LANG = 'pl';
 
@@ -17,7 +11,6 @@ export function langFromPath(pathname) {
   return SUPPORTED_LANGS.has(seg) ? seg : DEFAULT_LANG;
 }
 
-/** Deduplikuje rownolegle zadania o ten sam plik - w cache siedzi Promise. */
 export function loadLocale(lang) {
   if (!CACHE.has(lang)) {
     CACHE.set(
@@ -28,7 +21,7 @@ export function loadLocale(lang) {
           return r.json();
         })
         .catch((err) => {
-          CACHE.delete(lang); // nie utrwalamy nieudanej proby
+          CACHE.delete(lang);
           throw err;
         })
     );

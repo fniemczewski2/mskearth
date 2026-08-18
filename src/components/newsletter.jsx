@@ -2,8 +2,6 @@ import { useRef, useState } from 'react';
 
 import { useTranslations } from '../i18n/useTranslations.js';
 
-// Zapis idzie przez wlasny endpoint. Wczesniej komponent wolal API
-// ConvertKit bezposrednio z przegladarki, z kluczem API w bundlu.
 const SUBSCRIBE_URL = '/api/newsletter-subscribe';
 const REQUEST_TIMEOUT_MS = 15000;
 
@@ -66,7 +64,9 @@ export default function NewsletterForm() {
             j?.message ||
             j?.error?.message ||
             (Array.isArray(j?.errors) ? j.errors.map((x) => x?.message).filter(Boolean).join(', ') : '');
-        } catch { /* ignore parse errors */ }
+        } catch {
+          info = '';
+        }
         throw new Error(info || `HTTP ${resp.status}`);
       }
 
@@ -165,8 +165,9 @@ export default function NewsletterForm() {
           </button>
           
           {busy && (
-            <div className="loader" aria-hidden="true" role="status" aria-live="polite" aria-busy="true">
+            <div className="loader" role="status" aria-live="polite">
               <span className="spinner" aria-hidden="true" />
+              <span className="sr-only">Ładowanie…</span>
             </div>
           )}
           {status === 'error' && (

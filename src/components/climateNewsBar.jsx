@@ -14,9 +14,6 @@ const ClimateNewsBar = () => {
     const controller = new AbortController();
     let cancelled = false;
 
-    // Timeout + trzy proby z backoffem. Wczesniej fetch bez AbortSignal
-    // mogl wisiec do domyslnego limitu przegladarki, a pojedynczy blad
-    // sieci trwale chowal pasek.
     const fetchWithRetry = async (attempt = 0) => {
       try {
         const res = await fetch(API_URL, {

@@ -1,4 +1,3 @@
-
 function SocialLink({ link, icon, label }) {
     return (
       <a href={link} target="_blank" rel="noopener noreferrer" aria-label={label}>

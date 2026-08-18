@@ -1,4 +1,3 @@
-
 import { useCallback, useMemo, useRef, useState } from 'react';
 
 import ArticlesCMS from '../../components/admin/articlesCMS.jsx';
@@ -19,8 +18,6 @@ function AdminPanelNav() {
   const [formType, setFormType] = useState('articles');
   const tabRefs = useRef(new Map());
 
-  // Wzorzec ARIA Tabs wymaga, by fokus wedrowal razem z aktywna zakladka -
-  // wczesniej zostawal na starym przycisku, ktory mial juz tabIndex={-1}.
   const activate = useCallback((id) => {
     setFormType(id);
     requestAnimationFrame(() => tabRefs.current.get(id)?.focus());
@@ -129,6 +126,5 @@ function AdminPanelNav() {
     </>
   );
 }
-
 
 export default AdminPanelNav;

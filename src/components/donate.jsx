@@ -4,18 +4,6 @@ import { useDonationStats } from '../services/db/donationStats.js';
 import { useTranslations } from '../i18n/useTranslations.js';
 import '../style/donate.css';
 
-/**
- * Formularz darowizny.
- *
- * Zmiany wzgledem poprzedniej wersji:
- * - zniknal zapis do tabeli donations z przegladarki (robi to serwer
- *   kluczem service_role w /api/create-checkout-session),
- * - zniknely successUrl/cancelUrl wysylane w ciele zadania - adresy
- *   powrotu buduje serwer z listy dozwolonych hostow (open redirect),
- * - zniknely console.log z danymi darczyncy,
- * - doszla obsluga platnosci cyklicznych, ktora wczesniej istniala
- *   wylacznie w public/donate-iframe.html.
- */
 export default function DonateStripe() {
   const { t, lang } = useTranslations();
   const { goalAmount, currentAmount, donorsCount, loading } = useDonationStats();
@@ -78,7 +66,6 @@ export default function DonateStripe() {
         throw new Error(data?.error ?? t.donate?.createPaymentFailed ?? 'Nie udało się utworzyć płatności.');
       }
 
-      // Checkout musi otworzyc sie na najwyzszym poziomie okna.
       const target = window.top ?? window;
       target.location.assign(data.url);
     } catch (e) {

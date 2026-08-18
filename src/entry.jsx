@@ -7,15 +7,9 @@ import AdminPanel from './pages/admin/adminPanel.jsx';
 import RequireAdmin from './components/auth/RequireAdmin.jsx';
 import ErrorBoundary from './components/ErrorBoundary.jsx';
 import { DEFAULT_LANG } from './i18n/useTranslations.js';
+import 'bootstrap-icons/font/bootstrap-icons.css';
 import './style/index.css';
 
-/**
- * Punkt wejscia aplikacji.
- *
- * Wczesniej createRoot() siedzial na dole App.jsx, przez co ten sam plik
- * byl jednoczesnie komponentem i entrypointem, StrictMode ladowal wewnatrz
- * Routera, a panel admina wisial poza drzewem aplikacji.
- */
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
     <ErrorBoundary>

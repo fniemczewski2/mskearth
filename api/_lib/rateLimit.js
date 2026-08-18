@@ -1,12 +1,3 @@
-/**
- * Limiter zapytan.
- *
- * Jesli ustawiono UPSTASH_REDIS_REST_URL i UPSTASH_REDIS_REST_TOKEN,
- * limit jest wspoldzielony miedzy instancjami funkcji (wariant poprawny).
- * W przeciwnym razie dziala limiter in-memory: chroni przed prostym
- * zalewem z jednej instancji, ale nie przed atakiem rozproszonym.
- */
-
 const memory = new Map();
 
 async function upstash(parts) {
@@ -23,9 +14,6 @@ async function upstash(parts) {
   return data.result;
 }
 
-/**
- * @returns {Promise<boolean>} true = limit przekroczony
- */
 export async function isLimited(key, { max = 5, windowSec = 60 } = {}) {
   const safeKey = encodeURIComponent(key);
 
@@ -35,8 +23,8 @@ export async function isLimited(key, { max = 5, windowSec = 60 } = {}) {
       if (hits === 1) await upstash(['EXPIRE', safeKey, String(windowSec)]);
       return hits > max;
     }
-  } catch {
-    // Redis niedostepny - schodzimy do wariantu in-memory
+  } catch (err) {
+    void err;
   }
 
   const now = Date.now();

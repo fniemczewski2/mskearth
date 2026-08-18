@@ -8,8 +8,6 @@ import { buildReturnUrls } from './_lib/urls.js';
 import { supabaseAdmin } from './_lib/supabaseAdmin.js';
 import { isLimited, clientIp } from './_lib/rateLimit.js';
 
-// Ta sama wersja API co w stripe-webhook.js. Rozjazd wersji powoduje,
-// ze webhook dostaje obiekty o innym ksztalcie niz zaklada kod.
 export const STRIPE_API_VERSION = '2025-08-27.basil';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
@@ -63,8 +61,6 @@ export default async function handler(req, res) {
     payment_type,
   };
 
-  // Klucz idempotencji: powtorzone klikniecie w ciagu tej samej minuty
-  // nie tworzy drugiej sesji platnosci.
   const idempotencyKey = crypto
     .createHash('sha256')
     .update(`${email}:${unitAmount}:${payment_type}:${Math.floor(Date.now() / 60_000)}`)
@@ -90,9 +86,6 @@ export default async function handler(req, res) {
                 {
                   price_data: {
                     currency: 'pln',
-                    // Produkt tworzymy RAZ recznie w panelu Stripe.
-                    // Wczesniejsza wersja tworzyla nowy produkt i nowa cene
-                    // przy kazdej wplacie, zasmiecajac konto duplikatami.
                     product: process.env.STRIPE_RECURRING_PRODUCT_ID,
                     unit_amount: unitAmount,
                     recurring: { interval: 'month' },
@@ -127,8 +120,6 @@ export default async function handler(req, res) {
             { idempotencyKey }
           );
 
-    // Rekord darowizny zapisuje SERWER kluczem service_role.
-    // Przegladarka nie ma i nie moze miec dostepu do tabeli donations.
     const { error: dbError } = await supabaseAdmin.from('donations').insert({
       amount,
       currency: 'PLN',
@@ -141,8 +132,6 @@ export default async function handler(req, res) {
     });
 
     if (dbError) {
-      // Blad zapisu nie moze zablokowac platnosci - webhook i tak
-      // potwierdzi transakcje i uzupelni brakujacy rekord.
       log.error('donations.insert', dbError, { session_id: session.id });
     }
 
@@ -153,11 +142,9 @@ export default async function handler(req, res) {
       email: redact(email),
     });
 
-    // Do klienta wraca wylacznie URL. sessionId nie jest mu do niczego potrzebny.
     return res.status(200).json({ url: session.url });
   } catch (err) {
     log.error('checkout.create', err, { email: redact(email) });
-    // Komunikat ogolny - err.message potrafi ujawnic szczegoly konfiguracji Stripe.
     return res.status(500).json({ error: 'Nie udalo sie rozpoczac platnosci. Sprobuj ponownie.' });
   }
 }

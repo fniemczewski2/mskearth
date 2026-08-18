@@ -4,15 +4,6 @@ import { useTranslations } from '../i18n/useTranslations.js';
 
 const STORAGE_KEY = 'msk-cookie-consent';
 
-/**
- * Baner zgody.
- *
- * Poprzednia wersja mial wylacznie przycisk akceptacji, a zamkniecie
- * overlaya (klikniecie w tlo) zapisywalo zgode - art. 7 ust. 3 RODO wymaga,
- * by odmowa byla rownie latwa jak zgoda. Doszlo tez natywne <dialog>,
- * ktore daje przechwycenie fokusu, obsluge Escape i role="dialog"
- * bez pisania wlasnej logiki.
- */
 export default function CookieConsent() {
   const { t } = useTranslations();
   const dialogRef = useRef(null);
@@ -37,8 +28,8 @@ export default function CookieConsent() {
         STORAGE_KEY,
         JSON.stringify({ analytics, ts: new Date().toISOString(), version: 1 })
       );
-    } catch {
-      /* tryb prywatny - zapis niedostepny */
+    } catch (err) {
+      void err;
     }
     dialogRef.current?.close();
     setOpen(false);
@@ -53,7 +44,7 @@ export default function CookieConsent() {
       aria-labelledby="cookie-title"
       onCancel={(e) => {
         e.preventDefault();
-        decide(false); // Escape = tylko niezbedne, nigdy milcząca zgoda
+        decide(false);
       }}
     >
       <h2 id="cookie-title">{t.cookies?.title ?? 'Pliki cookies'}</h2>

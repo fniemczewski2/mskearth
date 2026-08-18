@@ -1,12 +1,6 @@
 import { writeFile } from 'node:fs/promises';
 import { createClient } from '@supabase/supabase-js';
 
-/**
- * Poprzednia wersja generowala adresy BEZ prefiksu jezyka (/aktualnosci),
- * podczas gdy routing wymaga /:lang/*. Kazdy taki adres renderowal strone
- * glowna - szesc roznych URL-i o identycznej tresci (duplicate content).
- */
-
 const base = 'https://msk.earth';
 const langs = ['pl', 'en'];
 const paths = ['', '/aktualnosci', '/o-nas', '/miasta', '/fundacja', '/kontakt'];

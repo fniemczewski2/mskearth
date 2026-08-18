@@ -1,12 +1,5 @@
 import DOMPurify from 'dompurify';
 
-/**
- * Sanityzacja tresci redakcyjnej przed dangerouslySetInnerHTML.
- * Domyslna konfiguracja DOMPurify blokuje skrypty, ale przepuszcza
- * <iframe>, <form>, atrybut style i linki bez rel - przy CMS-ie
- * to za malo.
- */
-
 let hookRegistered = false;
 
 function registerHook() {

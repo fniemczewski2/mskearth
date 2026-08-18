@@ -48,8 +48,9 @@ export default function Goals() {
       <h2>{t.goals_h2 || 'Nasze Cele'}</h2>
 
       {loading && (
-        <div className="loader" aria-hidden="true" role="status" aria-live="polite" aria-busy="true">
+        <div className="loader" role="status" aria-live="polite">
           <span className="spinner" aria-hidden="true"/>
+          <span className="sr-only">Ładowanie…</span>
         </div>
       )}
 

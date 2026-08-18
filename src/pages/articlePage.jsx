@@ -26,9 +26,6 @@ export default function ArticlePage() {
         if (active) setArticle(data);
       })
       .catch((err) => {
-        // Wczesniej try/catch obejmowal .then(), wiec bledy sieciowe
-        // nie byly lapane, a setLoading(false) wykonywalo sie przed
-        // rozwiazaniem obietnicy.
         console.error("Nie udalo sie pobrac artykulu:", err);
         if (active) setArticle(null);
       })
@@ -111,7 +108,6 @@ export default function ArticlePage() {
       </main>
     );
   }
-
 
   const imgs = Array.isArray(article.imgurl) ? article.imgurl : [];
   const canonical = `https://msk.earth/${language}/aktualnosci/${article.id}`;

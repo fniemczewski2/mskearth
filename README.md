@@ -1,1 +1,88 @@
-# Aplikacja internetowa MSK.EARTH
+# msk.earth
+
+Serwis Młodzieżowego Strajku Klimatycznego: aktualności, mapa miast, dane fundacji, zbiórka i newsletter.
+
+React 19 + Vite, Supabase (baza, auth, storage), Stripe przez funkcje serverless na Vercelu.
+
+## Uruchomienie lokalne
+
+```bash
+npm ci
+cp .env.example .env.local     # uzupełnij wartości
+npm run dev
+```
+
+Funkcje z katalogu `api/` nie działają pod `vite dev`. Żeby przetestować płatności lokalnie:
+
+```bash
+npx vercel dev --listen 3001   # w drugim terminalu; Vite proxuje /api na ten port
+```
+
+Webhook Stripe w developmencie:
+
+```bash
+stripe listen --forward-to localhost:3001/api/stripe-webhook
+```
+
+## Skrypty
+
+| Polecenie | Działanie |
+|---|---|
+| `npm run dev` | serwer deweloperski |
+| `npm run build` | build produkcyjny (strona główna + strony osadzeń) |
+| `npm run preview` | podgląd builda |
+| `npm run lint` | ESLint, zero tolerancji dla ostrzeżeń |
+
+## Zmienne środowiskowe
+
+Wszystko z prefiksem `VITE_` **trafia do bundla i jest publiczne**. Sekrety (`SUPABASE_SERVICE_KEY`, `STRIPE_SECRET_KEY`, `KIT_API_KEY`) ustawia się wyłącznie w Vercel → Settings → Environment Variables i nigdy nie dostają prefiksu `VITE_`.
+
+Pełna lista w `.env.example`.
+
+## Baza danych
+
+Schemat i polityki RLS są wersjonowane w `supabase/migrations/`.
+
+```bash
+npx supabase link --project-ref <id-projektu>
+npx supabase db push
+```
+
+Po migracji trzeba ręcznie wpisać administratorów — bez tego nikt nie wejdzie do panelu:
+
+```sql
+insert into public.admins (user_id, email)
+select id, email from auth.users where email in ('adres@fpmsk.org.pl')
+on conflict (user_id) do nothing;
+```
+
+Zasady, na których stoi model dostępu:
+
+- Tabela `donations` jest niedostępna dla przeglądarki. Zapisuje do niej wyłącznie serwer kluczem `service_role`. Statystyki zbiórki czyta się z widoku `donation_stats`, który zwraca trzy liczby zamiast wierszy z danymi darczyńców.
+- Panel administracyjny sprawdza funkcję `is_admin()`. Sama sesja nie wystarcza.
+- Treści publiczne filtrują polityki RLS (`accepted = true and published is not null`), nie tylko zapytanie w kliencie.
+
+## Struktura
+
+```
+api/              funkcje serverless (Stripe, newsletter) + wspólne moduły w _lib/
+embed/            strony osadzeń dla partnerów
+src/components/   komponenty współdzielone, admin/ to CMS
+src/pages/        widoki tras
+src/services/     dostęp do Supabase
+src/i18n/         ładowanie tłumaczeń z public/locales
+supabase/         migracje bazy
+```
+
+## Osadzenia u partnerów
+
+```html
+<iframe src="https://msk.earth/embed/donate" title="Wesprzyj MSK"></iframe>
+<iframe src="https://msk.earth/embed/belka" title="Wesprzyj MSK"></iframe>
+```
+
+Stare adresy `/donate-iframe.html` i `/donate-belka.html` są przekierowywane w `vercel.json`, więc już osadzone ramki działają dalej. Domeny, które mogą osadzać serwis, kontroluje dyrektywa `frame-ancestors` w tym samym pliku.
+
+## Tłumaczenia
+
+Teksty leżą w `public/locales/{pl,en}.json` i są ładowane w locie przez hook `useTranslations`. Dodając klucz, dopisz go do obu plików — brakujące wartości mają fallbacki w kodzie, ale wtedy interfejs miesza języki.

@@ -170,8 +170,9 @@ function Cities({ selectedRegion, onSelectCity, selectedCity }) {
 
               <div className="peopleData" aria-busy={peopleLoading ? 'true' : 'false'}>
                 {peopleLoading ? (
-                  <div className="loader" aria-hidden="true" role="status" aria-live="polite" aria-busy="true">
+                  <div className="loader" role="status" aria-live="polite">
                     <span className="spinner" aria-hidden="true"/>
+                    <span className="sr-only">Ładowanie…</span>
                   </div>
                 ) : peopleError ? (
                   <p role="alert">{peopleError}</p>

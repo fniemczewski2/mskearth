@@ -38,9 +38,10 @@ function MobileHeader({ lang = 'pl', handleLanguageChange }) {
       >
         <Link to={homeHref} className="mobile logo" aria-label="Strona główna">
           <img
-            src="/logoMSK.png"
+            src="/logoMSK.webp"
             alt="MSK — Młodzieżowy Strajk Klimatyczny"
-            loading="lazy"
+            width="512"
+            height="512"
             decoding="async"
           />
           <img

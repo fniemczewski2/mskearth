@@ -279,3 +279,56 @@
   white-space: nowrap;
   border-width: 0;
 }
+
+.donation-progress {
+  background: var(--surface-veil);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-1);
+  display: grid;
+  gap: 12px;
+  margin-bottom: 20px;
+  padding: 16px 18px;
+}
+
+.progress-loading {
+  align-items: center;
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  min-height: 72px;
+}
+
+.payment-type {
+  background: var(--green-soft);
+  border-radius: var(--radius-pill);
+  display: flex;
+  gap: 4px;
+  margin-bottom: 14px;
+  padding: 4px;
+}
+
+.payment-type button {
+  background: transparent;
+  box-shadow: none;
+  color: var(--green-strong);
+  flex: 1 1 0;
+  min-height: 40px;
+}
+
+.payment-type button:hover {
+  background: color-mix(in srgb, var(--green-strong) 12%, transparent);
+  color: var(--green-strong);
+  translate: none;
+}
+
+.payment-type button[aria-pressed="true"] {
+  background: var(--green-strong);
+  box-shadow: var(--shadow-1);
+  color: var(--white);
+}
+
+.amounts button[aria-pressed="true"],
+.amounts button.active {
+  background: var(--green-strong);
+  color: var(--white);
+}

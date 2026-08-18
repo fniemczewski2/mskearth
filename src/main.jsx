@@ -57,20 +57,25 @@ function Main() {
           className="film"
           ref={videoRef}
           autoPlay
-          muted={isMuted}     
+          muted={isMuted}
+          loop
           playsInline
           preload="metadata"
+          poster="/filmikea-poster.webp"
+          width="1280"
+          height="720"
           onCanPlayThrough={() => setIsLoading(false)}
           onLoadedData={() => setIsLoading(false)}
           aria-label="Film promocyjny IKEA przedstawiający działania proekologiczne"
         >
-          <source src="./filmikea.webm" type="video/webm" />
+          <source src="/filmikea.webm" type="video/webm" />
           Twoja przeglądarka nie obsługuje elementu wideo.
         </video>
 
         {isLoading && (
-          <div className="loader" aria-hidden="true" role="status" aria-live="polite" aria-busy="true">
+          <div className="loader" role="status" aria-live="polite">
             <span className="spinner" aria-hidden="true"/>
+            <span className="sr-only">Ładowanie…</span>
           </div>
         )}
 

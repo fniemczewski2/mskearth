@@ -1,9 +1,6 @@
 import { Component } from 'react';
 import PropTypes from 'prop-types';
 
-/**
- * Bez tego dowolny wyjatek w renderze kasuje cala strone do bialego ekranu.
- */
 export default class ErrorBoundary extends Component {
   constructor(props) {
     super(props);

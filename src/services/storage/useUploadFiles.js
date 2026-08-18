@@ -3,17 +3,6 @@ import { v4 as uuid } from 'uuid';
 
 import { supabase } from '../supabaseClient.js';
 
-/**
- * JEDYNA implementacja uploadu (wczesniej byla zduplikowana
- * w services/storage/useUploadFiles.js i services/db/storage.js).
- *
- * Dochodzi walidacja, ktorej wczesniej nie bylo w ogole:
- * - lista dozwolonych typow MIME (bez SVG - to nosnik stored XSS),
- * - limit rozmiaru,
- * - sprawdzenie sygnatury pliku, bo file.type podaje klient,
- * - rozszerzenie wyprowadzone z MIME, nie z nazwy pliku.
- */
-
 const ALLOWED_TYPES = new Map([
   ['image/jpeg', 'jpg'],
   ['image/png', 'png'],

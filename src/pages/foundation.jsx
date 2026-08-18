@@ -40,7 +40,6 @@ export default function Foundation() {
     return () => { active = false; };
   }, [language]);
 
-
   const publicUrl = (path, bucket = STORAGE_BUCKET) => {
     if (!path) return '';
     if (/^https?:\/\//i.test(path)) return path;
@@ -168,8 +167,9 @@ export default function Foundation() {
           <h3 className="reportsTitle">{t.foundation.financialReports || 'Sprawozdania finansowe'}</h3>
           <div className="reportsContainer" aria-busy={reportsLoading ? 'true' : 'false'}>
             {reportsLoading && (
-              <div className="loader" aria-hidden="true" role="status" aria-live="polite" aria-busy="true">
+              <div className="loader" role="status" aria-live="polite">
                 <span className="spinner" aria-hidden="true"/>
+                <span className="sr-only">Ładowanie…</span>
               </div>
             )}
             {!reportsLoading && reportsErr && <p role="alert">{reportsErr}</p>}
@@ -220,8 +220,9 @@ export default function Foundation() {
         <h2>{t.foundation.board || 'Zarząd'}</h2>
 
         {boardLoading && (
-          <div className="loader" aria-hidden="true" role="status" aria-live="polite" aria-busy="true">
+          <div className="loader" role="status" aria-live="polite">
             <span className="spinner" aria-hidden="true"/>
+            <span className="sr-only">Ładowanie…</span>
           </div>
         )}
         {!boardLoading && boardErr && <p role="alert">{boardErr}</p>}

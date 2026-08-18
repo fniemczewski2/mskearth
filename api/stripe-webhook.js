@@ -3,9 +3,6 @@ import Stripe from 'stripe';
 import { log } from './_lib/log.js';
 import { supabaseAdmin } from './_lib/supabaseAdmin.js';
 
-// KLUCZOWE: Vercel domyslnie parsuje JSON i podstawia obiekt pod req.body.
-// stripe.webhooks.constructEvent() liczy HMAC z SUROWYCH bajtow, wiec
-// bez tego ustawienia weryfikacja podpisu nie moze sie powiesc.
 export const config = { api: { bodyParser: false } };
 
 const STRIPE_API_VERSION = '2025-08-27.basil';
@@ -23,7 +20,6 @@ async function readRawBody(req) {
   return Buffer.concat(chunks);
 }
 
-/** Pobiera id subskrypcji niezaleznie od wersji API (Basil przenioslo pole). */
 function subscriptionIdOf(invoice) {
   return (
     invoice.parent?.subscription_details?.subscription ??
@@ -32,7 +28,6 @@ function subscriptionIdOf(invoice) {
   );
 }
 
-/** Pobiera id PaymentIntent niezaleznie od wersji API. */
 function paymentIntentIdOf(invoice) {
   const fromPayments = invoice.payments?.data?.[0]?.payment?.payment_intent;
   return fromPayments ?? invoice.payment_intent ?? null;
@@ -84,8 +79,6 @@ export default async function handler(req, res) {
     return res.status(200).json({ received: true });
   } catch (err) {
     log.error('webhook.handler', err, { type: event.type, event_id: event.id });
-    // 500 => Stripe ponowi dostawe. Handlery sa idempotentne, wiec
-    // ponowienie nie zdubluje darowizny.
     return res.status(500).json({ error: 'Webhook handler failed' });
   }
 }
@@ -128,14 +121,13 @@ async function handleInvoicePaymentSucceeded(invoice, eventId) {
   const subscriptionId = subscriptionIdOf(invoice);
   if (!subscriptionId) return;
 
-  // Pierwsza rata jest juz zapisana przez checkout.session.completed.
   if (invoice.billing_reason === 'subscription_create') return;
 
   const subscription = await stripe.subscriptions.retrieve(subscriptionId);
   const metadata = subscription.metadata ?? {};
 
   const { error } = await supabaseAdmin.from('donations').insert({
-    stripe_event_id: eventId, // unikalny indeks = gwarancja idempotencji
+    stripe_event_id: eventId,
     amount: invoice.amount_paid / 100,
     currency: (invoice.currency ?? 'pln').toUpperCase(),
     donor_name: metadata.donor_name || null,
@@ -148,8 +140,6 @@ async function handleInvoicePaymentSucceeded(invoice, eventId) {
       : new Date().toISOString(),
   });
 
-  // 23505 = naruszenie unikalnosci, czyli powtorzona dostawa tego samego
-  // zdarzenia. To sukces idempotencji, nie blad.
   if (error && error.code !== '23505') throw error;
 
   log.info('recurring.recorded', { invoice_id: invoice.id, duplicate: error?.code === '23505' });

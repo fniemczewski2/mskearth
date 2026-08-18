@@ -54,8 +54,6 @@ function News() {
           subtitleua,
           contentua
         `)
-        // Filtr po stronie bazy - wczesniej niezaakceptowane artykuly
-        // trafialy do przegladarki i byly odsiewane dopiero w JS.
         .eq('accepted', true)
         .not('published', 'is', null)
         .order('pinned', { ascending: false })

@@ -1,9 +1,3 @@
-/**
- * Logger dla funkcji serverless.
- * Zasada: do logow NIE trafiaja dane osobowe. Adresy e-mail wylacznie
- * przez redact(), nigdy cale obiekty req.body / payload z bazy.
- */
-
 export function redact(value) {
   if (!value) return null;
   const s = String(value);

@@ -55,8 +55,9 @@ export default function About() {
         <h1 id="about-title">{t.about_h1 || 'O nas'}</h1>
 
         {loading && (
-          <div className="loader" aria-hidden="true" role="status" aria-live="polite" aria-busy="true">
+          <div className="loader" role="status" aria-live="polite">
             <span className="spinner" aria-hidden="true"/>
+            <span className="sr-only">Ładowanie…</span>
           </div>
         )}
 
@@ -73,8 +74,10 @@ export default function About() {
             <figure className="logoContainer">
               <img
                 className="logo"
-                src="/logoMSK-kolor.png"
+                src="/logoMSK-kolor.webp"
                 alt="Logo Młodzieżowego Strajku Klimatycznego"
+                width="1024"
+                height="1024"
                 loading="lazy"
                 decoding="async"
               />

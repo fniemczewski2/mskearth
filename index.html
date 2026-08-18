@@ -4,14 +4,9 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/x-icon" href="/logoMSK.ico" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    
-    <!-- Jeden arkusz zamiast trzech osobnych zadan po ten sam krój.
-         Docelowo warto zhostować fonty lokalnie (@fontsource-variable/jost):
-         Google Fonts przekazuje IP użytkownika do Google przy każdym wejściu. -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Jost:wght@400;600;900&display=swap">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.11.3/font/bootstrap-icons.min.css">
+
+    <link rel="preload" as="font" type="font/woff2" href="/fonts/Jost-Variable.woff2" crossorigin>
+    <link rel="preload" as="image" href="/photo.webp" fetchpriority="high">
 
     <link rel="alternate" href="https://msk.earth/" hreflang="pl" />
 
@@ -33,7 +28,7 @@
     <meta name="twitter:image" content="https://msk.earth/logoMSK-kolor.png">
 
     <link rel="manifest" href="/manifest.webmanifest">
-    <meta name="theme-color" content="#0f172a">
+    <meta name="theme-color" content="#1B7340">
 
     <title>Młodzieżowy Strajk Klimatyczny</title>
     <script type="application/ld+json">
@@ -42,7 +37,7 @@
         "@type":"Organization",
         "name":"Młodzieżowy Strajk Klimatyczny",
         "url":"https://msk.earth/",
-        "logo":"https://msk.earth/logoMSK.svg",
+        "logo":"https://msk.earth/icons/icon-512.png",
         "sameAs":[
           "https://www.facebook.com/msk.polska",
           "https://www.instagram.com/mlodziezowystrajkklimatyczny",
@@ -61,6 +56,9 @@
 
   </head>
   <body>
+    <noscript>
+      Ta strona wymaga JavaScriptu. Napisz do nas na biuro@fpmsk.org.pl, jeśli nie możesz go włączyć.
+    </noscript>
     <div id="root"></div>
     <script type="module" src="/src/entry.jsx"></script>
   </body>

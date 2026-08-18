@@ -1,3 +1,4 @@
+import { useEffect, useRef } from 'react';
 import { Routes, Route, useLocation, useNavigate } from 'react-router-dom';
 
 import Header from './header.jsx';
@@ -13,17 +14,28 @@ import ThankYou from './pages/thankyou.jsx';
 import NotFound from './pages/notFound.jsx';
 import SideButtons from './components/sideButtons.jsx';
 import CookieConsent from './components/cookies.jsx';
-import { langFromPath, SUPPORTED_LANGS } from './i18n/useTranslations.js';
+import { langFromPath, SUPPORTED_LANGS, useTranslations } from './i18n/useTranslations.js';
 
-/**
- * Uklad strony publicznej. Zadnego pobierania danych na tym poziomie -
- * wczesniej App sciagal komplet artykulow przy wejsciu na KAZDA podstrone,
- * zeby przekazac je propsem do jednego komponentu.
- */
 export default function App() {
   const location = useLocation();
   const navigate = useNavigate();
   const lang = langFromPath(location.pathname);
+  const { t } = useTranslations();
+  const contentRef = useRef(null);
+  const firstRender = useRef(true);
+
+  useEffect(() => {
+    document.documentElement.lang = lang;
+  }, [lang]);
+
+  useEffect(() => {
+    if (firstRender.current) {
+      firstRender.current = false;
+      return;
+    }
+    contentRef.current?.focus({ preventScroll: true });
+    window.scrollTo({ top: 0, behavior: 'instant' });
+  }, [location.pathname]);
 
   const handleLanguageChange = (newLang) => {
     if (!SUPPORTED_LANGS.has(newLang)) return;
@@ -34,20 +46,26 @@ export default function App() {
 
   return (
     <>
+      <a className="skip-link" href="#main-content">
+        {t.a11y?.skipToContent ?? 'Przejdź do treści'}
+      </a>
+
       <Header lang={lang} handleLanguageChange={handleLanguageChange} />
       <CookieConsent />
 
-      <Routes>
-        <Route index element={<Main />} />
-        <Route path="aktualnosci" element={<News />} />
-        <Route path="aktualnosci/:id" element={<ArticlePage />} />
-        <Route path="o-nas" element={<About />} />
-        <Route path="miasta" element={<MapPage />} />
-        <Route path="fundacja" element={<Foundation />} />
-        <Route path="kontakt" element={<Contact />} />
-        <Route path="dziekujemy" element={<ThankYou />} />
-        <Route path="*" element={<NotFound />} />
-      </Routes>
+      <div id="main-content" ref={contentRef} tabIndex={-1}>
+        <Routes>
+          <Route index element={<Main />} />
+          <Route path="aktualnosci" element={<News />} />
+          <Route path="aktualnosci/:id" element={<ArticlePage />} />
+          <Route path="o-nas" element={<About />} />
+          <Route path="miasta" element={<MapPage />} />
+          <Route path="fundacja" element={<Foundation />} />
+          <Route path="kontakt" element={<Contact />} />
+          <Route path="dziekujemy" element={<ThankYou />} />
+          <Route path="*" element={<NotFound />} />
+        </Routes>
+      </div>
 
       <SideButtons />
       <Footer lang={lang} handleLanguageChange={handleLanguageChange} />

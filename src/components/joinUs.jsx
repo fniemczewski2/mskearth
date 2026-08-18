@@ -49,8 +49,6 @@ export default function JoinUs() {
           .maybeSingle();
         if (recErr) throw recErr;
 
-        // Zapytanie o recruitment_calls zostalo usuniete: jego wynik
-        // nie byl nigdzie renderowany, a lecial przy kazdym wejsciu.
         if (!active) return;
         setRecruitment(recData || null);
       } catch (e) {
@@ -63,16 +61,15 @@ export default function JoinUs() {
     return () => { active = false; };
   }, []);
 
-
-
   return (
     <>
       <h2>{t.joinUs?.h2 || 'Dołącz do nas'}</h2>
 
       <aside id="joinUs" className="joinUs" aria-busy={loading ? 'true' : 'false'}>
         {loading && (
-          <div className="loader" aria-hidden="true" role="status" aria-live="polite" aria-busy="true">
+          <div className="loader" role="status" aria-live="polite">
             <span className="spinner" aria-hidden="true"/>
+            <span className="sr-only">Ładowanie…</span>
           </div>
         )}
 

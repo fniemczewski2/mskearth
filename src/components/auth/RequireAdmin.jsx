@@ -4,16 +4,6 @@ import PropTypes from 'prop-types';
 import { supabase, checkIsAdmin } from '../../services/supabaseClient.js';
 import SignInForm from '../../pages/admin/login.jsx';
 
-/**
- * Brama panelu administracyjnego.
- *
- * Wczesniej jedynym warunkiem dostepu bylo user !== null, wiec dowolne
- * konto Google przechodzilo do CMS-u. Tu sprawdzamy funkcje SQL is_admin(),
- * ktora czyta tabele public.admins.
- *
- * To warstwa UI - wlasciwa bariera sa polityki RLS w bazie. Ukrycie
- * przyciskow nie zabezpiecza niczego, jesli baza przyjmuje zapisy.
- */
 export default function RequireAdmin({ children }) {
   const [state, setState] = useState({ status: 'loading', isAdmin: false });
 

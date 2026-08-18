@@ -35,7 +35,6 @@ export async function signOut() {
   return supabase.auth.signOut();
 }
 
-/** Czy zalogowany uzytkownik jest administratorem (funkcja SQL is_admin()). */
 export async function checkIsAdmin() {
   const { data, error } = await supabase.rpc('is_admin');
   if (error) return false;

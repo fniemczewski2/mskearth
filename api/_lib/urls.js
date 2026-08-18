@@ -1,10 +1,3 @@
-/**
- * Adresy powrotu z Stripe Checkout buduje SERWER.
- * Przyjmowanie success_url/cancel_url z ciala zadania pozwalaloby
- * wygenerowac prawdziwy link platniczy Fundacji, ktory po zaplacie
- * przekierowuje ofiare na strone atakujacego (open redirect / phishing).
- */
-
 const RETURN_HOSTS = new Set([
   'msk.earth',
   'www.msk.earth',

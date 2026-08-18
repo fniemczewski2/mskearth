@@ -1,7 +1,5 @@
-// src/pages/ThankYou.jsx
 import { useEffect, useMemo, useState } from 'react';
 import { useLocation } from 'react-router-dom';
-//import '../style/thankyou.css';
 
 const LOCALE_CACHE = new Map();
 
@@ -66,7 +64,6 @@ export default function ThankYou() {
         </div>
       )}
 
-
       {!loading && !err && (
         <section className="thankyou-content" aria-labelledby="thankyou-title">
 
@@ -98,7 +95,6 @@ export default function ThankYou() {
               )}
           </aside>
 
-          {/* Share Section */}
           <aside className="share-section">
             <h3 className="share-title">
               {t.thankyou?.shareTitle || 'Podziel się z innymi'}
@@ -137,7 +133,6 @@ export default function ThankYou() {
             </div>
           </aside>
 
-          {/* Next Steps */}
           <aside className="next-steps">
             <h3>{t.thankyou?.nextSteps || 'Co dalej?'}</h3>
             <ul>

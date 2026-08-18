@@ -108,9 +108,6 @@ export default function ArticlesCMS() {
       sourcetext: row.sourcetext || "",
       accepted: Boolean(row.accepted),
       pinned: Boolean(row.pinned),
-      // published to znacznik czasu, nie flaga. Wczesniej bylo tu
-      // !!row.published, co przy kazdej edycji niszczylo date publikacji
-      // (a po niej sortowana jest publiczna lista artykulow).
       published: row.published ?? null,
     });
     resetUploads();

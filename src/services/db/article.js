@@ -20,13 +20,6 @@ function mapArticleRow(a) {
   };
 }
 
-/* ------------------------- odczyt publiczny ------------------------- */
-
-/**
- * Lista do widoku publicznego: tylko zaakceptowane i opublikowane,
- * bez tresci artykulow (te sciagamy dopiero na stronie szczegolow)
- * i ze stronicowaniem.
- */
 export async function fetchPublishedArticles({ limit = 20, offset = 0 } = {}) {
   const { data, error } = await supabase
     .from('articles')
@@ -54,8 +47,6 @@ export async function getPublishedArticleById(id) {
   if (error) throw error;
   return mapArticleRow(data);
 }
-
-/* --------------------------- panel admina --------------------------- */
 
 export async function fetchArticles() {
   const { data, error } = await supabase
@@ -93,7 +84,6 @@ export async function deleteArticle(id) {
   if (error) throw error;
 }
 
-/** Przelaczniki przyjmuja aktualny stan, zeby nie robic zbednego SELECT-a. */
 export async function toggleAccept(id, current) {
   const { error } = await supabase
     .from('articles')

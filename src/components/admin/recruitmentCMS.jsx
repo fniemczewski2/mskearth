@@ -81,7 +81,6 @@ function RecruitmentSettingsCMS() {
   );
 }
 
-
 export default function RecruitmentCMS() {
   return (
     <div className="cms-page">

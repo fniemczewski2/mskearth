@@ -70,8 +70,20 @@ function DesktopHeader({ lang, handleLanguageChange }) {
     <header className="desktopHeader" id="header">
       <div className="headerElementsContainer">
         <Link to={`/${lang}`} className="desktop logo">
-          <img src="/logoMSK.png" alt="Logo Młodzieżowy Strajk Klimatyczny" />
-          <img src="/logoFFF.png" alt="Logo Fridays For Future" />
+          <img
+            src="/logoMSK.webp"
+            alt="Logo Młodzieżowy Strajk Klimatyczny"
+            width="512"
+            height="512"
+            decoding="async"
+          />
+          <img
+            src="/logoFFF.png"
+            alt="Logo Fridays For Future"
+            width="512"
+            height="512"
+            decoding="async"
+          />
         </Link>
 
         <div className="desktopNavbar">
@@ -109,17 +121,6 @@ function DesktopHeader({ lang, handleLanguageChange }) {
                     <ReactCountryFlag countryCode="GB" svg />
                   </button>
                 )}
-                {/* {lang !== 'ua' && (
-                  <button
-                    type="button"
-                    onClick={() => handleLanguageChange('ua')}
-                    title="Українська"
-                    aria-label="Українська"
-                    className="flag-btn"
-                  >
-                    <ReactCountryFlag countryCode="UA" svg />
-                  </button>
-                )} */}
               </span>
             </ul>
           </nav>

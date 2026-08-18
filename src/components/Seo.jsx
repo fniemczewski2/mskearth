@@ -1,13 +1,5 @@
 import PropTypes from 'prop-types';
 
-/**
- * React 19 podnosi <title> i <meta> z drzewa komponentow do <head>,
- * wiec kazda podstrona moze miec wlasne metadane bez dodatkowej biblioteki.
- *
- * Uwaga: to dziala po stronie klienta. Scrapery Facebooka i Twittera
- * nie wykonuja JS, wiec do poprawnych podgladow linkow potrzebny jest
- * prerendering albo przejscie na framework z SSG.
- */
 export default function Seo({ title, description, image, url, type = 'website' }) {
   const absImage = image?.startsWith('http')
     ? image

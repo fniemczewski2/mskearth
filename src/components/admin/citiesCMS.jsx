@@ -1,4 +1,3 @@
-// --- CitiesCMS.jsx (no Tailwind) ---
 import { useEffect, useState } from "react";
 import {
   fetchCities,
@@ -176,7 +175,6 @@ export function CitiesCMS() {
   );
 }
 
-// --- LocalContactsCMS.jsx (no Tailwind) ---
 import {
   fetchLocalContacts,
   createLocalContact,

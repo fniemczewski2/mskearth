@@ -1,10 +1,7 @@
 import { useId, useState } from 'react';
 import PropTypes from 'prop-types';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faGoogle } from '@fortawesome/free-brands-svg-icons';
 
 import { supabase } from '../../services/supabaseClient.js';
-import { env } from '../../config/env.js';
 
 export default function SignInForm({ onSignedIn }) {
   const emailId = useId();
@@ -34,7 +31,6 @@ export default function SignInForm({ onSignedIn }) {
       setPassword('');
       onSignedIn?.(data.session ?? null);
     } catch {
-      // Komunikat celowo ogolny - nie zdradzamy, czy konto istnieje.
       setStatus({ type: 'error', message: 'Nieprawidłowe dane logowania.' });
     } finally {
       setSubmitting(false);

@@ -2,11 +2,6 @@ import { Link } from 'react-router-dom';
 
 import { useTranslations } from '../i18n/useTranslations.js';
 
-/**
- * Wczesniej trasa catch-all robila <Navigate to="." replace />, czyli
- * po cichu przenosila na strone glowna. Dla wyszukiwarek to soft 404:
- * nieistniejacy adres zwracal HTTP 200 z pelna trescia.
- */
 export default function NotFound() {
   const { t, lang } = useTranslations();
 

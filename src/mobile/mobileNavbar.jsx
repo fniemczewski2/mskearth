@@ -125,17 +125,6 @@ const MobileNavbar = forwardRef(function MobileNavbar(
                 <ReactCountryFlag countryCode="GB" svg aria-hidden="true" />
               </button>
             )}
-            {/* {lang !== 'ua' && (
-              <button
-                type="button"
-                onClick={() => handleLanguageChange('ua')}
-                className="flag-btn"
-                aria-label="Українська"
-                title="Українська"
-              >
-                <ReactCountryFlag countryCode="UA" svg aria-hidden="true" />
-              </button>
-            )} */}
           </span>
         </li>
       </ul>

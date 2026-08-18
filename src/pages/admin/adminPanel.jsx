@@ -3,13 +3,6 @@ import { useEffect, useState } from 'react';
 import { supabase } from '../../services/supabaseClient.js';
 import AdminPanelNav from './adminPanelNav.jsx';
 
-/**
- * Panel administracyjny.
- *
- * Logowanie i kontrola uprawnien przeniesione do <RequireAdmin>
- * (src/components/auth/RequireAdmin.jsx). Ten komponent renderuje sie
- * dopiero wtedy, gdy is_admin() zwrocilo true.
- */
 export default function AdminPanel() {
   const [user, setUser] = useState(null);
   const [statusMsg, setStatusMsg] = useState('');
