@@ -7,7 +7,7 @@ import {
   deleteCity,
 } from "../../services/db/cities.jsx";
 
-import { supabase } from "../../services/supabaseClient.jsx";
+import { supabase } from "../../services/supabaseClient.js";
 
 const emptyCity = { name: "", facebook: "", instagram: "", meetings: "", voivodeship: "" };
 
@@ -54,7 +54,6 @@ export function CitiesCMS() {
     if (sessionChecked && user) load();
   }, [sessionChecked, user]);
 
-  const startCreate = () => { setEditingId(null); setForm(emptyCity); };
   const startEdit = (row) => {
     setEditingId(row.id);
     setForm({
@@ -226,7 +225,6 @@ export function LocalContactsCMS() {
 
   useEffect(() => { if (sessionChecked && user) load(); }, [sessionChecked, user]);
 
-  const startCreate = () => { setEditingId(null); setForm({ name: "", facebook: "", phone: "", email: "", city: "" }); };
   const startEdit = (row) => {
     setEditingId(row.id);
     setForm({

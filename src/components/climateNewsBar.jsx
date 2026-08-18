@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 
 const API_URL = 'https://api.climateclock.world/v2/widget/clock.json';
 const ABS_SPEED = 80;
@@ -10,21 +10,40 @@ const ClimateNewsBar = () => {
   const trackRef = useRef(null);
   const groupRef = useRef(null); 
 
-  const fetchModules = useCallback(async () => {
-    try {
-      const res = await fetch(API_URL, { cache: 'no-store' });
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      const data = await res.json();
-      const modules = data?.data?.modules;
-      const items = modules?.newsfeed_1?.newsfeed ?? [];
-      setFeed(items.filter(Boolean));
-    } catch (err) {
-      console.error('ClimateNewsBar fetch error:', err);
-      setFeed([]);
-    }
-  }, []);
+  useEffect(() => {
+    const controller = new AbortController();
+    let cancelled = false;
 
-  useEffect(() => { fetchModules(); }, [fetchModules]);
+    // Timeout + trzy proby z backoffem. Wczesniej fetch bez AbortSignal
+    // mogl wisiec do domyslnego limitu przegladarki, a pojedynczy blad
+    // sieci trwale chowal pasek.
+    const fetchWithRetry = async (attempt = 0) => {
+      try {
+        const res = await fetch(API_URL, {
+          signal: AbortSignal.any([controller.signal, AbortSignal.timeout(8000)]),
+        });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const data = await res.json();
+        const items = data?.data?.modules?.newsfeed_1?.newsfeed ?? [];
+        if (!cancelled) setFeed(items.filter(Boolean));
+      } catch (err) {
+        if (cancelled || controller.signal.aborted) return;
+        if (attempt < 2) {
+          setTimeout(() => fetchWithRetry(attempt + 1), 2 ** attempt * 1000);
+        } else {
+          console.error('ClimateNewsBar fetch error:', err);
+          setFeed([]);
+        }
+      }
+    };
+
+    fetchWithRetry();
+
+    return () => {
+      cancelled = true;
+      controller.abort();
+    };
+  }, []);
 
   useEffect(() => {
     const trackEl = trackRef.current;

@@ -10,7 +10,6 @@ function Main() {
 
   const [isMuted, setIsMuted] = useState(true);
   const [isLoading, setIsLoading] = useState(true);
-  const [isInView, setIsInView] = useState(true);
 
   useEffect(() => {
     const v = videoRef.current;
@@ -20,7 +19,6 @@ function Main() {
       (entries) => {
         const entry = entries[0];
         const visible = entry.isIntersecting && entry.intersectionRatio > 0;
-        setIsInView(visible);
         if (visible) v.play().catch(() => {});
         else v.pause();
       },

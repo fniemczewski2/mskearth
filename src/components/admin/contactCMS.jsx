@@ -7,7 +7,7 @@ import {
   deleteContactPerson,
 } from "../../services/db/contactPeople.jsx";
 
-import { supabase } from "../../services/supabaseClient.jsx";
+import { supabase } from "../../services/supabaseClient.js";
 
 const emptyForm = { name: "", phone: "", email: "", city: "" };
 
@@ -57,7 +57,6 @@ export default function ContactPeopleCMS() {
     if (sessionChecked && user) load();
   }, [sessionChecked, user]);
 
-  const startCreate = () => { setEditingId(null); setForm(emptyForm); };
   const startEdit = (row) => {
     setEditingId(row.id);
     setForm({

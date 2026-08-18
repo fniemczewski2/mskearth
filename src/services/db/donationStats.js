@@ -1,119 +1,59 @@
-import { useState, useEffect } from 'react';
-import { supabase } from '../supabaseClient';
+import { useEffect, useState } from 'react';
+
+import { supabase } from '../supabaseClient.js';
 
 /**
- * Custom hook to fetch and track donation statistics in real-time
- * Handles both one-time and recurring donations (recorded as individual donations)
- * @returns {Object} { goalAmount, currentAmount, donorsCount, loading, error }
+ * Statystyki zbiorki.
+ *
+ * Wczesniej hook sciagal do przegladarki WSZYSTKIE wiersze tabeli donations
+ * (razem z donor_email) i sumowal je w JS, a subskrypcja Realtime powodowala
+ * pelne przeladowanie tabeli u kazdego otwartego uzytkownika po kazdej wplacie.
+ *
+ * Teraz: agregat liczy baza (widok donation_stats), do przegladarki ida trzy
+ * liczby, a odswiezanie to jedno lekkie zapytanie na minute.
  */
-export function useDonationStats() {
-  const [goalAmount, setGoalAmount] = useState(10000);
-  const [currentAmount, setCurrentAmount] = useState(0);
-  const [donorsCount, setDonorsCount] = useState(0);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+export function useDonationStats({ pollMs = 60_000 } = {}) {
+  const [state, setState] = useState({
+    goalAmount: 10_000,
+    currentAmount: 0,
+    donorsCount: 0,
+    loading: true,
+    error: null,
+  });
 
   useEffect(() => {
     let active = true;
-    
-    const fetchDonationStats = async () => {
-      try {
-        setLoading(true);
-        setError(null);
-        
-        // Fetch all donations (including recurring ones recorded as individual donations)
-        const { data: donations, error: donationsError } = await supabase
-          .from('donations')
-          .select('amount, donor_email, status');
 
-        if (donationsError) throw donationsError;
+    const load = async () => {
+      const { data, error } = await supabase
+        .from('donation_stats')
+        .select('current_amount, donors_count, goal_amount')
+        .maybeSingle();
 
-        if (active && donations) {
-          // Filter completed donations
-          const completedDonations = donations.filter(d => 
-            d.status === 'completed' || 
-            d.status === 'paid' || 
-            d.status === 'succeeded'
-          );
+      if (!active) return;
 
-          // Calculate total amount (includes both one-time and recurring donations)
-          const total = completedDonations.reduce((sum, d) => {
-            const amount = typeof d.amount === 'string' ? parseFloat(d.amount) : d.amount;
-            return sum + (amount || 0);
-          }, 0);
-          
-          // Count unique donors
-          const uniqueDonors = new Set(
-            completedDonations
-              .map(d => d.donor_email)
-              .filter(email => email && email !== null)
-          ).size;
-          
-          setCurrentAmount(total);
-          setDonorsCount(uniqueDonors);
-        }
-
-        // Fetch goal amount from settings
-        try {
-          const { data: settings, error: settingsError } = await supabase
-            .from('fundraising_settings')
-            .select('goal_amount')
-            .eq('active', true)
-            .maybeSingle(); 
-
-          if (!settingsError && settings?.goal_amount && active) {
-            setGoalAmount(parseFloat(settings.goal_amount) || 10000);
-          }
-        } catch (settingsErr) {
-          console.warn('Could not load settings, using default goal');
-        }
-
-      } catch (e) {
-        console.error('Error fetching donation stats:', e);
-        if (active) {
-          setError(e.message || 'Failed to fetch donation statistics');
-        }
-      } finally {
-        if (active) {
-          setLoading(false);
-        }
+      if (error) {
+        setState((s) => ({ ...s, loading: false, error: 'Nie udało się pobrać statystyk.' }));
+        return;
       }
+
+      setState({
+        goalAmount: Number(data?.goal_amount) || 10_000,
+        currentAmount: Number(data?.current_amount) || 0,
+        donorsCount: Number(data?.donors_count) || 0,
+        loading: false,
+        error: null,
+      });
     };
 
-    // Initial fetch
-    fetchDonationStats();
-
-    // Subscribe to real-time changes
-    // This will update stats whenever a new donation is added (one-time or recurring)
-    const channel = supabase
-      .channel('donations_realtime')
-      .on(
-        'postgres_changes',
-        {
-          event: '*', // Listen to INSERT, UPDATE, DELETE
-          schema: 'public',
-          table: 'donations',
-        },
-        (payload) => {
-          console.log('Donation table changed:', payload);
-          if (active) {
-            fetchDonationStats();
-          }
-        }
-      )
-      .subscribe();
+    load();
+    const id = setInterval(load, pollMs);
 
     return () => {
       active = false;
-      channel.unsubscribe();
+      clearInterval(id);
     };
-  }, []);
+  }, [pollMs]);
 
-  return {
-    goalAmount,
-    currentAmount,
-    donorsCount,
-    loading,
-    error
-  };
+  return state;
 }

@@ -4,7 +4,7 @@ import {
   replaceRecruitmentSettings,
 } from "../../services/db/recruitmentSettings.jsx";
 
-import { supabase } from "../../services/supabaseClient.jsx";
+import { supabase } from "../../services/supabaseClient.js";
 
 function RecruitmentSettingsCMS() {
   const [sessionChecked, setSessionChecked] = useState(false);
@@ -59,7 +59,8 @@ function RecruitmentSettingsCMS() {
     <div className="cms-sectionGrid">
       <aside className="cms-card">
         <h3 style={{ fontWeight: 600, marginTop: 0 }}>Zmień ustawienia</h3>
-        <form onSubmit={handleSave}>
+        <form onSubmit={handleSave} aria-busy={loading ? "true" : "false"}>
+          {loading && <div role="status" aria-live="polite" className="cms-helperXs">Wczytywanie ustawień…</div>}
           <label className="cms-labelWrap">
             <span className="cms-label">Instagram URL</span>
             <input type="url" placeholder="https://instagram.com/..." className="cms-input" value={settings.instagram} onChange={(e) => setSettings((s) => ({ ...s, instagram: e.target.value }))} />

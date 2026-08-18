@@ -6,9 +6,9 @@ import {
   deleteArticle,
   toggleAccept,
   togglePinned,
-} from "../../services/db/article.jsx";
-import useUploadFiles from "../../services/useUploadFiles.jsx"
-import { supabase } from "../../services/supabaseClient.jsx";
+} from "../../services/db/article.js";
+import useUploadFiles from "../../services/storage/useUploadFiles.js";
+import { supabase } from "../../services/supabaseClient.js";
 import "../../style/admin.css"
 
 function fmt(d) {
@@ -104,11 +104,14 @@ export default function ArticlesCMS() {
       imgurl: row.imgPaths || [],
       imgalt: row.imgalt || "",
       author: row.author || user?.email || "",
-      sourcelink: row.sourceLink || "",
-      sourcetext: row.sourceText || "",
-      accepted: !!row.accepted,
-      published: !!row.published,
-      pinned: !!row.pinned,
+      sourcelink: row.sourcelink || "",
+      sourcetext: row.sourcetext || "",
+      accepted: Boolean(row.accepted),
+      pinned: Boolean(row.pinned),
+      // published to znacznik czasu, nie flaga. Wczesniej bylo tu
+      // !!row.published, co przy kazdej edycji niszczylo date publikacji
+      // (a po niej sortowana jest publiczna lista artykulow).
+      published: row.published ?? null,
     });
     resetUploads();
   };
@@ -151,11 +154,11 @@ export default function ArticlesCMS() {
     }
   }
 
-  async function handleToggle(id, kind) {
+  async function handleToggle(row, kind) {
     setErr("");
     try {
-      if (kind === "accept") await toggleAccept(id);
-      if (kind === "pin") await togglePinned(id);
+      if (kind === "accept") await toggleAccept(row.id, row.accepted);
+      if (kind === "pin") await togglePinned(row.id, row.pinned);
       await load();
     } catch (e) {
       setErr(e?.message || String(e));
@@ -205,8 +208,8 @@ export default function ArticlesCMS() {
                     <td className="cms-td">
                       <div style={{ display: "flex", gap: 8, justifyContent: "flex-end" }}>
                         <button className="cms-btn" onClick={() => startEdit(r)}><i className="bi bi-pencil-fill" aria-hidden="true"></i></button>
-                        <button className="cms-btn" onClick={() => handleToggle(r.id, "accept")}>{r.accepted ? <i className="bi bi-eye-slash-fill" aria-hidden="true"></i> : <i className="bi bi-send-check-fill" aria-hidden="true"></i>}</button>
-                        <button className="cms-btn" onClick={() => handleToggle(r.id, "pin")}>{r.pinned ? <i className="bi bi-pin-angle" aria-hidden="true"></i> : <i className="bi bi-pin-fill" aria-hidden="true"></i>}</button>
+                        <button className="cms-btn" onClick={() => handleToggle(r, "accept")}>{r.accepted ? <i className="bi bi-eye-slash-fill" aria-hidden="true"></i> : <i className="bi bi-send-check-fill" aria-hidden="true"></i>}</button>
+                        <button className="cms-btn" onClick={() => handleToggle(r, "pin")}>{r.pinned ? <i className="bi bi-pin-angle" aria-hidden="true"></i> : <i className="bi bi-pin-fill" aria-hidden="true"></i>}</button>
                         <button className="cms-btnDanger" onClick={() => handleDelete(r.id)}><i className="bi bi-trash-fill" aria-hidden="true"></i></button>
                       </div>
                     </td>
@@ -218,7 +221,14 @@ export default function ArticlesCMS() {
         )}
 
       <aside className="cms-card">
-        <h3 style={{ fontWeight: 600, marginTop: 0 }}>{editingId ? "Edytuj artykuł" : "Nowy artykuł"}</h3>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
+          <h3 style={{ fontWeight: 600, marginTop: 0 }}>{editingId ? "Edytuj artykuł" : "Nowy artykuł"}</h3>
+          {editingId && (
+            <button type="button" className="cms-btn" onClick={startCreate}>
+              Nowy artykuł
+            </button>
+          )}
+        </div>
         <form onSubmit={handleSubmit}>
           <label className="cms-labelWrap">
             <span className="cms-label">Tytuł</span>
@@ -265,6 +275,16 @@ export default function ArticlesCMS() {
               <input type="checkbox" checked={form.pinned} onChange={(e) => setForm((f) => ({ ...f, pinned: e.target.checked }))} />
               Przypięty
             </label>
+            <label style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 13 }}>
+              <input
+                type="checkbox"
+                checked={Boolean(form.published)}
+                onChange={(e) =>
+                  setForm((f) => ({ ...f, published: e.target.checked ? (f.published ?? new Date().toISOString()) : null }))
+                }
+              />
+              Opublikowany
+            </label>
           </div>
 
           <label className="cms-labelWrap">
@@ -275,7 +295,7 @@ export default function ArticlesCMS() {
             {uploading && <div className="cms-helperXs">Przesyłanie…</div>}
             {uploadErrors?.length > 0 && (
               <ul className="cms-helperXs" style={{ color: "#b00020", marginTop: 8, paddingLeft: 18, listStyle: "disc" }}>
-                {uploadErrors.map((er, i) => <li key={i}>{er.message}</li>)}
+                {uploadErrors.map((er) => <li key={`${er.index}-${er.message}`}>{er.message}</li>)}
               </ul>
             )}
             {(form.imgurl?.length || 0) > 0 && (
@@ -304,14 +324,5 @@ export default function ArticlesCMS() {
         </form>
       </aside>
     </div>
-  );
-}
-
-function Field({ label, children }) {
-  return (
-    <label className="cms-labelWrap">
-      <div className="cms-label">{label}</div>
-      {children}
-    </label>
   );
 }

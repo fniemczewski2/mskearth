@@ -32,7 +32,7 @@ function Footer({ lang, handleLanguageChange: _handleLanguageChange }) {
         const data = await fetchLocale(effectiveLang);
         if (!active || !data) return;
         setMenuItems(data?.footer?.menuItems ?? []);
-      } catch (e) {
+      } catch {
         if (active) setMenuItems([]);
       }
     })();

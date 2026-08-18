@@ -1,16 +1,24 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 
-export default defineConfig({
+export default defineConfig(({ mode }) => ({
   plugins: [react()],
-    server: {
+  build: {
+    target: 'es2022',
+    sourcemap: mode !== 'production',
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          react: ['react', 'react-dom', 'react-router-dom'],
+          supabase: ['@supabase/supabase-js'],
+        },
+      },
+    },
+  },
+  server: {
     proxy: {
-      // Proxy API requests to the local Express server
-      '/api': {
-        target: 'http://localhost:3001',
-        changeOrigin: true,
-        secure: false,
-      }
-    }
-  }
-});
+      // lokalny serwer API (vercel dev --listen 3001)
+      '/api': { target: 'http://localhost:3001', changeOrigin: true },
+    },
+  },
+}));

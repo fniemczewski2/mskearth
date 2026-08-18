@@ -1,11 +1,67 @@
 import { writeFile } from 'node:fs/promises';
+import { createClient } from '@supabase/supabase-js';
+
+/**
+ * Poprzednia wersja generowala adresy BEZ prefiksu jezyka (/aktualnosci),
+ * podczas gdy routing wymaga /:lang/*. Kazdy taki adres renderowal strone
+ * glowna - szesc roznych URL-i o identycznej tresci (duplicate content).
+ */
 
 const base = 'https://msk.earth';
-const routes = ['/', '/aktualnosci', '/o-nas', '/miasta', '/fundacja', '/kontakt']; 
+const langs = ['pl', 'en'];
+const paths = ['', '/aktualnosci', '/o-nas', '/miasta', '/fundacja', '/kontakt'];
+
+async function fetchArticles() {
+  const url = process.env.SUPABASE_URL;
+  const key = process.env.SUPABASE_SERVICE_KEY;
+  if (!url || !key) {
+    console.warn('[sitemap] Brak SUPABASE_URL/SUPABASE_SERVICE_KEY - pomijam artykuly.');
+    return [];
+  }
+
+  try {
+    const supabase = createClient(url, key, { auth: { persistSession: false } });
+    const { data, error } = await supabase
+      .from('articles')
+      .select('id, published')
+      .eq('accepted', true)
+      .not('published', 'is', null)
+      .order('published', { ascending: false })
+      .limit(1000);
+
+    if (error) throw error;
+    return data ?? [];
+  } catch (err) {
+    console.warn('[sitemap] Nie udalo sie pobrac artykulow:', err.message);
+    return [];
+  }
+}
+
+function entry(loc, lastmod) {
+  const alternates = langs
+    .map((l) => {
+      const href = loc.replace(/^(https:\/\/[^/]+)\/(pl|en)/, `$1/${l}`);
+      return `    <xhtml:link rel="alternate" hreflang="${l}" href="${href}"/>`;
+    })
+    .join('\n');
+
+  return `  <url>
+    <loc>${loc}</loc>${lastmod ? `\n    <lastmod>${String(lastmod).slice(0, 10)}</lastmod>` : ''}
+${alternates}
+  </url>`;
+}
+
+const articles = await fetchArticles();
+
+const urls = [
+  ...langs.flatMap((l) => paths.map((p) => entry(`${base}/${l}${p}`))),
+  ...langs.flatMap((l) => articles.map((a) => entry(`${base}/${l}/aktualnosci/${a.id}`, a.published))),
+];
 
 const xml = `<?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-${routes.map(r => `  <url><loc>${base}${r}</loc></url>`).join('\n')}
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">
+${urls.join('\n')}
 </urlset>`;
 
 await writeFile('dist/sitemap.xml', xml, 'utf8');
+console.log(`[sitemap] Zapisano ${urls.length} adresow.`);

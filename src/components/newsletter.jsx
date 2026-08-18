@@ -1,45 +1,22 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useRef, useState } from 'react';
 
-const LOCALE_CACHE = new Map();
-const FORM_ID = '7027392'; 
-const SUBSCRIBE_URL = `https://api.convertkit.com/v3/forms/${FORM_ID}/subscribe`;
+import { useTranslations } from '../i18n/useTranslations.js';
+
+// Zapis idzie przez wlasny endpoint. Wczesniej komponent wolal API
+// ConvertKit bezposrednio z przegladarki, z kluczem API w bundlu.
+const SUBSCRIBE_URL = '/api/newsletter-subscribe';
 const REQUEST_TIMEOUT_MS = 15000;
 
 export default function NewsletterForm() {
-  const location = useLocation();
-  const language = useMemo(() => location.pathname.split('/')[1] || 'pl', [location.pathname]);
+  const { t } = useTranslations();
 
-  const [t, setT] = useState({ newsletter: {} });
   const [email, setEmail] = useState('');
   const [consent, setConsent] = useState(false);
-  const [status, setStatus] = useState('idle'); 
+  const [status, setStatus] = useState('idle');
   const [errMsg, setErrMsg] = useState('');
-
   const [company, setCompany] = useState('');
 
   const abortRef = useRef(null);
-
-  useEffect(() => {
-    let active = true;
-    (async () => {
-      try {
-        if (LOCALE_CACHE.has(language)) {
-          if (active) setT(LOCALE_CACHE.get(language));
-        } else {
-          const res = await fetch(`/locales/${language}.json`, { credentials: 'same-origin' });
-          if (!res.ok) throw new Error(`HTTP ${res.status}`);
-          const data = await res.json();
-          LOCALE_CACHE.set(language, data);
-          if (active) setT(data);
-        }
-      } catch (e) {
-        console.error('i18n error:', e);
-        if (active) setT({ newsletter: {} });
-      }
-    })();
-    return () => { active = false; };
-  }, [language]);
 
   const validate = () => {
     if (company.trim().length > 0) {
@@ -77,10 +54,7 @@ export default function NewsletterForm() {
           'Content-Type': 'application/json; charset=utf-8',
           Accept: 'application/json',
         },
-        body: JSON.stringify({
-          api_key: import.meta.env.VITE_CONVERTKIT_PUBLIC_API_KEY, 
-          email,
-        }),
+        body: JSON.stringify({ email, consent, company }),
         signal: controller.signal,
       });
 

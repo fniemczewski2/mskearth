@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import useUploadFiles from "../../services/useUploadFiles.jsx"
+import useUploadFiles from "../../services/storage/useUploadFiles.js"
 
 import {
   fetchFoundationBoardMembers,
@@ -12,7 +12,7 @@ import {
   createFinancialReport,
 } from "../../services/db/financialReports.jsx";
 
-import { supabase } from "../../services/supabaseClient.jsx";
+import { supabase } from "../../services/supabaseClient.js";
 
 const emptyMember = {
   name: "",
@@ -40,6 +40,7 @@ function BoardMembersCMS() {
   const [saving, setSaving] = useState(false);
 
   const { fileIds, uploadFiles, uploading, errors: uploadErrors, reset: resetUploads } = useUploadFiles("mskearth");
+  const uploadErrorMsg = uploadErrors?.[0]?.message ?? "";
 
   useEffect(() => {
     let mounted = true;
@@ -210,6 +211,7 @@ function BoardMembersCMS() {
               await uploadFiles(e.target.files, { bucket: "mskearth", prefix: "foundation/board", maxFiles: 1 });
             }} />
             {uploading && <div className="cms-helperXs">Przesyłanie…</div>}
+            {uploadErrorMsg && <div className="cms-error" role="alert">{uploadErrorMsg}</div>}
             {fileIds?.length > 0 && (
               <div className="cms-helperXs">Wybrano plik: {fileIds[0]}</div>
             )}

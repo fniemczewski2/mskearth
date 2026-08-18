@@ -1,10 +1,9 @@
-import { Link } from 'react-router-dom';
 
 function SocialLink({ link, icon, label }) {
     return (
-      <Link target="_blank" to={link} aria-label={label} >
+      <a href={link} target="_blank" rel="noopener noreferrer" aria-label={label}>
         <i className={`social-icon ${icon}`} />
-      </Link>
+      </a>
     );
 }
 

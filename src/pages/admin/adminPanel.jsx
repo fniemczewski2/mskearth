@@ -1,175 +1,63 @@
-import { useEffect, useState } from "react";
-import { supabase } from "../../services/supabaseClient";
-import AdminPanelNav from "./adminPanelNav"
+import { useEffect, useState } from 'react';
 
-function AdminPanel() {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+import { supabase } from '../../services/supabaseClient.js';
+import AdminPanelNav from './adminPanelNav.jsx';
 
-  const [loading, setLoading] = useState(true);
-  const [authError, setAuthError] = useState("");
-  const [statusMsg, setStatusMsg] = useState("");
+/**
+ * Panel administracyjny.
+ *
+ * Logowanie i kontrola uprawnien przeniesione do <RequireAdmin>
+ * (src/components/auth/RequireAdmin.jsx). Ten komponent renderuje sie
+ * dopiero wtedy, gdy is_admin() zwrocilo true.
+ */
+export default function AdminPanel() {
   const [user, setUser] = useState(null);
+  const [statusMsg, setStatusMsg] = useState('');
 
   useEffect(() => {
-    const init = async () => {
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
-      setUser(session?.user ?? null);
-      setLoading(false);
-    };
-    init();
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUser(session?.user ?? null);
-      setLoading(false);
-      setAuthError("");
-      setStatusMsg("");
+    let active = true;
+
+    supabase.auth.getSession().then(({ data }) => {
+      if (active) setUser(data.session?.user ?? null);
     });
 
-    return () => subscription.unsubscribe();
+    const { data: sub } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (active) setUser(session?.user ?? null);
+    });
+
+    return () => {
+      active = false;
+      sub.subscription.unsubscribe();
+    };
   }, []);
 
-  const handleSignIn = async (e) => {
-    e.preventDefault();
-    setAuthError("");
-    setStatusMsg("Logowanie…");
-    try {
-      const { error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
-      if (error) throw error;
-      setStatusMsg("Zalogowano.");
-    } catch (err) {
-      setAuthError(err?.message || "Błąd logowania.");
-      setStatusMsg("");
-    }
-  };
-
-  const handleGoogle = async (e) => {
-    e.preventDefault();
-    setAuthError("");
-    setStatusMsg("Przekierowanie do Google…");
-    try {
-      await supabase.auth.signInWithOAuth({
-        provider: "google",
-        options: { redirectTo: window.location.origin },
-      });
-    } catch (err) {
-      setAuthError(err?.message || "Błąd logowania przez Google.");
-      setStatusMsg("");
-    }
-  };
-
   const handleSignOut = async () => {
-    setStatusMsg("Wylogowywanie…");
-    setAuthError("");
-    try {
-      await supabase.auth.signOut();
-      setStatusMsg("Wylogowano.");
-    } catch (err) {
-      setAuthError("Błąd podczas wylogowywania.");
-    }
+    setStatusMsg('Wylogowywanie…');
+    await supabase.auth.signOut();
+    setStatusMsg('');
   };
 
   const displayName =
-    user?.user_metadata?.full_name ||
-    user?.user_metadata?.name ||
-    user?.email ||
-    "Użytkownik";
+    user?.user_metadata?.full_name ?? user?.user_metadata?.name ?? user?.email ?? 'Użytkownik';
 
   return (
     <main className="adminPanel">
       <h1>Panel administracyjny</h1>
 
       <div role="status" aria-live="polite" className="status">
-        {loading ? "Ładowanie…" : statusMsg}
+        {statusMsg}
       </div>
-      {authError && (
-        <div role="alert" className="error">
-          {authError}
-        </div>
-      )}
 
-      {!user ? (
-        <form
-          className="loginForm"
-          onSubmit={handleSignIn}
-          aria-label="Logowanie administratora"
-          noValidate
-        >
-          <h2>Zaloguj</h2>
-
-          <label className="visually-hidden" htmlFor="email">
-            E-mail
-          </label>
-          <input
-            id="email"
-            type="email"
-            className="loginBox"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            placeholder="E-mail"
-            autoComplete="email"
-            required
-            aria-required="true"
-            inputMode="email"
-          />
-
-          <label className="visually-hidden" htmlFor="password">
-            Hasło
-          </label>
-          <input
-            id="password"
-            type="password"
-            className="loginBox"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            placeholder="Hasło"
-            autoComplete="current-password"
-            required
-            aria-required="true"
-          />
-
-          <button
-            type="submit"
-            className="loginBtn primaryBtn"
-            disabled={loading || !email || !password}
-          >
-            Zaloguj
+      <section className="sub-header">
+        <h2>
+          {displayName}
+          <button className="logOutBtn primaryBtn" onClick={handleSignOut} type="button">
+            Wyloguj
           </button>
+        </h2>
+      </section>
 
-          <button
-            type="button"
-            className="oauthBtn"
-            onClick={handleGoogle}
-            disabled={loading}
-          >
-            Zaloguj przez Google
-          </button>
-        </form>
-      ) : (
-        <>
-          <section className="sub-header">
-            <h2>
-              {displayName}
-              <button
-                className="logOutBtn primaryBtn"
-                onClick={handleSignOut}
-                type="button"
-              >
-                Wyloguj
-              </button>
-            </h2>
-          </section>
-          <AdminPanelNav currentUserName={displayName} />
-        </>
-      )}
+      <AdminPanelNav />
     </main>
   );
 }
-
-export default AdminPanel;

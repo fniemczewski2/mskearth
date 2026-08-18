@@ -1,13 +1,11 @@
 import { useState, useEffect } from 'react';
 import JoinUs from './joinUs';
 import Donate from './donate';
-import NewsletterForm from './newsletter';
 
 function SideButtons() {
     const [overlayVisible, setOverlayVisible] = useState(false);
     const [activeSection, setActiveSection] = useState(null);
     const [translations, setTranslations] = useState({ buttons: {} });
-    const [language, setLanguage] = useState('pl');
 
     const fetchTranslations = async (lang) => {
         try {
@@ -21,7 +19,6 @@ function SideButtons() {
 
     useEffect(() => {
         const lang = window.location.pathname.split('/')[1] || 'pl';
-        setLanguage(lang);
         fetchTranslations(lang);
     }, []); 
 

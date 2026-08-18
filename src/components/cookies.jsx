@@ -1,58 +1,84 @@
-import { useState, useEffect } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
-function CookieConsent() {
-    const [overlayVisible, setOverlayVisible] = useState(false);
-    const [showCookieConsent, setShowCookieConsent] = useState(false);
-    const [translations, setTranslations] = useState({ cookies: {} });
-    const [language, setLanguage] = useState('pl'); 
+import { useTranslations } from '../i18n/useTranslations.js';
 
-    const fetchTranslations = async (lang) => {
-        try {
-        const response = await fetch(`/locales/${lang}.json`);
-        const data = await response.json();
-        setTranslations(data);
-        } catch (error) {
-        console.error('Error loading translations:', error);
-        }
-    };
+const STORAGE_KEY = 'msk-cookie-consent';
 
-    useEffect(() => {
-        const lang = window.location.pathname.split('/')[1] || 'pl';
-        setLanguage(lang);
-        fetchTranslations(lang);
-    }, [language]);
+/**
+ * Baner zgody.
+ *
+ * Poprzednia wersja mial wylacznie przycisk akceptacji, a zamkniecie
+ * overlaya (klikniecie w tlo) zapisywalo zgode - art. 7 ust. 3 RODO wymaga,
+ * by odmowa byla rownie latwa jak zgoda. Doszlo tez natywne <dialog>,
+ * ktore daje przechwycenie fokusu, obsluge Escape i role="dialog"
+ * bez pisania wlasnej logiki.
+ */
+export default function CookieConsent() {
+  const { t } = useTranslations();
+  const dialogRef = useRef(null);
 
-    useEffect(() => {
-        const isCookieConsentShown = sessionStorage.getItem('cookieConsentShown');
-        if (!isCookieConsentShown) {
-            setShowCookieConsent(true);
-            setOverlayVisible(true);
-        }
-    }, []);
+  const [open, setOpen] = useState(() => {
+    try {
+      return localStorage.getItem(STORAGE_KEY) === null;
+    } catch {
+      return false;
+    }
+  });
 
-    const handleCookieConsentClose = () => {
-        setShowCookieConsent(false);
-        setOverlayVisible(false);
-        sessionStorage.setItem('cookieConsentShown', 'true');
-    };
+  useEffect(() => {
+    if (open && dialogRef.current && !dialogRef.current.open) {
+      dialogRef.current.showModal();
+    }
+  }, [open]);
 
-    return (
-        <>
-            {showCookieConsent && overlayVisible && (
-                <div className="overlay" onClick={handleCookieConsentClose}>
-                    <div className="overlay-content" onClick={(e) => e.stopPropagation()}>
-                        <div>
-                            <h2>COOKIES</h2>
-                            <article className="cookies">
-                                <p>{translations.cookies.message}</p>
-                                <button className="cookiesButton" onClick={handleCookieConsentClose}>{translations.cookies.button}</button>
-                            </article>
-                        </div>
-                    </div>
-                </div>
-            )}
-        </>
-    );
+  const decide = (analytics) => {
+    try {
+      localStorage.setItem(
+        STORAGE_KEY,
+        JSON.stringify({ analytics, ts: new Date().toISOString(), version: 1 })
+      );
+    } catch {
+      /* tryb prywatny - zapis niedostepny */
+    }
+    dialogRef.current?.close();
+    setOpen(false);
+  };
+
+  if (!open) return null;
+
+  return (
+    <dialog
+      ref={dialogRef}
+      className="cookie-dialog overlay-content"
+      aria-labelledby="cookie-title"
+      onCancel={(e) => {
+        e.preventDefault();
+        decide(false); // Escape = tylko niezbedne, nigdy milcząca zgoda
+      }}
+    >
+      <h2 id="cookie-title">{t.cookies?.title ?? 'Pliki cookies'}</h2>
+
+      <article className="cookies">
+        <p>
+          {t.cookies?.message ??
+            'Używamy plików cookies niezbędnych do działania serwisu. Możesz zgodzić się także na cookies analityczne.'}
+        </p>
+
+        <div className="cookie-actions" style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
+          <button type="button" className="cookiesButton primaryBtn" onClick={() => decide(true)}>
+            {t.cookies?.accept ?? t.cookies?.button ?? 'Akceptuję wszystkie'}
+          </button>
+          <button type="button" className="cookiesButton" onClick={() => decide(false)}>
+            {t.cookies?.reject ?? 'Tylko niezbędne'}
+          </button>
+        </div>
+
+        <p>
+          <a href="/polityka-prywatnosci.pdf" target="_blank" rel="noopener noreferrer">
+            {t.cookies?.policy ?? 'Polityka prywatności'}
+          </a>
+        </p>
+      </article>
+    </dialog>
+  );
 }
-
-export default CookieConsent;

@@ -1,6 +1,5 @@
 
-import { useCallback, useMemo, useState } from 'react';
-import PropTypes from 'prop-types';
+import { useCallback, useMemo, useRef, useState } from 'react';
 
 import ArticlesCMS from '../../components/admin/articlesCMS.jsx';
 import CitiesLocalCMS from '../../components/admin/citiesCMS.jsx';
@@ -16,25 +15,35 @@ const TABS = [
   { id: 'contact', label: 'Kontakt' },
 ];
 
-function AdminPanelNav({ currentUserName }) {
+function AdminPanelNav() {
   const [formType, setFormType] = useState('articles');
+  const tabRefs = useRef(new Map());
+
+  // Wzorzec ARIA Tabs wymaga, by fokus wedrowal razem z aktywna zakladka -
+  // wczesniej zostawal na starym przycisku, ktory mial juz tabIndex={-1}.
+  const activate = useCallback((id) => {
+    setFormType(id);
+    requestAnimationFrame(() => tabRefs.current.get(id)?.focus());
+  }, []);
 
   const handleKeyNav = useCallback(
     (e) => {
       const idx = TABS.findIndex((t) => t.id === formType);
       if (idx === -1) return;
 
-      if (e.key === 'ArrowRight') {
+      const target = {
+        ArrowRight: TABS[(idx + 1) % TABS.length].id,
+        ArrowLeft: TABS[(idx - 1 + TABS.length) % TABS.length].id,
+        Home: TABS[0].id,
+        End: TABS[TABS.length - 1].id,
+      }[e.key];
+
+      if (target) {
         e.preventDefault();
-        const next = TABS[(idx + 1) % TABS.length].id;
-        setFormType(next);
-      } else if (e.key === 'ArrowLeft') {
-        e.preventDefault();
-        const prev = TABS[(idx - 1 + TABS.length) % TABS.length].id;
-        setFormType(prev);
+        activate(target);
       }
     },
-    [formType]
+    [formType, activate]
   );
 
   const content = useMemo(() => {
@@ -76,7 +85,7 @@ function AdminPanelNav({ currentUserName }) {
           </>
         );
     }
-  }, [formType, currentUserName]);
+  }, [formType]);
 
   return (
     <>
@@ -91,12 +100,16 @@ function AdminPanelNav({ currentUserName }) {
           return (
             <button
               key={tab.id}
+              ref={(el) => {
+                if (el) tabRefs.current.set(tab.id, el);
+                else tabRefs.current.delete(tab.id);
+              }}
               className="formBtn"
               role="tab"
               aria-selected={selected}
               aria-controls={`panel-${tab.id}`}
               id={`tab-${tab.id}`}
-              onClick={() => setFormType(tab.id)}
+              onClick={() => activate(tab.id)}
               tabIndex={selected ? 0 : -1}
               type="button"
             >
@@ -117,8 +130,5 @@ function AdminPanelNav({ currentUserName }) {
   );
 }
 
-AdminPanelNav.propTypes = {
-  currentUserName: PropTypes.string, 
-};
 
 export default AdminPanelNav;

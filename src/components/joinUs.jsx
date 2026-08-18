@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { useLocation } from 'react-router-dom';
 import { supabase } from '../services/supabaseClient';
 
 const LOCALE_CACHE = new Map();
@@ -10,7 +10,6 @@ export default function JoinUs() {
 
   const [t, setT] = useState({ joinUs: {} });
 
-  const [calls, setCalls] = useState([]);
   const [recruitment, setRecruitment] = useState(null);
   const [loading, setLoading] = useState(true);
   const [err, setErr] = useState('');
@@ -50,16 +49,10 @@ export default function JoinUs() {
           .maybeSingle();
         if (recErr) throw recErr;
 
-        const { data: callData, error: callErr } = await supabase
-          .from('recruitment_calls')
-          .select('id, date, time, link') 
-          .order('date', { ascending: true })
-          .order('time', { ascending: true });
-        if (callErr) throw callErr;
-
+        // Zapytanie o recruitment_calls zostalo usuniete: jego wynik
+        // nie byl nigdzie renderowany, a lecial przy kazdym wejsciu.
         if (!active) return;
         setRecruitment(recData || null);
-        setCalls(Array.isArray(callData) ? callData : []);
       } catch (e) {
         console.error('JoinUs fetch error:', e);
         if (active) setErr('Nie udało się wczytać danych rekrutacyjnych.');
@@ -71,35 +64,6 @@ export default function JoinUs() {
   }, []);
 
 
-  const toLocalDate = (d, t) => {
-    if (!d) return null;
-    const timeStr = (t || '00:00').toString();
-    const hhmm = /^\d{2}:\d{2}$/.test(timeStr)
-      ? timeStr
-      : (/^\d{2}:\d{2}:\d{2}$/.test(timeStr) ? timeStr.slice(0, 5) : '00:00');
-    const dt = new Date(`${d}T${hhmm}`);
-    return isNaN(dt.getTime()) ? null : dt; 
-  };
-
-  const nearest = useMemo(() => {
-    const now = new Date();
-    const upcoming = calls
-      .map(c => ({ ...c, when: toLocalDate(c.date, c.time) }))
-      .filter(c => c.when && c.when > now)
-      .sort((a, b) => a.when - b.when);
-    return upcoming[0] || null;
-  }, [calls]);
-
-  const locale = language === 'pl' ? 'pl-PL' : language;
-  const formatDate = (d) => {
-    if (!d) return '';
-    try {
-      return d.toLocaleDateString(locale, { year: 'numeric', month: '2-digit', day: '2-digit' });
-    } catch {
-      return d.toLocaleDateString('pl-PL');
-    }
-  };
-  const formatTime = (d) => (d ? d.toLocaleTimeString('pl-PL', { hour: '2-digit', minute: '2-digit' }) : '');
 
   return (
     <>

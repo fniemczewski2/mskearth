@@ -2,7 +2,7 @@ import { useMemo, useState, useRef, useEffect, useCallback } from 'react';
 import { useLocation } from 'react-router-dom';
 import clsx from 'clsx';
 import Cities from '../components/cities.jsx';
-import { supabase } from '../services/supabaseClient.jsx';
+import { supabase } from '../services/supabaseClient.js';
 
 const LOCALE_CACHE = new Map();
 

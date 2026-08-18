@@ -1,23 +1,27 @@
-import { useId, useState } from "react";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faGoogle } from "@fortawesome/free-brands-svg-icons";
-import { supabase } from "../../services/supabaseClient";
+import { useId, useState } from 'react';
+import PropTypes from 'prop-types';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faGoogle } from '@fortawesome/free-brands-svg-icons';
 
-function SignInForm({ onSignedIn } = {}) {
+import { supabase } from '../../services/supabaseClient.js';
+import { env } from '../../config/env.js';
+
+export default function SignInForm({ onSignedIn }) {
   const emailId = useId();
   const passwordId = useId();
   const statusId = useId();
 
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [submitting, setSubmitting] = useState(false);
-  const [status, setStatus] = useState({ type: "idle", message: "" });
+  const [status, setStatus] = useState({ type: 'idle', message: '' });
 
   async function handleEmailPasswordSignIn(e) {
     e.preventDefault();
     if (submitting) return;
+
     setSubmitting(true);
-    setStatus({ type: "loading", message: "Logowanie…" });
+    setStatus({ type: 'loading', message: 'Logowanie…' });
 
     try {
       const { data, error } = await supabase.auth.signInWithPassword({
@@ -26,48 +30,18 @@ function SignInForm({ onSignedIn } = {}) {
       });
       if (error) throw error;
 
-      setStatus({ type: "success", message: "Zalogowano." });
-      setPassword("");
-      if (typeof onSignedIn === "function") onSignedIn(data.session || null);
-    } catch (err) {
-      console.error("Sign-in error:", err);
-      setStatus({
-        type: "error",
-        message: "Nieprawidłowe dane logowania lub błąd serwera.",
-      });
+      setStatus({ type: 'success', message: 'Zalogowano.' });
+      setPassword('');
+      onSignedIn?.(data.session ?? null);
+    } catch {
+      // Komunikat celowo ogolny - nie zdradzamy, czy konto istnieje.
+      setStatus({ type: 'error', message: 'Nieprawidłowe dane logowania.' });
     } finally {
       setSubmitting(false);
     }
   }
 
-  async function handleGoogleSignIn(e) {
-    e.preventDefault();
-    if (submitting) return;
-    setSubmitting(true);
-    setStatus({ type: "loading", message: "Przekierowanie do Google…" });
-
-    const redirectTo =
-      (typeof import.meta !== "undefined" && import.meta.env?.VITE_AUTH_CALLBACK_URL) ||
-      process.env?.NEXT_PUBLIC_AUTH_CALLBACK_URL ||
-      window.location.origin;
-
-    try {
-      const { error } = await supabase.auth.signInWithOAuth({
-        provider: "google",
-        options: { redirectTo },
-      });
-      if (error) throw error;
-    } catch (err) {
-      console.error("OAuth error:", err);
-      setStatus({
-        type: "error",
-        message: "Nie udało się rozpocząć logowania przez Google.",
-      });
-      setSubmitting(false);
-    }
-  }
-
-  const canSubmit = !submitting && email.trim().length > 3 && password.length >= 6;
+  const canSubmit = !submitting && email.trim().length > 3 && password.length >= 8;
 
   return (
     <div className="login">
@@ -79,22 +53,16 @@ function SignInForm({ onSignedIn } = {}) {
       >
         <p
           id={statusId}
-          role="status"
+          role={status.type === 'error' ? 'alert' : 'status'}
           aria-live="polite"
           className={`formStatus ${
-            status.type === "error"
-              ? "is-error"
-              : status.type === "success"
-              ? "is-success"
-              : ""
+            status.type === 'error' ? 'is-error' : status.type === 'success' ? 'is-success' : ''
           }`}
         >
           {status.message}
         </p>
 
-        <label className="sr-only" htmlFor={emailId}>
-          E-mail
-        </label>
+        <label className="sr-only" htmlFor={emailId}>E-mail</label>
         <input
           id={emailId}
           type="email"
@@ -107,9 +75,7 @@ function SignInForm({ onSignedIn } = {}) {
           required
         />
 
-        <label className="sr-only" htmlFor={passwordId}>
-          Hasło
-        </label>
+        <label className="sr-only" htmlFor={passwordId}>Hasło</label>
         <input
           id={passwordId}
           type="password"
@@ -119,28 +85,16 @@ function SignInForm({ onSignedIn } = {}) {
           placeholder="Hasło"
           autoComplete="current-password"
           required
-          minLength={6}
+          minLength={8}
         />
 
         <button
           type="submit"
           className="loginBtn"
           disabled={!canSubmit}
-          aria-busy={submitting ? "true" : "false"}
+          aria-busy={submitting ? 'true' : 'false'}
         >
-          {submitting ? "Logowanie…" : "Zaloguj"}
-        </button>
-
-        <button
-          type="button"
-          className="loginBtn"
-          onClick={handleGoogleSignIn}
-          aria-label="Zaloguj przez Google"
-          title="Zaloguj przez Google"
-          disabled={submitting}
-          aria-busy={submitting ? "true" : "false"}
-        >
-          <FontAwesomeIcon className="social-icon" icon={faGoogle} />
+          {submitting ? 'Logowanie…' : 'Zaloguj'}
         </button>
       </form>
     </div>
@@ -148,15 +102,5 @@ function SignInForm({ onSignedIn } = {}) {
 }
 
 SignInForm.propTypes = {
-  onSignedIn: (props, propName, componentName) => {
-    const v = props[propName];
-    if (v !== undefined && typeof v !== "function") {
-      return new Error(
-        `Invalid prop \`${propName}\` supplied to \`${componentName}\`. Expected a function.`
-      );
-    }
-    return null;
-  },
+  onSignedIn: PropTypes.func,
 };
-
-export default SignInForm;

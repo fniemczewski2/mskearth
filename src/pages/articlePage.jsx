@@ -1,62 +1,44 @@
 import { useMemo, useState, useRef, useEffect, useCallback } from "react";
-import { Link, useLocation, useParams } from "react-router-dom";
-import PropTypes from "prop-types";
-import DOMPurify from "dompurify";
-import { getArticleById } from "../services/db/article";
-const LOCALE_CACHE = new Map();
-const SUPPORTED_LOCALES = new Set(["pl", "en", "ua"]);
+import { Link, useParams } from "react-router-dom";
 
-export default function ArticlePage({ articles = [] }) {
+import Seo from "../components/Seo.jsx";
+import { sanitizeArticle } from "../lib/sanitize.js";
+import { useTranslations } from "../i18n/useTranslations.js";
+import { getPublishedArticleById } from "../services/db/article.js";
+
+export default function ArticlePage() {
   const { id } = useParams();
-  const location = useLocation();
+  const { t, lang } = useTranslations();
+  const language = lang;
 
-  const language = useMemo(() => {
-    const seg = (location.pathname.split("/")[1] || "").toLowerCase();
-    return SUPPORTED_LOCALES.has(seg) ? seg : "pl";
-  }, [location.pathname]);
-
-  const [article, setArticle] = useState(() =>
-    articles.find((a) => String(a?.id) === String(id)) || null
-  );
-  const [loading, setLoading] = useState(!article);
-  const [t, setT] = useState({ articlePage: {} });
+  const [article, setArticle] = useState(null);
+  const [loading, setLoading] = useState(true);
 
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const carouselImgRef = useRef(null);
 
   useEffect(() => {
-    (async () => {
-      try {
-        if (LOCALE_CACHE.has(language)) {
-           setT(LOCALE_CACHE.get(language));
-        } else {
-          const res = await fetch(`/locales/${language}.json`, { credentials: "same-origin" });
-          if (!res.ok) throw new Error(`HTTP ${res.status}`);
-          const data = await res.json();
-          LOCALE_CACHE.set(language, data);
-          setT(data);
-        }
-      } catch (err) {
-        console.error("Error loading translations:", err);
-        setT({ articlePage: {} });
-      }
-    })();
-  }, [language]);
+    let active = true;
+    setLoading(true);
 
-  useEffect(() => {
-    (async () => {
-      setLoading(true);
-      try {
-        getArticleById(id).then((data) => {
-          setArticle(data);
-        });
-      } catch (err) {
-        console.error("Fetch article error:", err);
-        setArticle(null);
-      } finally {
-        setLoading(false);
-      }
-    })();
+    getPublishedArticleById(id)
+      .then((data) => {
+        if (active) setArticle(data);
+      })
+      .catch((err) => {
+        // Wczesniej try/catch obejmowal .then(), wiec bledy sieciowe
+        // nie byly lapane, a setLoading(false) wykonywalo sie przed
+        // rozwiazaniem obietnicy.
+        console.error("Nie udalo sie pobrac artykulu:", err);
+        if (active) setArticle(null);
+      })
+      .finally(() => {
+        if (active) setLoading(false);
+      });
+
+    return () => {
+      active = false;
+    };
   }, [id]);
 
   useEffect(() => {
@@ -67,30 +49,36 @@ export default function ArticlePage({ articles = [] }) {
     const url = window.location.href;
     try {
       if (navigator.share) {
-        await navigator.share({ url, title: document.title, text: "" });
+        await navigator.share({ url, title: document.title });
         return;
       }
-      if (navigator.clipboard?.writeText) {
-        await navigator.clipboard.writeText(url);
-        alert(t.articlePage?.linkCopied || "Skopiowano link.");
-      } else {
-        const el = document.createElement("input");
-        el.value = url;
-        document.body.appendChild(el);
-        el.select();
-        document.execCommand("copy");
-        document.body.removeChild(el);
-        alert(t.articlePage?.linkCopied || "Skopiowano link.");
-      }
+      await navigator.clipboard?.writeText(url);
     } catch (err) {
-      console.error(t.articlePage?.linkNotCopied || "Nie udało się skopiować linku.", err);
+      console.error("Nie udalo sie udostepnic linku:", err);
     }
-  }, [t]);
+  }, []);
+
+  const pick = useCallback(
+    (obj, base, en, ua) => {
+      if (!obj) return "";
+      if (language === "en") return obj[en] ?? obj[base] ?? "";
+      if (language === "ua") return obj[ua] ?? obj[base] ?? "";
+      return obj[base] ?? "";
+    },
+    [language]
+  );
+
+  const title = pick(article, "title", "titleen", "titleua");
+  const subtitle = pick(article, "subtitle", "subtitleen", "subtitleua");
+  const contentHtml = pick(article, "content", "contenten", "contentua");
+
+  const safeHtml = useMemo(() => sanitizeArticle(contentHtml), [contentHtml]);
 
   if (loading) {
     return (
-      <div className="loader" aria-hidden="true" role="status" aria-live="polite" aria-busy="true">
-        <span className="spinner" aria-hidden="true"/>
+      <div className="loader" role="status" aria-live="polite" aria-busy="true">
+        <span className="spinner" aria-hidden="true" />
+        <span className="sr-only">Ładowanie artykułu…</span>
       </div>
     );
   }
@@ -98,37 +86,35 @@ export default function ArticlePage({ articles = [] }) {
   if (!article) {
     return (
       <main>
+        <Seo title="Nie znaleziono artykułu | MSK" />
         <article>
           <p role="alert">{t.articlePage?.error || "Nie znaleziono artykułu."}</p>
+          <Link to={`/${language}/aktualnosci`}>
+            {t.articlePage?.backToList || "Wróć do aktualności"}
+          </Link>
         </article>
       </main>
     );
   }
-
-  const pick = (obj, base, en, ua) => {
-    if (language === "en") return obj[en] ?? obj[base] ?? "";
-    if (language === "ua") return obj[ua] ?? obj[base] ?? "";
-    return obj[base] ?? "";
-  };
-
-  const title = pick(article, "title", "titleen", "titleua");
-  const subtitle = pick(article, "subtitle", "subtitleen", "subtitleua");
-  const contentHtml = pick(article, "content", "contenten", "contentua");
 
   if (!contentHtml?.trim()) {
     return (
       <main>
+        <Seo title={`${title || "Artykuł"} | MSK`} />
         <article>
           <h3>{t.articlePage?.noTranslationTitle || "Brak tłumaczenia"}</h3>
-          <p>{t.articlePage?.noTranslation || "Ten artykuł nie ma jeszcze tłumaczenia w wybranym języku."}</p>
+          <p>
+            {t.articlePage?.noTranslation ||
+              "Ten artykuł nie ma jeszcze tłumaczenia w wybranym języku."}
+          </p>
         </article>
       </main>
     );
   }
 
-  const safeHtml = DOMPurify.sanitize(contentHtml);
 
   const imgs = Array.isArray(article.imgurl) ? article.imgurl : [];
+  const canonical = `https://msk.earth/${language}/aktualnosci/${article.id}`;
   const hasImages = imgs.length > 0;
   const manyImages = imgs.length > 1;
 
@@ -148,21 +134,16 @@ export default function ArticlePage({ articles = [] }) {
   const createdISO = article.created || "";
   const createdDate = createdISO ? String(createdISO).split("T")[0] : "";
 
-  const isAccepted =
-    typeof article.accepted === "boolean" ? article.accepted : article.accepted !== "false";
-
-  if (!isAccepted) {
-    return (
-      <main>
-        <article>
-          <p>{t.articlePage?.error || "Ten artykuł nie jest dostępny."}</p>
-        </article>
-      </main>
-    );
-  }
-
   return (
     <main>
+      <Seo
+        title={`${title} — MSK`}
+        description={subtitle || title}
+        image={imgs[0]}
+        url={canonical}
+        type="article"
+      />
+
       <article className="singleNewsElement" aria-labelledby="article-title">
         <div className="singleNewsTopInfo">
           <Link to={`/${language}/aktualnosci`} aria-label={t.articlePage?.back || "Powrót do aktualności"}>
@@ -261,25 +242,3 @@ export default function ArticlePage({ articles = [] }) {
   );
 }
 
-ArticlePage.propTypes = {
-  articles: PropTypes.arrayOf(
-    PropTypes.shape({
-      id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
-      title: PropTypes.string,
-      titleen: PropTypes.string,
-      titleua: PropTypes.string,
-      subtitle: PropTypes.string,
-      subtitleen: PropTypes.string,
-      subtitleua: PropTypes.string,
-      content: PropTypes.string,
-      contenten: PropTypes.string,
-      contentua: PropTypes.string,
-      created: PropTypes.string,
-      accepted: PropTypes.oneOfType([PropTypes.bool, PropTypes.string]),
-      imgurl: PropTypes.arrayOf(PropTypes.string),
-      imgalt: PropTypes.string,
-      sourcetext: PropTypes.string,
-      sourcelink: PropTypes.string,
-    })
-  ),
-};
