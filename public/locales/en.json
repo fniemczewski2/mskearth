@@ -128,7 +128,8 @@
   },
   "news": {
     "h1": "News",
-    "more": "More..."
+    "more": "More...",
+    "empty": "No posts yet. Check back soon."
   },
   "newsletter": {
     "h2": "Newsletter",

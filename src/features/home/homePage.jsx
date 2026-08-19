@@ -1,0 +1,116 @@
+import { useEffect, useRef, useState } from 'react';
+import Clock from '../../layout/clock.jsx';
+import JoinUs from '../recruitment/joinUs.jsx';
+import Donate from '../donate/donate.jsx';
+
+function Main() {
+  const videoRef = useRef(null);
+  const observerRef = useRef(null);
+
+  const [isMuted, setIsMuted] = useState(true);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const v = videoRef.current;
+    if (!v || !('IntersectionObserver' in window)) return;
+
+    observerRef.current = new IntersectionObserver(
+      (entries) => {
+        const entry = entries[0];
+        const visible = entry.isIntersecting && entry.intersectionRatio > 0;
+        if (visible) v.play().catch(() => {});
+        else v.pause();
+      },
+      { rootMargin: '0px 0px -10% 0px', threshold: [0, 0.1, 0.5] }
+    );
+    observerRef.current.observe(v);
+    return () => observerRef.current?.disconnect();
+  }, []);
+
+  useEffect(() => {
+    const v = videoRef.current;
+    if (!v) return;
+    const handleVolumeChange = () => setIsMuted(v.muted);
+    v.addEventListener('volumechange', handleVolumeChange);
+    return () => v.removeEventListener('volumechange', handleVolumeChange);
+  }, []);
+
+  const toggleMute = () => {
+    const v = videoRef.current;
+    if (!v) return;
+    v.muted = !v.muted;
+    setIsMuted(v.muted);
+  };
+
+  return (
+    <main className="index">
+      <Clock />
+
+      <section className="hero">
+
+        <h1>Młodzieżowy<br/>Strajk<br/>Klimatyczny</h1>
+
+        <div className="hero-cta-group">
+          <a href="#joinUs" className="cta">
+            Dołącz do nas&nbsp;<i className="bi bi-rocket-takeoff" aria-hidden="true" />
+          </a>
+          <a href="#donate" className="cta ghost">
+            Wesprzyj nas&nbsp;<i className="bi bi-piggy-bank" aria-hidden="true" />
+          </a>
+        </div>
+
+        <i className="bi bi-chevron-double-down scroll-cue" aria-hidden="true" />
+      </section>
+
+      <section className="film-container" data-reveal>
+        <video
+          id="film"
+          className="film"
+          ref={videoRef}
+          autoPlay
+          muted={isMuted}
+          loop
+          playsInline
+          preload="metadata"
+          poster="/filmikea-poster.webp"
+          width="1280"
+          height="720"
+          onCanPlayThrough={() => setIsLoading(false)}
+          onLoadedData={() => setIsLoading(false)}
+          aria-label="Film promocyjny IKEA przedstawiający działania proekologiczne"
+        >
+          <source src="/filmikea.webm" type="video/webm" />
+          Twoja przeglądarka nie obsługuje elementu wideo.
+        </video>
+
+        {isLoading && (
+          <div className="loader" role="status" aria-live="polite">
+            <span className="spinner" aria-hidden="true"/>
+            <span className="sr-only">Ładowanie…</span>
+          </div>
+        )}
+
+        <div className="film-controls">
+          <button
+            type="button"
+            className="mute-button"
+            onClick={toggleMute}
+            aria-pressed={!isMuted}
+            aria-label={isMuted ? 'Włącz dźwięk' : 'Wycisz wideo'}
+          >
+            {isMuted
+              ? <i className="bi bi-volume-mute" aria-hidden="true" />
+              : <i className="bi bi-volume-up" aria-hidden="true" />}
+          </button>
+        </div>
+      </section>
+
+      <JoinUs />
+      <div id="donate">
+        <Donate />
+      </div>
+    </main>
+  );
+}
+
+export default Main;

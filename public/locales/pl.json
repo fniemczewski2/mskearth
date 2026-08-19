@@ -126,7 +126,8 @@
   },
   "news": {
     "h1": "Aktualności",
-    "more": "Więcej..."
+    "more": "Więcej...",
+    "empty": "Nie mamy jeszcze żadnych wpisów. Zajrzyj tu wkrótce."
   },
   "newsletter": {
     "h2": "Newsletter",

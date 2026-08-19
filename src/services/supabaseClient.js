@@ -1,6 +1,6 @@
 import { createClient } from '@supabase/supabase-js';
 
-import { env } from '../config/env.js';
+import { env } from '../shared/config/env.js';
 
 export const supabase =
   globalThis.__supabase__ ??

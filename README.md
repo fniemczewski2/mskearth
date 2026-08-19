@@ -67,10 +67,11 @@ Zasady, na których stoi model dostępu:
 ```
 api/              funkcje serverless (Stripe, newsletter) + wspólne moduły w _lib/
 embed/            strony osadzeń dla partnerów
-src/components/   komponenty współdzielone, admin/ to CMS
-src/pages/        widoki tras
-src/services/     dostęp do Supabase
-src/i18n/         ładowanie tłumaczeń z public/locales
+src/app/          punkt wejścia, routing (App.jsx, RootRouter.jsx)
+src/features/     jeden folder na widok/funkcję (news, donate, admin/cms, ...)
+src/layout/       nagłówek, stopka, pasek boczny — wspólne dla całej strony
+src/shared/       komponenty, hooki, i18n i lib używane w wielu features
+src/services/     klient Supabase i upload plików
 supabase/         migracje bazy
 ```
 

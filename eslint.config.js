@@ -19,18 +19,18 @@ export default [
     plugins: { react, 'react-hooks': reactHooks, 'react-refresh': reactRefresh },
     rules: {
       ...react.configs.recommended.rules,
-      ...reactHooks.configs.recommended.rules,
+      'react-hooks/rules-of-hooks': 'error',
+      'react-hooks/exhaustive-deps': 'error',
       'react/react-in-jsx-scope': 'off',
       // Docelowo TypeScript z typami generowanymi ze schematu Supabase.
       // Do tego czasu PropTypes sa w projekcie uzywane niekonsekwentnie,
       // wiec regula nie blokuje CI.
       'react/prop-types': 'off',
-      'react-hooks/exhaustive-deps': 'error',
       'no-console': ['error', { allow: ['error'] }],
       'no-unused-vars': ['error', { argsIgnorePattern: '^_', varsIgnorePattern: '^_' }],
       'no-restricted-globals': [
         'error',
-        { name: 'process', message: 'W kodzie klienckim uzyj import.meta.env (src/config/env.js).' },
+        { name: 'process', message: 'W kodzie klienckim uzyj import.meta.env (src/shared/config/env.js).' },
       ],
     },
   },

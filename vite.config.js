@@ -1,9 +1,15 @@
-import { defineConfig } from 'vite';
+import { defineConfig } from 'vitest/config';
 import react from '@vitejs/plugin-react';
 import { resolve } from 'node:path';
 
 export default defineConfig(({ mode }) => ({
   plugins: [react()],
+  test: {
+    environment: 'jsdom',
+    setupFiles: ['./src/test/setup.js'],
+    css: false,
+    exclude: ['node_modules/**', 'dist/**'],
+  },
   build: {
     target: 'es2022',
     sourcemap: mode !== 'production',
@@ -14,9 +20,11 @@ export default defineConfig(({ mode }) => ({
         embedBelka: resolve(import.meta.dirname, 'embed/belka.html'),
       },
       output: {
-        manualChunks: {
-          react: ['react', 'react-dom', 'react-router-dom'],
-          supabase: ['@supabase/supabase-js'],
+        manualChunks(id) {
+          if (!id.includes('node_modules')) return undefined;
+          if (/[\\/](react|react-dom|react-router-dom)[\\/]/.test(id)) return 'react';
+          if (id.includes('@supabase/supabase-js')) return 'supabase';
+          return undefined;
         },
       },
     },
