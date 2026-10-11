@@ -65,6 +65,21 @@ select id, email from auth.users where email in ('adres@fpmsk.org.pl')
 on conflict (user_id) do nothing;
 ```
 
+### Logowanie do panelu przez Google
+
+Panel (`/admin`) ma przycisk „Zaloguj przez Google”. Przez Google wejdą tylko konta z domen **@msk.earth** i **@fpmsk.org.pl** – sprawdza to przeglądarka (`src/features/admin/allowedDomains.js`) i serwer (hook Supabase w `supabase/migrations/20261011120000_admin_google_domains.sql`). Każde konto Google z tych domen **automatycznie dostaje uprawnienia administratora** – trigger z migracji `20261011130000_admin_from_google_domain.sql` dopisuje je do tabeli `admins` przy pierwszym logowaniu przez Google. Konta logujące się hasłem nadal trzeba dopisać ręcznie. Gdy ktoś odchodzi z organizacji, wyłącz jego konto w Google Workspace i usuń wiersz z `admins`.
+
+Jednorazowa konfiguracja:
+
+1. **Google Cloud Console** → APIs & Services → Credentials → *Create OAuth client ID* (typ *Web application*).
+   - Authorized JavaScript origins: `https://msk.earth`, `http://localhost:5173`
+   - Authorized redirect URIs: `https://<id-projektu>.supabase.co/auth/v1/callback`
+   - Jeśli obie domeny są w jednym Google Workspace, ekran zgody można ustawić na *Internal*.
+2. **Supabase** → Authentication → Providers → **Google**: włącz i wklej Client ID oraz Client Secret.
+3. **Supabase** → Authentication → URL Configuration → *Redirect URLs*: dodaj `https://msk.earth/admin` i `http://localhost:5173/admin` (albo adres z `VITE_AUTH_CALLBACK_URL`).
+4. Wdróż migrację (`npx supabase db push`), a potem **Supabase** → Authentication → **Hooks** → *Before User Created* → Postgres → `public.hook_admin_google_domains` → włącz.
+5. Nic więcej: osoby z @msk.earth i @fpmsk.org.pl po pierwszym logowaniu przez Google mają dostęp do panelu. Konto Google z tym samym adresem co istniejące konto e-mail Supabase łączy automatycznie.
+
 Zasady, na których stoi model dostępu:
 
 - Tabela `donations` jest niedostępna dla przeglądarki. Zapisuje do niej wyłącznie serwer kluczem `service_role`. Statystyki zbiórki czyta się z widoku `donation_stats`, który zwraca trzy liczby zamiast wierszy z danymi darczyńców.

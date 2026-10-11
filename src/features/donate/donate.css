@@ -129,10 +129,6 @@
   color: white;
 }
 
-.amounts button:focus {
-  outline: none;
-  color: white;
-}
 
 .buttonContainer .primaryBtn {
   width: 100%;

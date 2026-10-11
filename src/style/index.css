@@ -3335,3 +3335,316 @@ dl.foundationData { margin: 0; }
    nie rysujemy wokol naglowka/kontenera ramki jak przy fokusie z klawiatury. */
 #main-content:focus,
 #main-content h1[tabindex="-1"]:focus { outline: none; }
+
+/* ==== Kontakt: karty osób ====
+   Siatka zamiast flex + min-width: karty nie wychodzą poza ekran na telefonie,
+   mają równą wysokość, a cała treść jest wyśrodkowana. */
+.contact-persons {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 250px), 1fr));
+  gap: 20px;
+  align-items: stretch;
+  width: 100%;
+  max-width: min(55vw, 860px);
+}
+.contact-persons > .loader,
+.contact-persons > p { grid-column: 1 / -1; }
+
+.contact-persons article.contact-person {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 4px;
+  width: auto;
+  min-width: 0;
+  max-width: none;
+  height: auto;
+  margin: 0;
+  padding: 24px 20px;
+  text-align: center;
+}
+.contact-person .iconContainer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 12px;
+}
+.contact-persons .contact-person .iconContainer i { margin: 0; }
+.contact-persons .contact-person .personName {
+  min-height: 0;
+  margin: 0;
+  line-height: 1.2;
+  text-align: center;
+  overflow-wrap: anywhere;
+}
+.contact-person .personCity {
+  margin: 2px 0 12px;
+  font-weight: 600;
+  text-align: center;
+}
+.contact-person .contactLink {
+  width: 100%;
+  margin: 4px 0 0;
+}
+.contact-person .contactLink strong {
+  justify-content: center;
+  gap: 8px;
+  margin: 0;
+  font-size: .95rem;
+}
+.contact-person .contactLink i.bi-telephone-fill,
+.contact-person .contactLink i.bi-envelope-fill {
+  flex: 0 0 auto;
+  margin: 0;
+}
+.contact-person .contactLink a {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+@media (max-width: 1023px) {
+  .contact-persons { max-width: 100%; }
+}
+
+/* ==== Przyciski drugorzędne (non-primary): wspólne zachowanie przy najechaniu ====
+   Każdy przycisk drugorzędny na hover: unosi się o 1px, dostaje cień --shadow-2,
+   a kolory zmieniają się płynnie (te same czasy przejścia). Kolor zależy od rodziny:
+   1) wypełnione zielone (Pobierz, Obserwuj/Wypełnij, Zapisz się, Zamknij)
+      -> ciemniejsza zieleń, biały tekst;
+   2) opcje do wyboru (kwoty, rodzaj wsparcia, miasta)
+      -> jasnozielone tło, zielony tekst; wybrana opcja = pełna zieleń;
+   3) na ciemnym tle / zdjęciu (EN, "Wesprzyj nas" w hero, wideo, pasek wiadomości, karuzela)
+      -> odwrócenie: białe tło, ciemnozielony tekst.
+   Przyciski główne (.primaryBtn, .cta) i boczne zakładki (.side-button) mają własne reguły. */
+.statut,
+.report,
+.joinUsButton,
+.newsletterButton,
+.foundation .documentsContainer a,
+.close-button,
+.donate .amounts button,
+.donate .payment-type button,
+.city-chip,
+.flag-btn,
+.hero-cta-group .cta.ghost,
+.mute-button,
+.ticker-toggle,
+.carousel-button,
+.singleNewsTopInfo a,
+.singleNewsTopInfo .icon-btn {
+  transition:
+    background-color var(--transition),
+    color var(--transition),
+    border-color var(--transition),
+    box-shadow var(--transition),
+    translate var(--transition),
+    filter var(--transition);
+}
+
+/* wspólne: uniesienie + cień */
+.statut:hover,
+.report:hover,
+.joinUsButton:hover,
+.newsletterButton:hover,
+.foundation .documentsContainer a:hover,
+.close-button:hover,
+.donate .amounts button:hover,
+.donate .payment-type button:hover,
+.city-chip:hover,
+.flag-btn:hover,
+.hero-cta-group .cta.ghost:hover,
+.film-controls .mute-button:hover,
+.ccw-ticker .ticker-toggle:hover,
+.carousel-button:hover,
+.singleNewsTopInfo a:hover,
+.singleNewsTopInfo .icon-btn:hover {
+  translate: 0 -1px;
+  transform: none;
+  box-shadow: var(--shadow-2);
+  filter: none;
+}
+
+/* 1) wypełnione */
+.statut:hover,
+.report:hover,
+.joinUsButton:hover,
+.newsletterButton:hover,
+.foundation .documentsContainer a:hover,
+.close-button:hover {
+  background-color: var(--green-deep);
+  color: var(--white);
+}
+.singleNewsTopInfo a:hover,
+.singleNewsTopInfo .icon-btn:hover { background-color: var(--purple-deep); }
+
+/* 2) opcje do wyboru */
+.donate .amounts button:not(.active):hover,
+.donate .payment-type button:not(.active):hover,
+.city-chip:not([aria-pressed="true"]):hover {
+  background: color-mix(in srgb, var(--green-strong) 10%, var(--surface));
+  color: var(--green-strong);
+  box-shadow: inset 0 0 0 2px var(--green-strong), var(--shadow-2);
+}
+.donate .amounts button.active:hover,
+.donate .payment-type button.active:hover,
+.city-chip[aria-pressed="true"]:hover {
+  background: var(--green-deep);
+  color: var(--white);
+}
+/* bez :focus { outline: none } – fokus z klawiatury musi być widoczny */
+.donate .amounts button:focus-visible,
+.donate .payment-type button:focus-visible,
+.city-chip:focus-visible {
+  outline: 3px solid var(--ink);
+  outline-offset: 3px;
+}
+
+/* 3) na ciemnym tle */
+.flag-btn:hover,
+.hero-cta-group .cta.ghost:hover,
+.film-controls .mute-button:hover,
+.ccw-ticker .ticker-toggle:hover,
+.carousel-button:hover {
+  background: var(--white);
+  background-image: none;
+  color: var(--green-deep);
+  text-shadow: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .statut:hover, .report:hover, .joinUsButton:hover, .newsletterButton:hover,
+  .foundation .documentsContainer a:hover, .close-button:hover,
+  .donate .amounts button:hover, .donate .payment-type button:hover, .city-chip:hover,
+  .flag-btn:hover, .hero-cta-group .cta.ghost:hover, .film-controls .mute-button:hover,
+  .ccw-ticker .ticker-toggle:hover, .carousel-button:hover,
+  .singleNewsTopInfo a:hover, .singleNewsTopInfo .icon-btn:hover { translate: none; }
+}
+
+/* ==== Jeden styl przycisków akcji ====
+   Wybór kwoty, Dołącz (Obserwuj/Wypełnij), Zapisz się, Wpłać, nazwa miasta,
+   Załóż nową grupę, Pobierz, Wyślij: ten sam krój, rozmiar, zaokrąglenie, cień,
+   animacja (błysk + uniesienie o 2px) i ten sam hover.
+   - przycisk akcji: zielone tło -> ciemniejsza zieleń
+   - opcja do wyboru (kwota, miasto): białe tło z zieloną obwódką -> jasnozielone tło;
+     wybrana opcja wygląda jak przycisk akcji.
+   #root podnosi specyficzność ponad starsze, rozproszone reguły (także donate.css). */
+#root :is(
+  .donate .amounts button,
+  .joinUsButton,
+  .newsletterButton,
+  .donate button.primaryBtn,
+  .city-chip,
+  .startNewGroup,
+  .statut,
+  .contact .primaryBtn
+) {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: .5ch;
+  min-height: 48px;
+  padding: 12px 22px;
+  border: 0;
+  border-radius: var(--radius-md);
+  font-family: var(--main-font);
+  font-size: var(--step-0);
+  font-weight: 900;
+  letter-spacing: .02em;
+  line-height: 1.2;
+  text-transform: uppercase;
+  text-decoration: none;
+  text-shadow: none;
+  cursor: pointer;
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  background-image: none;
+  background-color: var(--green-strong);
+  color: var(--white);
+  box-shadow: var(--shadow-1);
+  filter: none;
+  transform: none;
+  translate: none;
+  transition:
+    background-color var(--transition),
+    color var(--transition),
+    box-shadow var(--transition),
+    translate var(--transition);
+}
+
+/* opcje do wyboru – stan spoczynku */
+#root :is(.donate .amounts button:not(.active), .city-chip:not([aria-pressed="true"])) {
+  background-color: var(--surface);
+  color: var(--green-strong);
+  box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--green-strong) 30%, transparent), var(--shadow-1);
+}
+
+/* hover – wspólny dla wszystkich */
+#root :is(
+  .donate .amounts button,
+  .joinUsButton,
+  .newsletterButton,
+  .donate button.primaryBtn,
+  .city-chip,
+  .startNewGroup,
+  .statut,
+  .contact .primaryBtn
+):hover {
+  translate: 0 -2px;
+  background-image: none;
+  background-color: var(--green-deep);
+  color: var(--white);
+  box-shadow: var(--shadow-2);
+}
+#root :is(.donate .amounts button:not(.active), .city-chip:not([aria-pressed="true"])):hover {
+  background-color: color-mix(in srgb, var(--green-strong) 10%, var(--surface));
+  color: var(--green-strong);
+  box-shadow: inset 0 0 0 2px var(--green-strong), var(--shadow-2);
+}
+
+/* klik, fokus, blokada */
+#root :is(
+  .donate .amounts button,
+  .joinUsButton,
+  .newsletterButton,
+  .donate button.primaryBtn,
+  .city-chip,
+  .startNewGroup,
+  .statut,
+  .contact .primaryBtn
+):active {
+  translate: 0 0;
+}
+#root :is(
+  .donate .amounts button,
+  .joinUsButton,
+  .newsletterButton,
+  .donate button.primaryBtn,
+  .city-chip,
+  .startNewGroup,
+  .statut,
+  .contact .primaryBtn
+):focus-visible {
+  outline: 3px solid var(--ink);
+  outline-offset: 3px;
+}
+#root :is(.donate button.primaryBtn, .contact .primaryBtn, .newsletterButton)[aria-disabled="true"] {
+  translate: none;
+  box-shadow: var(--shadow-1);
+}
+
+/* przyciski wysyłające formularz zajmują całą szerokość formularza */
+#root :is(.donate button.primaryBtn, .contact .primaryBtn) { width: 100%; margin-inline: 0; }
+
+@media (prefers-reduced-motion: reduce) {
+  #root :is(
+    .donate .amounts button, .joinUsButton, .newsletterButton, .donate button.primaryBtn,
+    .city-chip, .startNewGroup, .statut, .contact .primaryBtn
+  ):hover { translate: none; }
+}
+/* ikony w przyciskach w kolorze tekstu; kwoty mają dwie linie, więc węższy padding boczny */
+#root :is(
+  .donate .amounts button, .joinUsButton, .newsletterButton, .donate button.primaryBtn,
+  .city-chip, .startNewGroup, .statut, .contact .primaryBtn
+) i { color: inherit; }
+#root .donate .amounts button { padding: 12px 10px; flex-direction: column; gap: 2px; }

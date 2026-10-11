@@ -3,28 +3,41 @@ import PropTypes from 'prop-types';
 
 import { supabase, checkIsAdmin } from '../../services/supabaseClient.js';
 import SignInForm from './login.jsx';
+import { DOMAIN_ERROR, isAllowedAdminEmail, isGoogleSession } from './allowedDomains.js';
 
 export default function RequireAdmin({ children }) {
-  const [state, setState] = useState({ status: 'loading', isAdmin: false });
+  const [state, setState] = useState({ status: 'loading', isAdmin: false, error: '' });
 
   useEffect(() => {
     let active = true;
     let seq = 0;
+    let signingOut = false;
 
     // Liczy sie tylko wynik ostatniego sprawdzenia (np. wylogowanie w trakcie is_admin).
     const evaluate = async (session) => {
       const current = ++seq;
       if (!session) {
-        if (active) setState({ status: 'anon', isAdmin: false });
+        if (active) setState((s) => ({ status: 'anon', isAdmin: false, error: s.error ?? '' }));
+        return;
+      }
+      // Google: wpuszczamy tylko konta z domen organizacji (serwer blokuje to tez hookiem w Supabase).
+      if (isGoogleSession(session) && !isAllowedAdminEmail(session.user?.email)) {
+        if (active) setState({ status: 'anon', isAdmin: false, error: DOMAIN_ERROR });
+        if (!signingOut) {
+          signingOut = true;
+          await supabase.auth.signOut();
+          signingOut = false;
+        }
         return;
       }
       const isAdmin = await checkIsAdmin();
-      if (active && current === seq) setState({ status: 'ready', isAdmin });
+      if (active && current === seq) setState({ status: 'ready', isAdmin, error: '' });
     };
 
     supabase.auth.getSession().then(({ data }) => evaluate(data.session));
     const { data: sub } = supabase.auth.onAuthStateChange((_event, session) => {
-      evaluate(session);
+      // Wywolania Supabase (rpc, signOut) poza callbackiem – w nim trzymana jest blokada sesji.
+      setTimeout(() => evaluate(session), 0);
     });
 
     return () => {
@@ -45,7 +58,7 @@ export default function RequireAdmin({ children }) {
     return (
       <main className="adminPanel">
         <h1>Panel administracyjny</h1>
-        <SignInForm />
+        <SignInForm initialError={state.error} />
       </main>
     );
   }

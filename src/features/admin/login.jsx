@@ -1,9 +1,28 @@
-import { useId, useState } from 'react';
+import { useEffect, useId, useState } from 'react';
 import PropTypes from 'prop-types';
 
 import { supabase } from '../../services/supabaseClient.js';
+import { env } from '../../shared/config/env.js';
+import { DOMAIN_ERROR } from './allowedDomains.js';
+import './login.css';
 
-export default function SignInForm({ onSignedIn }) {
+/** Blad zwrocony przez Supabase/Google w adresie po przekierowaniu (?error=… lub #error=…). */
+function readOAuthError() {
+  const params = new URLSearchParams(window.location.search);
+  const hash = new URLSearchParams(window.location.hash.replace(/^#/, ''));
+  const code = params.get('error') || hash.get('error');
+  if (!code) return '';
+  const description = params.get('error_description') || hash.get('error_description') || '';
+
+  // Usuwamy parametry bledu z paska adresu, zeby nie wracaly po odswiezeniu.
+  window.history.replaceState(null, '', window.location.pathname);
+
+  if (code === 'access_denied' && !description) return 'Logowanie przez Google zostało anulowane.';
+  if (/domen|domain|msk\.earth|fpmsk/i.test(description)) return DOMAIN_ERROR;
+  return 'Nie udało się zalogować przez Google. Spróbuj ponownie.';
+}
+
+export default function SignInForm({ onSignedIn, initialError = '' }) {
   const emailId = useId();
   const passwordId = useId();
   const statusId = useId();
@@ -11,7 +30,39 @@ export default function SignInForm({ onSignedIn }) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [submitting, setSubmitting] = useState(false);
-  const [status, setStatus] = useState({ type: 'idle', message: '' });
+  const [status, setStatus] = useState(() =>
+    initialError ? { type: 'error', message: initialError } : { type: 'idle', message: '' }
+  );
+  const [googleBusy, setGoogleBusy] = useState(false);
+
+  useEffect(() => {
+    const message = readOAuthError();
+    if (message) setStatus({ type: 'error', message });
+  }, []);
+
+  useEffect(() => {
+    if (initialError) setStatus({ type: 'error', message: initialError });
+  }, [initialError]);
+
+  async function handleGoogleSignIn() {
+    if (googleBusy) return;
+    setGoogleBusy(true);
+    setStatus({ type: 'loading', message: 'Przekierowanie do Google…' });
+
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: {
+        redirectTo: env.authCallbackUrl ?? `${window.location.origin}/admin`,
+        // Zawsze pokazuj wybor konta, zeby latwo przelaczyc sie na konto organizacji.
+        queryParams: { prompt: 'select_account' },
+      },
+    });
+
+    if (error) {
+      setGoogleBusy(false);
+      setStatus({ type: 'error', message: 'Nie udało się rozpocząć logowania przez Google.' });
+    }
+  }
 
   async function handleEmailPasswordSignIn(e) {
     e.preventDefault();
@@ -96,6 +147,19 @@ export default function SignInForm({ onSignedIn }) {
         >
           {submitting ? 'Logowanie…' : 'Zaloguj'}
         </button>
+
+        <p className="loginDivider" aria-hidden="true"><span>lub</span></p>
+
+        <button
+          type="button"
+          className="loginBtn loginBtn--google"
+          onClick={handleGoogleSignIn}
+          aria-disabled={googleBusy ? 'true' : 'false'}
+          aria-busy={googleBusy ? 'true' : 'false'}
+          aria-describedby={`${statusId}-google-hint`}
+        >
+          {googleBusy ? 'Przekierowanie…' : 'Zaloguj przez Google'}
+        </button>
       </form>
     </div>
   );
@@ -103,4 +167,5 @@ export default function SignInForm({ onSignedIn }) {
 
 SignInForm.propTypes = {
   onSignedIn: PropTypes.func,
+  initialError: PropTypes.string,
 };

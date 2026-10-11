@@ -189,7 +189,7 @@
     "backToList": "Wróć do aktualności"
   },
   "clock": {
-    "title": "Według Climate Clock globalne ocieplenie przekroczy 1,5°C za:",
+    "title": "Globalne ocieplenie przekroczy 1,5°C za:",
     "years": "lata",
     "yearForms": { "one": "rok", "few": "lata", "many": "lat", "other": "roku" },
     "days": "dni"
