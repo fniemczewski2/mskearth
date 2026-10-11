@@ -85,7 +85,7 @@ function BoardMembersCMS() {
   async function handleSubmit(e) {
     e.preventDefault(); setSaving(true); setErr("");
     try {
-      const newImg = (fileIds && fileIds.length > 0) ? fileIds[0] : null;
+      const newImg = fileIds?.length > 0 ? fileIds[fileIds.length - 1] : null;
       const payload = { ...form, img_path: newImg || form.img_path || null };
       if (editingId) await updateFoundationBoardMember(editingId, payload);
       else await createFoundationBoardMember(payload);
@@ -144,8 +144,8 @@ function BoardMembersCMS() {
                     </td>
                     <td className="cms-td">
                       <div className="cms-actions">
-                        <button className="cms-btn" onClick={() => startEdit(r)}><i className="bi bi-pencil-fill" aria-hidden="true"></i></button>
-                        <button className="cms-btnDanger" onClick={() => handleDelete(r.id)}><i className="bi bi-trash-fill" aria-hidden="true"></i></button>
+                        <button type="button" className="cms-btn" onClick={() => startEdit(r)} aria-label={`Edytuj: ${r.name}`}><i className="bi bi-pencil-fill" aria-hidden="true"></i></button>
+                        <button type="button" className="cms-btnDanger" onClick={() => handleDelete(r.id)} aria-label={`Usuń: ${r.name}`}><i className="bi bi-trash-fill" aria-hidden="true"></i></button>
                       </div>
                     </td>
                   </tr>
@@ -207,13 +207,13 @@ function BoardMembersCMS() {
 
           <label className="cms-labelWrap">
             <span className="cms-label">Zdjęcie (1 plik)</span>
-            <input type="file" accept="image/*" onChange={async (e) => {
+            <input type="file" accept="image/jpeg,image/png,image/webp,image/avif" onChange={async (e) => {
               await uploadFiles(e.target.files, { bucket: "mskearth", prefix: "foundation/board", maxFiles: 1 });
             }} />
             {uploading && <div className="cms-helperXs">Przesyłanie…</div>}
             {uploadErrorMsg && <div className="cms-error" role="alert">{uploadErrorMsg}</div>}
             {fileIds?.length > 0 && (
-              <div className="cms-helperXs">Wybrano plik: {fileIds[0]}</div>
+              <div className="cms-helperXs">Wybrano plik: {fileIds[fileIds.length - 1]}</div>
             )}
           </label>
 
@@ -244,7 +244,8 @@ function FinancialReportsCMS() {
   const [form, setForm] = useState(emptyReport);
   const [saving, setSaving] = useState(false);
 
-  const { fileIds, uploadFiles, uploading, reset: resetUploads } = useUploadFiles("mskearth");
+  const { fileIds, uploadFiles, uploading, errors: uploadErrors, reset: resetUploads } = useUploadFiles("mskearth");
+  const uploadErrorMsg = uploadErrors?.[0]?.message ?? "";
 
   useEffect(() => {
     let mounted = true;
@@ -269,7 +270,8 @@ function FinancialReportsCMS() {
   async function handleCreate(e) {
     e.preventDefault(); setSaving(true); setErr("");
     try {
-      const path = (fileIds && fileIds.length > 0) ? fileIds[0] : form.file_path || null;
+      const path = fileIds?.length > 0 ? fileIds[fileIds.length - 1] : form.file_path || null;
+      if (!path) throw new Error("Dodaj plik PDF ze sprawozdaniem.");
       await createFinancialReport({ year: Number(form.year), file_path: path, author: user?.email || form.author || null });
       await load();
       setForm({ ...emptyReport, year: form.year });
@@ -329,16 +331,17 @@ function FinancialReportsCMS() {
           </label>
           <label className="cms-labelWrap">
             <span className="cms-label">Plik (PDF)</span>
-            <input type="file" onChange={async (e) => {
-              await uploadFiles(e.target.files, { bucket: "mskearth", prefix: "foundation/reports", maxFiles: 1 });
+            <input type="file" accept="application/pdf" onChange={async (e) => {
+              await uploadFiles(e.target.files, { bucket: "mskearth", prefix: "foundation/reports", maxFiles: 1, kind: "pdf" });
             }} />
-            {uploading && <div className="cms-helperXs">Przesyłanie…</div>}
+            {uploading && <div className="cms-helperXs" role="status">Przesyłanie…</div>}
+            {uploadErrorMsg && <div className="cms-error" role="alert">{uploadErrorMsg}</div>}
             {fileIds?.length > 0 && (
-              <div className="cms-helperXs">Wybrano plik: {fileIds[0]}</div>
+              <div className="cms-helperXs">Wybrano plik: {fileIds[fileIds.length - 1]}</div>
             )}
           </label>
           <div className="cms-formActions">
-            <button disabled={saving} className="cms-btnPrimary">
+            <button type="submit" disabled={saving || uploading} className="cms-btnPrimary">
               {saving ? "Zapisywanie…" : "Dodaj"}
             </button>
           </div>

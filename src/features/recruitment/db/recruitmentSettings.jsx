@@ -1,33 +1,36 @@
 import { supabase } from "../../../services/supabaseClient";
 
-// TODO: remove the fallback once supabase/migrations/20260818_recruitments_steps.sql
-// has been applied to every environment.
 export async function getRecruitmentSettings() {
-  const withSteps = await supabase
+  const { data, error } = await supabase
     .from("recruitments")
     .select("id, instagram, form, steps")
+    .order("created_at", { ascending: false })
     .limit(1)
     .maybeSingle();
 
-  if (!withSteps.error) return withSteps.data || null;
-
-  const fallback = await supabase
-    .from("recruitments")
-    .select("id, instagram, form")
-    .limit(1)
-    .maybeSingle();
-  if (fallback.error) throw fallback.error;
-  return fallback.data ? { ...fallback.data, steps: [] } : null;
+  if (error) {
+    if (error.code === "42703") {
+      throw new Error(
+        "Brak kolumny recruitments.steps. Uruchom migrację bazy (supabase db push) i spróbuj ponownie."
+      );
+    }
+    throw error;
+  }
+  return data || null;
 }
 
+/**
+ * Aktualizuje istniejacy wiersz zamiast "usun wszystko, potem wstaw".
+ * Wczesniej nieudany insert kasowal ustawienia rekrutacji, a brak kolumny steps
+ * powodowal ciche gubienie krokow.
+ */
 export async function replaceRecruitmentSettings({ instagram, form, steps }) {
-  const del = await supabase.from("recruitments").delete().not("id", "is", null);
-  if (del.error) throw del.error;
+  const current = await getRecruitmentSettings();
+  const values = { instagram, form, steps: steps ?? [] };
 
-  const ins = await supabase.from("recruitments").insert({ instagram, form, steps: steps ?? [] });
-  if (!ins.error) return;
+  const { error } = current?.id
+    ? await supabase.from("recruitments").update(values).eq("id", current.id)
+    : await supabase.from("recruitments").insert(values);
 
-  // steps column not migrated yet, save without it
-  const insFallback = await supabase.from("recruitments").insert({ instagram, form });
-  if (insFallback.error) throw insFallback.error;
+  if (error) throw error;
 }

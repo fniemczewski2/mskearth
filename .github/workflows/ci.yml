@@ -24,6 +24,9 @@ jobs:
       - name: Lint
         run: npm run lint
 
+      - name: Testy
+        run: npm test
+
       - name: Build
         run: npm run build
         env:

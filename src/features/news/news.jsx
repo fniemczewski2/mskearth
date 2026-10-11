@@ -1,176 +1,118 @@
-import { Fragment, useState, useRef, useMemo, useCallback, useEffect } from 'react';
-import { useLocation, Link } from 'react-router-dom';
-import { toPublicUrl } from '../../services/supabaseClient';
-import { supabase } from '../../services/supabaseClient';
+import { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
+
 import Seo from '../../shared/components/Seo.jsx';
+import { useTranslations } from '../../shared/i18n/useTranslations.js';
+import { SITE_URL } from '../../shared/config/site.js';
+import { fetchPublishedArticles } from './db/article.js';
+
+const PREVIEW_LENGTH = 200;
+
+function toPlainText(html = '') {
+  // DOMParser dekoduje encje (&amp;, &nbsp;) i nie wykonuje skryptow.
+  const doc = new DOMParser().parseFromString(html, 'text/html');
+  return (doc.body.textContent ?? '').replace(/\s+/g, ' ').trim();
+}
 
 function News() {
+  const { t, lang } = useTranslations();
   const [articles, setArticles] = useState([]);
-  const articleRefs = useRef([]);
-  const [translations, setTranslations] = useState({ news: {} });
-  const location = useLocation();
+  const [loading, setLoading] = useState(true);
+  const [failed, setFailed] = useState(false);
 
-  const language = useMemo(() => {
-    const seg = location.pathname.split('/')[1] || 'pl';
-    return ['pl', 'en', 'ua'].includes(seg) ? seg : 'pl';
-  }, [location.pathname]);
-
-  const nowTs = useMemo(() => Date.now(), []);
-
-  const stripTags = (html = '') => html.replace(/<\/?[^>]+(>|$)/g, '');
-
-  const fetchTranslations = useCallback(async (lang) => {
-    try {
-      const res = await fetch(`/locales/${lang}.json`);
-      if (!res.ok) throw new Error(`i18n HTTP ${res.status}`);
-      const data = await res.json();
-      setTranslations(data);
-    } catch (err) {
-      console.error('Error loading translations:', err);
-      setTranslations({ news: { h1: 'Aktualności', more: 'Więcej' } });
-    }
+  useEffect(() => {
+    let active = true;
+    setLoading(true);
+    fetchPublishedArticles({ limit: 30 })
+      .then((list) => {
+        if (active) setArticles(list);
+      })
+      .catch((err) => {
+        console.error('Error fetching articles:', err);
+        if (active) setFailed(true);
+      })
+      .finally(() => {
+        if (active) setLoading(false);
+      });
+    return () => {
+      active = false;
+    };
   }, []);
 
-  const fetchArticles = useCallback(async () => {
-    try {
-      const { data, error } = await supabase
-        .from('articles')
-        .select(`
-          id,
-          accepted,
-          published,
-          created,
-          imgurl,
-          imgalt,
-          author,
-          sourcetext,
-          sourcelink,
-          title,
-          subtitle,
-          content,
-          titleen,
-          subtitleen,
-          contenten,
-          titleua,
-          subtitleua,
-          contentua
-        `)
-        .eq('accepted', true)
-        .not('published', 'is', null)
-        .order('pinned', { ascending: false })
-        .order('published', { ascending: false })
-        .limit(60);
+  const suffix = lang === 'pl' ? '' : lang;
+  const field = (name) => `${name}${suffix}`;
 
-      if (error) throw error;
-
-      const list = (data || []).map((a) => ({
-        ...a,
-        imgurl: Array.isArray(a.imgurl)
-          ? a.imgurl.map((p) => toPublicUrl(p, 'mskearth')).filter(Boolean)
-          : [],
-      }));
-
-      const filtered = list.filter((article) => {
-        if (article.accepted === false) return false; 
-        const pubTs = article.published ? new Date(article.published).getTime() : 0;
-        if (pubTs > nowTs) return false;
-
-        if (language === 'pl') return true;
-
-        const suffix = language === 'en' ? 'en' : 'ua';
-        const t = article[`title${suffix}`];
-        const s = article[`subtitle${suffix}`];
-        const c = article[`content${suffix}`];
-        return Boolean((t || '').trim() && (s || '').trim() && (c || '').trim());
-      });
-
-      setArticles(filtered);
-    } catch (err) {
-      console.error('Error fetching articles:', err);
-      setArticles([]);
-    }
-  }, [language, nowTs]);
-
-  useEffect(() => {
-    fetchTranslations(language);
-  }, [language, fetchTranslations]);
-
-  useEffect(() => {
-    fetchArticles();
-  }, [fetchArticles]);
-
-  const suffix = language === 'pl' ? '' : language; 
-  const titleField = suffix ? `title${suffix}` : 'title';
-  const subtitleField = suffix ? `subtitle${suffix}` : 'subtitle';
-  const contentField = suffix ? `content${suffix}` : 'content';
+  const visible = articles
+    .map((article) => {
+      const title = (article[field('title')] || '').trim();
+      const text = toPlainText(article[field('content')] || '');
+      return { article, title, text };
+    })
+    // Artykul jest widoczny w danym jezyku, gdy ma tytul i tresc (podtytul jest opcjonalny).
+    .filter(({ title, text }) => title && text);
 
   return (
-    <>
     <main className="news">
       <Seo
-        title="Aktualności — Młodzieżowy Strajk Klimatyczny"
-        description="Najnowsze wiadomości i działania Młodzieżowego Strajku Klimatycznego w Polsce."
-        url={`https://msk.earth/${language}/aktualnosci`}
+        title={t.seo?.news?.title ?? 'Aktualności – Młodzieżowy Strajk Klimatyczny'}
+        description={t.seo?.news?.description}
+        url={`${SITE_URL}/${lang}/aktualnosci`}
       />
       <div className="page-intro">
-        <h1>{translations.news?.h1 || 'Aktualności'}</h1>
+        <h1>{t.news?.h1 || 'Aktualności'}</h1>
         <span className="section-divider" aria-hidden="true" />
       </div>
 
-      {articles.length === 0 && (
+      {loading && (
+        <div className="loader" role="status" aria-live="polite">
+          <span className="spinner" aria-hidden="true" />
+          <span className="sr-only">{t.a11y?.loading ?? 'Ładowanie…'}</span>
+        </div>
+      )}
+
+      {!loading && (failed || visible.length === 0) && (
         <article className="emptyState">
           <i className="bi bi-journal-richtext emptyStateIcon" aria-hidden="true" />
-          <p>{translations.news?.empty || 'Nie mamy jeszcze żadnych wpisów. Zajrzyj tu wkrótce.'}</p>
+          <p>{t.news?.empty || 'Nie mamy jeszcze żadnych wpisów. Zajrzyj tu wkrótce.'}</p>
         </article>
       )}
 
-      {articles.map((article, index) => {
-        const rawContent = article[contentField] || '';
-        const sanitizedContent = stripTags(rawContent).trim();
-        if (!sanitizedContent) return null;
-
-        const displayText =
-          sanitizedContent.length > 200
-            ? `${sanitizedContent.substring(0, 200)}...`
-            : sanitizedContent;
+      {visible.map(({ article, title, text }) => {
+        const href = `/${lang}/aktualnosci/${article.id}`;
+        const preview = text.length > PREVIEW_LENGTH ? `${text.slice(0, PREVIEW_LENGTH).trimEnd()}…` : text;
+        const subtitle = article[field('subtitle')];
 
         return (
-          <Fragment key={article.id}>
-            <article
-              className="newsElement"
-              ref={(el) => (articleRefs.current[index] = el)}
-            >
-              {article.imgurl?.length > 0 && (
-                <div className="newsImages">
-                  <img
-                    className="newsImg"
-                    src={article.imgurl[0]}
-                    alt={article.imgalt || ''}
-                    loading="lazy"
-                    decoding="async"
-                  />
-                </div>
-              )}
-
-              <div className="newsText">
-                <h3>{article[titleField]}</h3>
-                {article[subtitleField] && <h5>{article[subtitleField]}</h5>}
-                <hr />
-                <p>{displayText}</p>
-                <div className="newsBottomData">
-                  {sanitizedContent.length > 200 && (
-                    <Link to={`/${language}/aktualnosci/${article.id}`}>
-                      {translations.news?.more || 'Więcej'}
-                    </Link>
-                  )}
-                </div>
+          <article className="newsElement" key={article.id}>
+            {article.imgurl?.length > 0 && (
+              <div className="newsImages">
+                <img
+                  className="newsImg"
+                  src={article.imgurl[0]}
+                  alt={article.imgalt || ''}
+                  loading="lazy"
+                  decoding="async"
+                />
               </div>
-            </article>
-          </Fragment>
+            )}
+
+            <div className="newsText">
+              <h2 className="newsTitle">
+                <Link to={href}>{title}</Link>
+              </h2>
+              {subtitle && <p className="newsSubtitle">{subtitle}</p>}
+              <hr />
+              <p>{preview}</p>
+              <div className="newsBottomData">
+                <Link to={href} aria-hidden="true" tabIndex={-1}>
+                  {t.news?.more || 'Czytaj dalej'}
+                </Link>
+              </div>
+            </div>
+          </article>
         );
       })}
     </main>
-    </>
   );
 }
 

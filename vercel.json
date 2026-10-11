@@ -1,6 +1,9 @@
 {
   "regions": ["fra1"],
   "cleanUrls": true,
+  "redirects": [
+    { "source": "/(.*)", "has": [{ "type": "host", "value": "www.msk.earth" }], "destination": "https://msk.earth/$1", "permanent": true }
+  ],
   "rewrites": [
     { "source": "/donate-iframe.html", "destination": "/embed/donate.html" },
     { "source": "/donate-belka.html", "destination": "/embed/belka.html" },

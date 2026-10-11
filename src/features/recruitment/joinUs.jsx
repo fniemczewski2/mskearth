@@ -1,119 +1,91 @@
 import { useEffect, useMemo, useState } from 'react';
-import { useLocation } from 'react-router-dom';
-import { supabase } from '../../services/supabaseClient';
-import { DEFAULT_RECRUITMENT_STEPS } from './recruitmentDefaults.js';
 
-const LOCALE_CACHE = new Map();
+import { supabase } from '../../services/supabaseClient';
+import { useTranslations } from '../../shared/i18n/useTranslations.js';
+import {
+  DEFAULT_RECRUITMENT_STEPS,
+  FORM_STEP_INDEX,
+  INSTAGRAM_STEP_INDEX,
+} from './recruitmentDefaults.js';
 
 export default function JoinUs() {
-  const location = useLocation();
-  const language = useMemo(() => location.pathname.split('/')[1] || 'pl', [location.pathname]);
-
-  const [t, setT] = useState({ joinUs: {} });
+  const { t } = useTranslations();
+  const j = t.joinUs ?? {};
 
   const [recruitment, setRecruitment] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [err, setErr] = useState('');
+  const [err, setErr] = useState(false);
 
   useEffect(() => {
     let active = true;
     (async () => {
       try {
-        if (LOCALE_CACHE.has(language)) {
-          if (active) setT(LOCALE_CACHE.get(language));
-        } else {
-          const res = await fetch(`/locales/${language}.json`, { credentials: 'same-origin' });
-          if (!res.ok) throw new Error(`HTTP ${res.status}`);
-          const data = await res.json();
-          LOCALE_CACHE.set(language, data);
-          if (active) setT(data);
-        }
-      } catch (e) {
-        console.error('JoinUs i18n error:', e);
-        if (active) setT({ joinUs: {} });
-      }
-    })();
-    return () => { active = false; };
-  }, [language]);
-
-  useEffect(() => {
-    let active = true;
-    (async () => {
-      setLoading(true);
-      setErr('');
-      try {
-        const withSteps = await supabase
-          .from('recruitments')
-          .select('id, instagram, form, steps')
-          .order('created_at', { ascending: false })
-          .limit(1)
-          .maybeSingle();
-
-        let recData = withSteps.data;
-        if (withSteps.error) {
-          // steps column not migrated yet, retry without it
-          const fallback = await supabase
+        const query = (columns) =>
+          supabase
             .from('recruitments')
-            .select('id, instagram, form')
+            .select(columns)
             .order('created_at', { ascending: false })
             .limit(1)
             .maybeSingle();
-          if (fallback.error) throw fallback.error;
-          recData = fallback.data;
-        }
 
-        if (!active) return;
-        setRecruitment(recData || null);
+        let { data, error } = await query('id, instagram, form, steps');
+        // 42703 = brak kolumny steps (migracja jeszcze nie wdrozona); domyslne kroki nadal dzialaja.
+        if (error?.code === '42703') ({ data, error } = await query('id, instagram, form'));
+        if (error) throw error;
+        if (active) setRecruitment(data || null);
       } catch (e) {
         console.error('JoinUs fetch error:', e);
-        if (active) setErr('Nie udało się wczytać danych rekrutacyjnych.');
+        if (active) setErr(true);
       } finally {
         if (active) setLoading(false);
       }
     })();
-    return () => { active = false; };
+    return () => {
+      active = false;
+    };
   }, []);
 
   const steps = useMemo(() => {
     if (Array.isArray(recruitment?.steps) && recruitment.steps.length > 0) {
       return recruitment.steps;
     }
+    const translated = Array.isArray(j.defaultSteps) ? j.defaultSteps : [];
     return DEFAULT_RECRUITMENT_STEPS.map((step, i) => {
-      if (i === 0 && recruitment?.instagram) return { ...step, link: recruitment.instagram };
-      if (i === 2 && recruitment?.form) return { ...step, link: recruitment.form };
-      return step;
+      const base = { ...step, ...(translated[i] ?? {}) };
+      if (i === INSTAGRAM_STEP_INDEX && recruitment?.instagram) return { ...base, link: recruitment.instagram };
+      if (i === FORM_STEP_INDEX && recruitment?.form) return { ...base, link: recruitment.form };
+      return base;
     });
-  }, [recruitment]);
+  }, [recruitment, j.defaultSteps]);
 
   return (
     <>
-      <h2>{t.joinUs?.h2 || 'Dołącz do nas'}</h2>
+      <h2>{j.h2 || 'Dołącz do nas!'}</h2>
 
-      <aside id="joinUs" className="joinUs" aria-busy={loading ? 'true' : 'false'}>
+      <div className="panel joinUs" aria-busy={loading ? 'true' : 'false'}>
         {loading && (
           <div className="loader" role="status" aria-live="polite">
-            <span className="spinner" aria-hidden="true"/>
-            <span className="sr-only">Ładowanie…</span>
+            <span className="spinner" aria-hidden="true" />
+            <span className="sr-only">{t.a11y?.loading ?? 'Ładowanie…'}</span>
           </div>
         )}
 
-        {!loading && err && <p role="alert">{err}</p>}
+        {!loading && err && (
+          <p role="alert">{j.loadError ?? 'Nie udało się wczytać danych rekrutacyjnych.'}</p>
+        )}
 
         {!loading && !err && (
           <ol className="recruitmentSteps">
             {steps.map((step, i) => (
-              <li className="recruitmentStep" key={i}>
+              <li className="recruitmentStep" key={`${i}-${step.text}`}>
                 <span className="recruitmentStepNumber" aria-hidden="true">{i + 1}</span>
                 <div className="recruitmentStepBody">
                   <p className="recruitmentStepText">{step.text}</p>
                   {step.link && (
-                    <a
-                      className="joinUsButton"
-                      href={step.link}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                    >
-                      {step.linkLabel || 'Link'}&nbsp;<i className="bi bi-box-arrow-up-right" aria-hidden="true"></i>
+                    <a className="joinUsButton" href={step.link} target="_blank" rel="noopener noreferrer">
+                      {step.linkLabel || 'Link'}
+                      <span className="sr-only"> {t.a11y?.opensNewTab ?? '(otwiera się w nowej karcie)'}</span>
+                      &nbsp;<i className="bi bi-box-arrow-up-right" aria-hidden="true" />
                     </a>
                   )}
                 </div>
@@ -121,7 +93,7 @@ export default function JoinUs() {
             ))}
           </ol>
         )}
-      </aside>
+      </div>
     </>
   );
 }

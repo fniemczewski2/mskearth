@@ -1,6 +1,8 @@
-import { useState, useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
-const API_URL = 'https://api.climateclock.world/v2/widget/clock.json';
+import { useTranslations } from '../shared/i18n/useTranslations.js';
+import { fetchClimateClock } from './climateClockApi.js';
+
 const ABS_SPEED = 80;
 const MIN_DURATION = 20;
 const MAX_DURATION = 180;
@@ -25,46 +27,30 @@ function NewsGroup({ items, duplicate = false, groupRef }) {
 }
 
 export default function ClimateNewsBar() {
+  const { t } = useTranslations();
   const [feed, setFeed] = useState([]);
+  // Pasek przewija sie od razu; przycisk pozwala go zatrzymac (WCAG 2.2.2).
+  const [paused, setPaused] = useState(false);
   const trackRef = useRef(null);
   const groupRef = useRef(null);
 
   useEffect(() => {
-    const controller = new AbortController();
-    let cancelled = false;
-
-    const fetchWithRetry = async (attempt = 0) => {
-      try {
-        const res = await fetch(API_URL, {
-          signal: AbortSignal.any([controller.signal, AbortSignal.timeout(8000)]),
-        });
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        const data = await res.json();
-        const items = data?.data?.modules?.newsfeed_1?.newsfeed ?? [];
-        if (!cancelled) setFeed(items.filter(Boolean));
-      } catch (err) {
-        if (cancelled || controller.signal.aborted) return;
-        if (attempt < 2) {
-          setTimeout(() => fetchWithRetry(attempt + 1), 2 ** attempt * 1000);
-        } else {
-          console.error('ClimateNewsBar fetch error:', err);
-          setFeed([]);
-        }
-      }
-    };
-
-    fetchWithRetry();
-
+    let active = true;
+    fetchClimateClock()
+      .then((mods) => {
+        const items = mods?.newsfeed_1?.newsfeed ?? [];
+        if (active) setFeed(items.filter(Boolean));
+      })
+      .catch((err) => console.error('ClimateNewsBar fetch error:', err));
     return () => {
-      cancelled = true;
-      controller.abort();
+      active = false;
     };
   }, []);
 
   useEffect(() => {
     const trackEl = trackRef.current;
     const groupEl = groupRef.current;
-    if (!trackEl || !groupEl || feed.length === 0) return;
+    if (!trackEl || !groupEl || feed.length === 0) return undefined;
 
     const compute = () => {
       const groupWidth = Math.ceil(groupEl.getBoundingClientRect().width);
@@ -73,26 +59,34 @@ export default function ClimateNewsBar() {
       trackEl.style.setProperty('--duration', `${seconds}s`);
     };
 
-    if (document?.fonts?.ready) {
-      document.fonts.ready.then(compute).catch(compute);
-    } else {
-      compute();
-    }
+    if (document?.fonts?.ready) document.fonts.ready.then(compute).catch(compute);
+    else compute();
 
+    if (typeof ResizeObserver === 'undefined') return undefined;
     const observer = new ResizeObserver(compute);
     observer.observe(groupEl);
-
     return () => observer.disconnect();
   }, [feed]);
 
   if (feed.length === 0) return null;
 
   return (
-    <div className="ccw-ticker">
-      <h2 className="sr-only">Wiadomości klimatyczne</h2>
-      <div className="ticker-track" ref={trackRef}>
-        <NewsGroup items={feed} groupRef={groupRef} />
-        <NewsGroup items={feed} duplicate />
+    <div className={`ccw-ticker${paused ? ' is-paused' : ''}`}>
+      <h2 className="sr-only">{t.a11y?.tickerHeading ?? 'Wiadomości klimatyczne'}</h2>
+      <button
+        type="button"
+        className="ticker-toggle"
+        onClick={() => setPaused((p) => !p)}
+        aria-pressed={paused}
+        aria-label={paused ? (t.a11y?.playTicker ?? 'Wznów wiadomości') : (t.a11y?.pauseTicker ?? 'Zatrzymaj wiadomości')}
+      >
+        <i className={paused ? 'bi bi-play-fill' : 'bi bi-pause-fill'} aria-hidden="true" />
+      </button>
+      <div className="ticker-viewport">
+        <div className="ticker-track" ref={trackRef}>
+          <NewsGroup items={feed} groupRef={groupRef} />
+          <NewsGroup items={feed} duplicate />
+        </div>
       </div>
     </div>
   );

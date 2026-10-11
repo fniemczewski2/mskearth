@@ -1,68 +1,27 @@
-import { forwardRef, useEffect, useMemo, useRef, useState } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { useEffect, useMemo, useRef } from 'react';
+import { Link } from 'react-router-dom';
 import PropTypes from 'prop-types';
 
-const LOCALE_CACHE = new Map();
+import LanguageSwitch from './languageSwitch.jsx';
+import { useTranslations } from '../shared/i18n/useTranslations.js';
 
-async function loadMenuItems(lang) {
-  try {
-    if (LOCALE_CACHE.has(lang)) return LOCALE_CACHE.get(lang);
-    const res = await fetch(`/locales/${lang}.json`, { credentials: 'same-origin' });
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    const data = await res.json();
-    const items = data?.mobileNavbar?.menuItems || [];
-    LOCALE_CACHE.set(lang, items);
-    return items;
-  } catch (e) {
-    console.error('Error loading translations:', e);
-    return [];
-  }
-}
-
-const MobileNavbar = forwardRef(function MobileNavbar(
-  { id = 'mobile-nav', lang = 'pl', handleLanguageChange, isOpen, toggleOpen },
-  ref
-) {
-  const location = useLocation();
-  const language = useMemo(() => location.pathname.split('/')[1] || 'pl', [location.pathname]);
-
-  const [menuItems, setMenuItems] = useState([]);
-
+export default function MobileNavbar({ id = 'mobile-nav', lang = 'pl', handleLanguageChange, isOpen, onNavigate }) {
+  const { t } = useTranslations();
+  const menuItems = useMemo(() => t.mobileNavbar?.menuItems ?? [], [t.mobileNavbar?.menuItems]);
   const navRef = useRef(null);
-  const firstFocusableRef = useRef(null);
-  const lastFocusableRef = useRef(null);
 
   useEffect(() => {
-    if (!ref) return;
-    if (typeof ref === 'function') ref(navRef.current);
-    else ref.current = navRef.current;
-  }, [ref]);
-
-  useEffect(() => {
-    let active = true;
-    (async () => {
-      const items = await loadMenuItems(language);
-      if (active) setMenuItems(items);
-    })();
-    return () => { active = false; };
-  }, [language]);
-
-  useEffect(() => {
-    if (!isOpen) return;
+    if (!isOpen) return undefined;
     const nav = navRef.current;
-    if (!nav) return;
+    if (!nav) return undefined;
 
     const focusables = nav.querySelectorAll('a,button,[tabindex]:not([tabindex="-1"])');
     const first = focusables[0];
     const last = focusables[focusables.length - 1];
-    firstFocusableRef.current = first || null;
-    lastFocusableRef.current = last || null;
     first?.focus();
 
     const onKeyDown = (e) => {
-      if (e.key !== 'Tab') return;
-      if (focusables.length === 0) return;
-
+      if (e.key !== 'Tab' || focusables.length === 0) return;
       if (e.shiftKey && document.activeElement === first) {
         e.preventDefault();
         last?.focus();
@@ -76,68 +35,44 @@ const MobileNavbar = forwardRef(function MobileNavbar(
     return () => nav.removeEventListener('keydown', onKeyDown);
   }, [isOpen, menuItems]);
 
-  const style = {
-    transform: isOpen ? 'translateX(0)' : 'translateX(-100%)',
-  };
-
-  const linkFor = (base) => `/${language}${base}`;
-
   return (
     <nav
       id={id}
       ref={navRef}
       className={`mobileNavbar ${isOpen ? 'is-open' : ''}`}
-      style={style}
-      aria-label="Nawigacja mobilna"
+      style={{ transform: isOpen ? 'translateX(0)' : 'translateX(-100%)' }}
+      aria-label={t.a11y?.mobileMenu ?? 'Nawigacja mobilna'}
       aria-hidden={!isOpen}
       inert={!isOpen ? true : undefined}
     >
-      <ul className="navbarItems" onClick={toggleOpen}>
-        {menuItems.map((item, index) => (
-          <li key={`${item.link}-${index}`}>
-            <Link to={linkFor(item.link)}>
+      <ul className="navbarItems">
+        {menuItems.map((item) => (
+          <li key={item.link}>
+            <Link to={`/${lang}${item.link === '/' ? '' : item.link}`} onClick={onNavigate}>
               {item.label}
             </Link>
           </li>
         ))}
 
         <li>
-          <span className="flags" role="group" aria-label="Wybór języka">
-            {lang !== 'pl' && (
-              <button
-                type="button"
-                onClick={() => handleLanguageChange('pl')}
-                className="flag-btn"
-                aria-label="Polski"
-                title="Polski"
-              >
-                PL
-              </button>
-            )}
-            {lang !== 'en' && (
-              <button
-                type="button"
-                onClick={() => handleLanguageChange('en')}
-                className="flag-btn"
-                aria-label="English"
-                title="English"
-              >
-                EN
-              </button>
-            )}
-          </span>
+          <LanguageSwitch
+            lang={lang}
+            label={t.a11y?.languageSwitch}
+            onChange={(code) => {
+              handleLanguageChange(code);
+              onNavigate?.();
+            }}
+          />
         </li>
       </ul>
     </nav>
   );
-});
+}
 
 MobileNavbar.propTypes = {
   id: PropTypes.string,
   lang: PropTypes.string.isRequired,
   handleLanguageChange: PropTypes.func.isRequired,
   isOpen: PropTypes.bool.isRequired,
-  toggleOpen: PropTypes.func.isRequired,
+  onNavigate: PropTypes.func,
 };
-
-export default MobileNavbar;

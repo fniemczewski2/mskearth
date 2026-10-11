@@ -1,16 +1,9 @@
-import Stripe from 'stripe';
-
-import { log } from './_lib/log.js';
+import { log, redact } from './_lib/log.js';
 import { supabaseAdmin } from './_lib/supabaseAdmin.js';
+import { stripe } from './_lib/stripe.js';
+import { subscribeToKit } from './_lib/kit.js';
 
 export const config = { api: { bodyParser: false } };
-
-const STRIPE_API_VERSION = '2025-08-27.basil';
-
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
-  apiVersion: STRIPE_API_VERSION,
-  maxNetworkRetries: 2,
-});
 
 async function readRawBody(req) {
   const chunks = [];
@@ -55,13 +48,24 @@ export default async function handler(req, res) {
   try {
     switch (event.type) {
       case 'checkout.session.completed':
-        await handleCheckoutCompleted(event.data.object);
+        await handleSession(event.data.object);
+        break;
+      // BLIK i Przelewy24 koncza sie asynchronicznie: sesja jest "completed" ze statusem "unpaid",
+      // a wynik platnosci przychodzi w jednym z ponizszych zdarzen.
+      case 'checkout.session.async_payment_succeeded':
+        await handleSession(event.data.object, 'completed');
+        break;
+      case 'checkout.session.async_payment_failed':
+        await handleSession(event.data.object, 'failed');
         break;
       case 'payment_intent.succeeded':
-        await handlePaymentSucceeded(event.data.object);
+        await updateByPaymentIntent(event.data.object.id, {
+          status: 'completed',
+          completed_at: new Date().toISOString(),
+        });
         break;
       case 'payment_intent.payment_failed':
-        await handlePaymentFailed(event.data.object);
+        await updateByPaymentIntent(event.data.object.id, { status: 'failed' });
         break;
       case 'invoice.payment_succeeded':
         await handleInvoicePaymentSucceeded(event.data.object, event.id);
@@ -83,38 +87,75 @@ export default async function handler(req, res) {
   }
 }
 
-async function handleCheckoutCompleted(session) {
-  const paid = session.payment_status === 'paid';
-
-  const { error } = await supabaseAdmin
-    .from('donations')
-    .update({
-      status: paid ? 'completed' : 'pending',
-      completed_at: paid ? new Date().toISOString() : null,
-      stripe_payment_intent_id: session.payment_intent ?? null,
-    })
-    .eq('stripe_session_id', session.id);
-
-  if (error) throw error;
-  log.info('checkout.completed', { session_id: session.id, paid });
+function statusOf(session, forced) {
+  if (forced) return forced;
+  return session.payment_status === 'paid' || session.payment_status === 'no_payment_required'
+    ? 'completed'
+    : 'pending';
 }
 
-async function handlePaymentSucceeded(paymentIntent) {
-  const { error } = await supabaseAdmin
-    .from('donations')
-    .update({ status: 'completed', completed_at: new Date().toISOString() })
-    .eq('stripe_payment_intent_id', paymentIntent.id);
+async function handleSession(session, forcedStatus) {
+  const status = statusOf(session, forcedStatus);
+  const metadata = session.metadata ?? {};
+  const paymentIntentId =
+    typeof session.payment_intent === 'string' ? session.payment_intent : session.payment_intent?.id ?? null;
 
+  const patch = {
+    status,
+    completed_at: status === 'completed' ? new Date().toISOString() : null,
+    stripe_payment_intent_id: paymentIntentId,
+  };
+
+  const { data: updated, error } = await supabaseAdmin
+    .from('donations')
+    .update(patch)
+    .eq('stripe_session_id', session.id)
+    .select('id');
   if (error) throw error;
+
+  if (!updated || updated.length === 0) {
+    // Wiersz "pending" nie powstal przy tworzeniu sesji: odtwarzamy go z metadanych.
+    const { error: insertError } = await supabaseAdmin.from('donations').insert({
+      ...patch,
+      amount: (session.amount_total ?? 0) / 100,
+      currency: (session.currency ?? 'pln').toUpperCase(),
+      donor_name: metadata.donor_name || null,
+      donor_email: session.customer_details?.email ?? metadata.donor_email ?? null,
+      stripe_session_id: session.id,
+      newsletter: metadata.newsletter === 'true',
+      payment_type: metadata.payment_type === 'recurring' ? 'recurring' : 'onetime',
+    });
+    if (insertError && insertError.code !== '23505') throw insertError;
+    log.warn('checkout.row_recreated', { session_id: session.id });
+  }
+
+  log.info('checkout.session', { session_id: session.id, status });
+
+  if (status === 'completed' && metadata.newsletter === 'true') {
+    const email = session.customer_details?.email ?? metadata.donor_email;
+    if (email) {
+      try {
+        await subscribeToKit(email);
+      } catch (err) {
+        // Brak zapisu do newslettera nie moze blokowac ksiegowania darowizny.
+        log.error('donor.newsletter', err, { email: redact(email) });
+      }
+    }
+  }
 }
 
-async function handlePaymentFailed(paymentIntent) {
-  const { error } = await supabaseAdmin
+async function updateByPaymentIntent(paymentIntentId, patch) {
+  const { data, error } = await supabaseAdmin
     .from('donations')
-    .update({ status: 'failed' })
-    .eq('stripe_payment_intent_id', paymentIntent.id);
+    .update(patch)
+    .eq('stripe_payment_intent_id', paymentIntentId)
+    .select('id');
 
   if (error) throw error;
+  if (!data || data.length === 0) {
+    // Zdarzenie przyszlo przed checkout.session.*; status ustawi zdarzenie sesji.
+    log.info('payment_intent.unmatched', { payment_intent_id: paymentIntentId });
+  }
 }
 
 async function handleInvoicePaymentSucceeded(invoice, eventId) {

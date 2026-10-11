@@ -5,12 +5,12 @@ import { DEFAULT_LANG, SUPPORTED_LANGS, langFromPath } from './useTranslations.j
 describe('langFromPath', () => {
   it('extracts a supported language from the first path segment', () => {
     expect(langFromPath('/en/aktualnosci')).toBe('en');
-    expect(langFromPath('/ua')).toBe('ua');
     expect(langFromPath('/pl/o-nas')).toBe('pl');
   });
 
   it('falls back to the default language for unsupported segments', () => {
     expect(langFromPath('/de/news')).toBe(DEFAULT_LANG);
+    expect(langFromPath('/ua/news')).toBe(DEFAULT_LANG);
     expect(langFromPath('/')).toBe(DEFAULT_LANG);
     expect(langFromPath('')).toBe(DEFAULT_LANG);
   });
@@ -25,7 +25,7 @@ describe('langFromPath', () => {
 });
 
 describe('SUPPORTED_LANGS', () => {
-  it('contains exactly the three supported languages', () => {
-    expect([...SUPPORTED_LANGS].sort()).toEqual(['en', 'pl', 'ua']);
+  it('contains exactly the languages that have locale files', () => {
+    expect([...SUPPORTED_LANGS].sort()).toEqual(['en', 'pl']);
   });
 });

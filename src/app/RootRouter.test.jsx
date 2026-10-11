@@ -53,8 +53,8 @@ describe('RootRouter language redirects', () => {
     expect(screen.getByTestId('app')).toHaveTextContent('/pl/de/aktualnosci');
   });
 
-  it('routes /admin paths to the admin panel instead of the language gate', () => {
+  it('routes /admin paths to the admin panel instead of the language gate', async () => {
     renderAt('/admin/login');
-    expect(screen.getByTestId('admin-panel')).toBeInTheDocument();
+    expect(await screen.findByTestId('admin-panel')).toBeInTheDocument();
   });
 });

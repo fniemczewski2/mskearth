@@ -94,7 +94,8 @@
   --transition: 200ms cubic-bezier(.22, .61, .36, 1);
   --ease-out: cubic-bezier(.22, .61, .36, 1);
   --ease-bounce: cubic-bezier(.34, 1.56, .64, 1);
-  --focus-ring: 1px solid var(--ink);
+  --focus-ring: 3px solid var(--ink);
+  --field-border: #6f776f;
   --focus-offset: 3px;
 
   --ink-deep: #0a0d0a;
@@ -117,8 +118,10 @@
 
 *, *::before, *::after { box-sizing: border-box; }
 
-:where(:focus-visible) {
-  outline: none;
+/* Widoczny fokus na kazdym elemencie (WCAG 2.4.7). */
+:focus-visible {
+  outline: 3px solid var(--ink);
+  outline-offset: 3px;
 }
 
 .skip-link {
@@ -207,10 +210,10 @@
   }
   [data-reveal] { opacity: 1; translate: none; }
   .decor-shape, .scroll-cue { animation: none !important; }
+  /* Pasek wiadomosci przewija sie zawsze; mozna go zatrzymac przyciskiem pauzy (WCAG 2.2.2). */
   .ticker-track {
     animation-duration: var(--duration, 60s) !important;
     animation-iteration-count: infinite !important;
-    transition-duration: initial !important;
   }
 }
 
@@ -235,7 +238,7 @@ img, video, svg, canvas { display: block; max-inline-size: 100%; height: auto; }
 img[width][height] { width: auto; }
 ul { margin: 0; padding: 0; list-style: none; }
 p { margin: 0; }
-article, aside, section, p { overflow-wrap: anywhere; }
+article, aside, :where(.panel), section, p { overflow-wrap: anywhere; }
 
 h1, h2, h3, h4, h5, h6 {
   font-weight: 900;
@@ -306,7 +309,7 @@ section {
   flex-wrap: wrap;
   width: 100%;
 }
-article, aside {
+article, aside, :where(.panel) {
   background-color: var(--surface);
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-1);
@@ -317,7 +320,7 @@ article, aside {
 }
 
 button,
-.index a,
+.index a:where(:not(.clock, p a)),
 .foundation .documentsContainer a,
 .joinUsButton,
 .donateButton,
@@ -352,7 +355,7 @@ button,
 }
 
 button:not([disabled])::before,
-.index a::before,
+.index a:where(:not(.clock, p a))::before,
 .foundation .documentsContainer a::before,
 .joinUsButton::before,
 .donateButton::before,
@@ -371,7 +374,7 @@ button:not([disabled])::before,
   z-index: 1;
 }
 button:not([disabled]):hover::before,
-.index a:hover::before,
+.index a:where(:not(.clock, p a)):hover::before,
 .foundation .documentsContainer a:hover::before,
 .joinUsButton:hover::before,
 .donateButton:hover::before,
@@ -386,7 +389,7 @@ button:not([disabled]):hover::before,
 .primaryBtn, .cta { text-align: center; background-color: var(--fourth-color); color: var(--white); }
 
 button:hover,
-.index a:hover,
+.index a:where(:not(.clock, p a)):hover,
 .foundation .documentsContainer a:hover,
 .joinUsButton:hover,
 .donateButton:hover,
@@ -488,7 +491,7 @@ form { max-width: 800px; }
   width: 100%; height: auto;
 }
 .formField#content { display: flex; height: 5rem; align-items: flex-end; }
-.agreement { font-size: clamp(10px, 0.7rem, 1.2vh); width: fit-content; }
+.agreement { font-size: 0.875rem; line-height: 1.45; width: fit-content; }
 .agreementContainer { display: flex; flex-wrap: nowrap; justify-content: left; margin: 5px 0; }
 .form-container { height: min-content; margin-top: 0; width: max(320px, 20vw); }
 .form-container input[type="checkbox"] { inline-size: 20px; block-size: 20px; margin: auto 5px; color: var(--first-color); }
@@ -617,13 +620,14 @@ a.mailto { color: var(--second-color); margin: 0; }
   animation: ticker-marquee var(--duration, 60s) linear infinite;
 }
 .ccw-ticker:hover .ticker-track,
-.ccw-ticker:focus-within .ticker-track { animation-play-state: paused; }
+.ticker-viewport:focus-within .ticker-track,
+.ccw-ticker.is-paused .ticker-track { animation-play-state: paused; }
 .ticker-group { display: flex; flex: 0 0 auto; white-space: nowrap; }
 .ticker-item {
   display: inline-block;
   padding-right: 50px;
   font-weight: 700;
-  font-size: clamp(12px, 2.4vh, 18px);
+  font-size: clamp(0.8rem, 1.4vw, 1.125rem);
 }
 @keyframes ticker-marquee {
   from { transform: translateX(0); }
@@ -640,7 +644,7 @@ a.mailto { color: var(--second-color); margin: 0; }
   h2 { margin-top: 16px; font-size: clamp(1.2rem, 5vw, 1.6rem); }
   h3 { font-size: clamp(1rem, 4.2vw, 1.2rem); }
   main { padding: 10px; }
-  section, aside { margin: 0; width: 100%; }
+  section, aside, :where(.panel) { margin: 0; width: 100%; }
   button, a { font-size: 1rem; margin: 5px 10px; }
 
   .joinUsButton, .donateButton, .newsletterButton { border-radius: 10px; margin: 10px 5px; font-size: 20px; }
@@ -1104,8 +1108,11 @@ nav ul, .bm-menu ul {
   stroke-width: 8;
 }
 
-.map svg path:focus {
-  outline: none;
+.map svg path:focus { outline: none; }
+.map svg path:focus-visible {
+  stroke: var(--ink);
+  stroke-width: 10;
+  fill: var(--green-deep);
 }
 
 .region, .region h3 {
@@ -2391,7 +2398,7 @@ footer h2 {
   margin-bottom: clamp(16px, 3vw, 32px);
 }
 
-.index a,
+.index a:where(:not(.clock, p a)),
 .foundation .documentsContainer a,
 .joinUsButton,
 .donateButton,
@@ -2416,7 +2423,7 @@ button {
 }
 
 button:hover,
-.index a:hover,
+.index a:where(:not(.clock, p a)):hover,
 .foundation .documentsContainer a:hover,
 .joinUsButton:hover,
 .donateButton:hover,
@@ -2474,11 +2481,12 @@ button:hover,
   .film-container { inline-size: 100%; border-radius: var(--radius-md); }
   main { padding: 16px 12px; }
   h2::after { width: 56px; height: 4px; }
-  article, aside { border-radius: var(--radius-md); }
+  article, aside, :where(.panel) { border-radius: var(--radius-md); }
 }
 
 article h2,
 aside h2,
+:where(.panel) h2,
 article h1,
 aside h1 {
   color: var(--ink);
@@ -2788,7 +2796,9 @@ section { margin-block: 0; }
 
 .joinUs > article,
 .joinUs > aside,
-.donate > aside { inline-size: 100%; }
+.donate > aside,
+.joinUs > .panel,
+.donate > .panel { inline-size: 100%; }
 
 .clock {
   background: var(--ink);
@@ -3109,7 +3119,7 @@ footer > p:last-child {
   .decor-shape,
   .scroll-cue { animation: none !important; }
   button::before,
-  .index a::before,
+  .index a:where(:not(.clock, p a))::before,
   .cta::before { display: none; }
 }
 
@@ -3176,4 +3186,138 @@ footer > p:last-child {
 
 @media (max-width: 480px) {
   .recruitmentStepBody { flex-direction: column; align-items: flex-start; }
+}
+
+/* ==== Poprawki z audytu (a11y, nowe elementy) ==== */
+
+/* Pola formularzy: obramowanie min. 3:1 (WCAG 1.4.11) */
+.formField,
+.loginBox,
+.cms-input,
+.cms-textarea { border-color: var(--field-border); }
+
+/* Ciemne tla: bialy fokus */
+footer :focus-visible,
+.ccw-ticker :focus-visible,
+.clock:focus-visible,
+.side-button:focus-visible,
+.mobileHeader :focus-visible,
+.mobileNavbar :focus-visible { outline-color: #fff; }
+
+.privacy-notice { margin: 8px 0 12px; color: var(--muted); }
+.formError { color: var(--danger); font-weight: 600; margin: 4px 0 8px; }
+
+/* Przycisk z aria-disabled zamiast disabled (pozostaje w kolejnosci Tab) */
+[aria-disabled="true"] { opacity: .7; cursor: progress; }
+
+/* Kwoty darowizny: <span> zamiast <p> w <button> */
+.amounts .amount,
+.amounts .desc { display: block; }
+
+/* Kontrolki filmu: pauza + dzwiek obok siebie */
+.film-controls { display: flex; gap: 8px; }
+.film-controls .mute-button { position: static; display: flex; margin: 0; }
+
+/* Przyciski boczne sa teraz <button> */
+.side-button {
+  border: 0;
+  text-transform: none;
+  letter-spacing: normal;
+  font-family: var(--main-font);
+  inline-size: auto;
+  block-size: auto;
+}
+
+/* Okno przyciskow bocznych: natywny <dialog> */
+.overlay-dialog {
+  border: 0;
+  padding: clamp(88px, 16vh, 160px) 16px 24px;
+  margin: 0;
+  background: transparent;
+  inline-size: 100%;
+  block-size: 100%;
+  max-inline-size: none;
+  max-block-size: none;
+  overflow-y: auto;
+}
+.overlay-dialog[open] { display: flex; justify-content: center; align-items: flex-start; }
+.overlay-dialog::backdrop { background: rgba(0, 0, 0, .7); }
+
+/* Baner cookies: informacja, nie modal */
+.cookie-notice {
+  position: fixed;
+  inset-inline: 16px;
+  bottom: 16px;
+  margin-inline: auto;
+  z-index: 30;
+}
+
+/* Zegar jest linkiem */
+a.clock { color: var(--white); text-decoration: none; }
+a.clock .clock-title,
+a.clock .clock-time { display: block; }
+
+/* Pasek wiadomosci z przyciskiem pauzy */
+.ccw-ticker { display: flex; align-items: center; gap: 8px; }
+.ticker-viewport { flex: 1 1 auto; overflow: hidden; }
+.ticker-toggle {
+  flex: 0 0 auto;
+  inline-size: 44px;
+  block-size: 30px;
+  min-height: 0;
+  margin-inline-start: 8px;
+  padding: 0;
+  border-radius: var(--radius-pill);
+  background: rgba(255, 255, 255, .14);
+  color: #fff;
+  box-shadow: none;
+}
+
+/* Lista miast */
+ul.citiesInRegion { list-style: none; padding: 0; margin: 0; gap: 6px; }
+.cityInfoHeader h3 { margin: 0; flex: 1 1 auto; }
+
+/* Naglowki zmienione z h3/h4/h5 na poprawna hierarchie, wyglad bez zmian */
+.news article .newsTitle,
+.singleNewsText .articleTitle {
+  text-align: center;
+  margin: var(--space-2) auto var(--space-1);
+  font-weight: 700;
+  font-size: clamp(20px, 2.2vw, 28px);
+  letter-spacing: .2px;
+  color: var(--text-strong);
+  text-shadow: none;
+}
+.newsTitle::after,
+.articleTitle::after,
+.personName::after { display: none; }
+.newsTitle a { color: inherit; text-decoration: none; }
+.newsTitle a:hover { text-decoration: underline; }
+.news article .newsSubtitle,
+.singleNewsText .articleSubtitle {
+  text-align: center;
+  margin: var(--space-2) 0 var(--space-1);
+  font-weight: 600;
+  font-size: clamp(16px, 1.8vw, 20px);
+  color: var(--green);
+  opacity: .9;
+}
+.contact-person .personName { font-size: var(--step-1); color: var(--green); margin-top: 0; }
+.boardMemberRole { color: var(--green); font-weight: 600; margin: 0 0 8px; text-align: center; }
+
+dl.foundationData { margin: 0; }
+.foundationDataElement { display: flex; align-items: baseline; }
+.foundationLabel { color: var(--green); font-weight: 900; text-transform: uppercase; letter-spacing: -.005em; margin-block: 10px; }
+.foundationDataElement dd { margin: 0 0 0 10px; }
+
+.flags-item { list-style: none; }
+
+/* Kotwice sekcji na stronie glownej: zachowuja szerokosc i wysrodkowanie jak dawne <aside> */
+.index > #joinUs,
+.index > #donate,
+.index > #newsletter {
+  inline-size: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }

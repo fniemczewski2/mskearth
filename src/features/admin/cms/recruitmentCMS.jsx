@@ -109,18 +109,19 @@ function RecruitmentSettingsCMS() {
                   <div className="cms-stepRowHead">
                     <span className="cms-stepIndex">{i + 1}</span>
                     <div className="cms-stepRowActions">
-                      <button type="button" className="cms-btn" onClick={() => moveStep(i, -1)} disabled={i === 0} aria-label="Przesuń w górę">
+                      <button type="button" className="cms-btn" onClick={() => moveStep(i, -1)} disabled={i === 0} aria-label={`Przesuń krok ${i + 1} w górę`}>
                         <i className="bi bi-arrow-up" aria-hidden="true"></i>
                       </button>
-                      <button type="button" className="cms-btn" onClick={() => moveStep(i, 1)} disabled={i === steps.length - 1} aria-label="Przesuń w dół">
+                      <button type="button" className="cms-btn" onClick={() => moveStep(i, 1)} disabled={i === steps.length - 1} aria-label={`Przesuń krok ${i + 1} w dół`}>
                         <i className="bi bi-arrow-down" aria-hidden="true"></i>
                       </button>
-                      <button type="button" className="cms-btnDanger" onClick={() => removeStep(i)} aria-label="Usuń krok">
+                      <button type="button" className="cms-btnDanger" onClick={() => removeStep(i)} aria-label={`Usuń krok ${i + 1}`}>
                         <i className="bi bi-trash-fill" aria-hidden="true"></i>
                       </button>
                     </div>
                   </div>
                   <textarea
+                    aria-label={`Krok ${i + 1}: opis`}
                     className="cms-textarea"
                     placeholder="Opis kroku, np. Zaobserwuj @msk_dolacz na Instagramie"
                     value={step.text}
@@ -130,6 +131,7 @@ function RecruitmentSettingsCMS() {
                     <input
                       type="url"
                       className="cms-input"
+                      aria-label={`Krok ${i + 1}: link`}
                       placeholder="Link (opcjonalnie)"
                       value={step.link}
                       onChange={(e) => updateStep(i, { link: e.target.value })}
@@ -137,6 +139,7 @@ function RecruitmentSettingsCMS() {
                     <input
                       type="text"
                       className="cms-input"
+                      aria-label={`Krok ${i + 1}: etykieta przycisku`}
                       placeholder="Etykieta przycisku, np. Obserwuj"
                       value={step.linkLabel}
                       onChange={(e) => updateStep(i, { linkLabel: e.target.value })}

@@ -1,11 +1,11 @@
-import { useMemo, useState, useRef, useEffect, useCallback } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import clsx from 'clsx';
+
 import Cities from './cities.jsx';
 import { supabase } from '../../services/supabaseClient.js';
 import Seo from '../../shared/components/Seo.jsx';
-
-const LOCALE_CACHE = new Map();
+import { useTranslations } from '../../shared/i18n/useTranslations.js';
+import { SITE_URL } from '../../shared/config/site.js';
 
 const DB_VOIVODESHIPS = [
   'dolnośląskie','kujawsko-pomorskie','lubelskie','lubuskie','łódzkie',
@@ -35,45 +35,17 @@ function toDbVoiv(value) {
 }
 
 export default function MapElement() {
-  const location = useLocation();
-  const language = useMemo(
-    () => (location.pathname.split('/')[1] || 'pl').toLowerCase(),
-    [location.pathname]
-  );
+  const { t, lang } = useTranslations();
+  const paths = Array.isArray(t.paths) ? t.paths : [];
+  const cities = t.cities ?? {};
 
-  const [t, setT] = useState({ paths: [], cities: {} });
-  const [selectedRegion, setSelectedRegion] = useState(null); 
+  const [selectedRegion, setSelectedRegion] = useState(null);
   const [selectedCity, setSelectedCity] = useState(null);
   const [recruitment, setRecruitment] = useState(null);
   const [showArticle, setShowArticle] = useState(false);
 
   const regionRef = useRef(null);
   const articleRef = useRef(null);
-
-  useEffect(() => {
-    let active = true;
-    (async () => {
-      try {
-        if (LOCALE_CACHE.has(language)) {
-          if (active) setT(LOCALE_CACHE.get(language));
-        } else {
-          const res = await fetch(`/locales/${language}.json`, { credentials: 'same-origin' });
-          if (!res.ok) throw new Error(`HTTP ${res.status}`);
-          const data = await res.json();
-          const safe = {
-            paths: Array.isArray(data?.paths) ? data.paths : [],
-            cities: data?.cities || {},
-          };
-          LOCALE_CACHE.set(language, safe);
-          if (active) setT(safe);
-        }
-      } catch (e) {
-        console.error('Map i18n error:', e);
-        if (active) setT({ paths: [], cities: {} });
-      }
-    })();
-    return () => { active = false; };
-  }, [language]);
 
   useEffect(() => {
     let active = true;
@@ -92,58 +64,54 @@ export default function MapElement() {
         if (active) setRecruitment(null);
       }
     })();
-    return () => { active = false; };
+    return () => {
+      active = false;
+    };
   }, []);
 
   const scrollToElement = (el) => {
     if (!el) return;
     if (!window.matchMedia('(max-width: 768px)').matches) return;
+    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     try {
-      el.scrollIntoView({ block: 'start', behavior: 'smooth' });
+      el.scrollIntoView({ block: 'start', behavior: reduce ? 'auto' : 'smooth' });
     } catch {
-      window.scrollTo({ top: el.offsetTop ?? 0, behavior: 'smooth' });
+      window.scrollTo({ top: el.offsetTop ?? 0 });
     }
   };
-
-  const scrollTo = (el) => scrollToElement(el?.current);
 
   const handleSelectRegion = useCallback((voivRaw) => {
     const voiv = toDbVoiv(voivRaw);
     setSelectedCity(null);
     setShowArticle(false);
     setSelectedRegion(voiv);
-    setTimeout(() => scrollToElement(document.getElementById(voiv)), 0);
+    setTimeout(() => scrollToElement(document.getElementById(`region-${voiv}`)), 0);
   }, []);
 
-  const handlePathActivate = (e) => {
-    const voivAttr = e.currentTarget.getAttribute('data-voiv');
-    handleSelectRegion(voivAttr);
-  };
-
-  const handlePathKeyDown = (e) => {
+  const handlePathKeyDown = (e, voiv) => {
     if (e.key === 'Enter' || e.key === ' ') {
       e.preventDefault();
-      const voivAttr = e.currentTarget.getAttribute('data-voiv');
-      handleSelectRegion(voivAttr);
+      handleSelectRegion(voiv);
     }
   };
 
   const toggleArticle = () => {
     setShowArticle((v) => !v);
-    setTimeout(() => scrollTo(articleRef), 0);
+    setTimeout(() => scrollToElement(articleRef.current), 0);
   };
 
-  const content = Array.isArray(t.cities?.content) ? t.cities.content : [];
-  const cta = t.cities?.cta || 'Załóż nową grupę';
-  const h1 = t.cities?.h1 || 'Wybierz województwo';
+  const content = Array.isArray(cities.content) ? cities.content : [];
+  const cta = cities.cta || 'Załóż nową grupę';
+  const h1 = cities.h1 || 'Wybierz województwo';
 
   return (
     <main className="cities">
       <Seo
-        title="Grupy lokalne — Młodzieżowy Strajk Klimatyczny"
-        description="Znajdź lokalną grupę MSK w swoim województwie albo załóż nową w swojej okolicy."
-        url={`https://msk.earth/${language}/miasta`}
+        title={t.seo?.cities?.title ?? 'Grupy lokalne – Młodzieżowy Strajk Klimatyczny'}
+        description={t.seo?.cities?.description}
+        url={`${SITE_URL}/${lang}/miasta`}
       />
+      <h1 className="sr-only">{t.seo?.cities?.title ?? 'Grupy lokalne'}</h1>
       <div className="map">
         <svg
           className="map"
@@ -151,29 +119,30 @@ export default function MapElement() {
           viewBox="0 0 1000 1000"
           xmlns="http://www.w3.org/2000/svg"
           role="group"
-          aria-label={t.cities?.mapLabel || 'Mapa województw'}
+          aria-label={t.a11y?.mapLabel || 'Mapa województw'}
         >
-          {t.paths.map((path, index) => {
-            const canonicalVoiv =
-              toDbVoiv(path.voivodeship || path.voiv || path.name || path.ariaLabel || path.id || `region-${index}`);
+          {paths.map((path, index) => {
+            const canonicalVoiv = toDbVoiv(
+              path.voivodeship || path.voiv || path.name || path.ariaLabel || path.id || `region-${index}`
+            );
+            const label = path.ariaLabel || path.name || canonicalVoiv;
 
-            const { d, ...rest } = path;
-
+            // Tylko "d" trafia do DOM; pozostale klucze z JSON-a nie sa atrybutami SVG.
             return (
               <path
                 key={canonicalVoiv || `region-${index}`}
                 id={`voiv-${canonicalVoiv || index}`}
-                d={d}
-                {...rest}
-                data-voiv={canonicalVoiv}
+                d={path.d}
                 className={clsx('region', selectedRegion === canonicalVoiv && 'chosen')}
                 tabIndex={0}
                 role="button"
                 aria-pressed={selectedRegion === canonicalVoiv ? 'true' : 'false'}
-                aria-label={path.ariaLabel || path.name || canonicalVoiv}
-                onClick={handlePathActivate}
-                onKeyDown={handlePathKeyDown}
-              />
+                aria-label={label}
+                onClick={() => handleSelectRegion(canonicalVoiv)}
+                onKeyDown={(e) => handlePathKeyDown(e, canonicalVoiv)}
+              >
+                <title>{label}</title>
+              </path>
             );
           })}
         </svg>
@@ -181,27 +150,35 @@ export default function MapElement() {
 
       {selectedRegion ? (
         <div className="citiesInfo" ref={regionRef}>
-          <Cities
-            selectedRegion={selectedRegion}  
-            onSelectCity={setSelectedCity}
-            selectedCity={selectedCity}
-          />
-          <button type="button" onClick={toggleArticle} className="startNewGroup primaryBtn">
+          <Cities selectedRegion={selectedRegion} onSelectCity={setSelectedCity} selectedCity={selectedCity} />
+          <button
+            type="button"
+            onClick={toggleArticle}
+            className="startNewGroup primaryBtn"
+            aria-expanded={showArticle}
+            aria-controls="new-local-group"
+          >
             {cta}
           </button>
         </div>
       ) : (
         <div ref={regionRef} className="citiesInfo">
           <h2>{h1}</h2>
-          <button type="button" className="startNewGroup primaryBtn" onClick={toggleArticle}>
+          <button
+            type="button"
+            className="startNewGroup primaryBtn"
+            onClick={toggleArticle}
+            aria-expanded={showArticle}
+            aria-controls="new-local-group"
+          >
             {cta}
           </button>
         </div>
       )}
 
       {showArticle && (
-        <article className="newLocalGroup" ref={articleRef}>
-          {content[0] && <h3>{content[0]}</h3>}
+        <article className="newLocalGroup" id="new-local-group" ref={articleRef}>
+          {content[0] && <h2>{content[0]}</h2>}
           {content[1] && <p>{content[1]}</p>}
           {content[2] && <p>{content[2]}</p>}
           {content[3] && <p>{content[3]}</p>}
@@ -209,13 +186,10 @@ export default function MapElement() {
           <p className="contactUs">
             {content[4] || ''}
             {recruitment?.instagram && (
-              <a
-                className="joinUsButton"
-                href={recruitment.instagram}
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                {(content[5] || 'Instagram')}&nbsp;<i className="bi bi-instagram" aria-hidden="true" />
+              <a className="joinUsButton" href={recruitment.instagram} target="_blank" rel="noopener noreferrer">
+                {content[5] || 'Instagram'}
+                <span className="sr-only"> {t.a11y?.opensNewTab ?? '(otwiera się w nowej karcie)'}</span>
+                &nbsp;<i className="bi bi-instagram" aria-hidden="true" />
               </a>
             )}
           </p>

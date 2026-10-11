@@ -1,66 +1,43 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
+
 import MobileHeader from './mobileHeader.jsx';
 import ClimateNewsBar from './climateNewsBar.jsx';
+import LanguageSwitch from './languageSwitch.jsx';
+import { useTranslations } from '../shared/i18n/useTranslations.js';
 
-async function fetchLocale(lang) {
-  try {
-    const res = await fetch(`/locales/${lang}.json`, { credentials: 'same-origin' });
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    return await res.json();
-  } catch (err) {
-    console.error('Error loading translations:', err);
-    return null;
-  }
+// Ten sam prog co w CSS (index.css: .desktopHeader ukryty ponizej 1024px).
+function useIsMobile(query = '(max-width: 1023px)') {
+  const [matches, setMatches] = useState(() => window.matchMedia?.(query).matches ?? false);
+  useEffect(() => {
+    const mql = window.matchMedia?.(query);
+    if (!mql) return undefined;
+    const onChange = (e) => setMatches(e.matches);
+    mql.addEventListener('change', onChange);
+    return () => mql.removeEventListener('change', onChange);
+  }, [query]);
+  return matches;
 }
 
 function Header({ lang, handleLanguageChange }) {
-  const location = useLocation();
-  const effectiveLang = useMemo(() => {
-    const seg = (location.pathname.split('/')[1] || '').toLowerCase();
-    const supported = ['pl', 'en', 'ua'];
-    if (lang && supported.includes(lang)) return lang;
-    return supported.includes(seg) ? seg : 'pl';
-  }, [lang, location.pathname]);
-
-  const [mobileMenuItems, setMobileMenuItems] = useState([]);
-
-  useEffect(() => {
-    let active = true;
-    (async () => {
-      const data = await fetchLocale(effectiveLang);
-      if (!active || !data) return;
-      setMobileMenuItems(data?.mobileNavbar?.menuItems ?? []);
-    })();
-    return () => { active = false; };
-  }, [effectiveLang]);
+  // Jeden pasek wiadomosci zamiast dwoch (desktop + mobile): jedno zapytanie do API
+  // i bez podwojnego naglowka dla czytnikow ekranu.
+  const isMobile = useIsMobile();
+  const ticker = <ClimateNewsBar />;
 
   return (
     <>
-      <DesktopHeader lang={effectiveLang} handleLanguageChange={handleLanguageChange} />
-      <MobileHeader
-        lang={effectiveLang}
-        handleLanguageChange={handleLanguageChange}
-        menuItems={mobileMenuItems}
-      />
+      <DesktopHeader lang={lang} handleLanguageChange={handleLanguageChange} ticker={isMobile ? null : ticker} />
+      <MobileHeader lang={lang} handleLanguageChange={handleLanguageChange} ticker={isMobile ? ticker : null} />
     </>
   );
 }
 
-function DesktopHeader({ lang, handleLanguageChange }) {
+function DesktopHeader({ lang, handleLanguageChange, ticker }) {
   const location = useLocation();
-  const [menuItems, setMenuItems] = useState([]);
+  const { t } = useTranslations();
+  const menuItems = t.navbar?.menuItems ?? [];
   const [isScrolled, setIsScrolled] = useState(false);
-
-  useEffect(() => {
-    let active = true;
-    (async () => {
-      const data = await fetchLocale(lang);
-      if (!active || !data) return;
-      setMenuItems(data?.navbar?.menuItems ?? []);
-    })();
-    return () => { active = false; };
-  }, [lang]);
 
   useEffect(() => {
     const onScroll = () => setIsScrolled(window.scrollY > 24);
@@ -69,72 +46,39 @@ function DesktopHeader({ lang, handleLanguageChange }) {
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
 
-  const isActive = (href) => {
-    return location.pathname === href || location.pathname.startsWith(href + '/');
-  };
+  const isActive = (href) => location.pathname === href || location.pathname.startsWith(`${href}/`);
 
   return (
     <header className={`desktopHeader${isScrolled ? ' is-scrolled' : ''}`} id="header">
       <div className="headerElementsContainer">
-        <Link to={`/${lang}`} className="desktop logo">
-          <img
-            src="/logoMSK.webp"
-            alt="Logo Młodzieżowy Strajk Klimatyczny"
-            width="512"
-            height="512"
-            decoding="async"
-          />
-          <img
-            src="/logoFFF.png"
-            alt="Logo Fridays For Future"
-            width="512"
-            height="512"
-            decoding="async"
-          />
+        <Link to={`/${lang}`} className="desktop logo" aria-label={t.header?.homeLink ?? 'Młodzieżowy Strajk Klimatyczny – strona główna'}>
+          <img src="/logoMSK.webp" alt="" width="512" height="512" decoding="async" />
+          <img src="/logoFFF.png" alt="" width="512" height="512" decoding="async" />
         </Link>
 
         <div className="desktopNavbar">
-          <nav className="navbarItems" aria-label="Główne menu">
+          <nav className="navbarItems" aria-label={t.a11y?.mainMenu ?? 'Główne menu'}>
             <ul>
-              {menuItems.map(({ label, link }, idx) => {
+              {menuItems.map(({ label, link }) => {
                 const to = (link || '').replace(':lang', lang);
+                const active = isActive(to);
                 return (
-                  <li key={`${label}-${idx}`} className={isActive(to) ? 'active' : ''}>
-                    <Link to={to}>{label}</Link>
+                  <li key={to} className={active ? 'active' : ''}>
+                    <Link to={to} aria-current={active ? 'page' : undefined}>
+                      {label}
+                    </Link>
                   </li>
                 );
               })}
-
-              <span className="flags" aria-label="Wybór języka">
-                {lang !== 'pl' && (
-                  <button
-                    type="button"
-                    onClick={() => handleLanguageChange('pl')}
-                    title="Polski"
-                    aria-label="Polski"
-                    className="flag-btn"
-                  >
-                    PL
-                  </button>
-                )}
-                {lang !== 'en' && (
-                  <button
-                    type="button"
-                    onClick={() => handleLanguageChange('en')}
-                    title="English"
-                    aria-label="English"
-                    className="flag-btn"
-                  >
-                    EN
-                  </button>
-                )}
-              </span>
+              <li className="flags-item">
+                <LanguageSwitch lang={lang} onChange={handleLanguageChange} label={t.a11y?.languageSwitch} />
+              </li>
             </ul>
           </nav>
         </div>
       </div>
 
-      <ClimateNewsBar />
+      {ticker}
     </header>
   );
 }

@@ -1,12 +1,15 @@
-import { useEffect, useRef, useState } from 'react';
+import { useState } from 'react';
 
 import { useTranslations } from '../shared/i18n/useTranslations.js';
 
 const STORAGE_KEY = 'msk-cookie-consent';
 
+/**
+ * Serwis nie uzywa analityki ani reklam, wiec nie ma o co prosic o zgode.
+ * Zamiast modalu blokujacego strone pokazujemy nienachalna informacje.
+ */
 export default function CookieConsent() {
   const { t } = useTranslations();
-  const dialogRef = useRef(null);
 
   const [open, setOpen] = useState(() => {
     try {
@@ -16,60 +19,40 @@ export default function CookieConsent() {
     }
   });
 
-  useEffect(() => {
-    if (open && dialogRef.current && !dialogRef.current.open) {
-      dialogRef.current.showModal();
-    }
-  }, [open]);
-
-  const decide = (analytics) => {
+  const dismiss = () => {
     try {
       localStorage.setItem(
         STORAGE_KEY,
-        JSON.stringify({ analytics, ts: new Date().toISOString(), version: 1 })
+        JSON.stringify({ analytics: false, ts: new Date().toISOString(), version: 2 })
       );
     } catch (err) {
       void err;
     }
-    dialogRef.current?.close();
     setOpen(false);
   };
 
   if (!open) return null;
 
   return (
-    <dialog
-      ref={dialogRef}
-      className="cookie-dialog overlay-content"
-      aria-labelledby="cookie-title"
-      onCancel={(e) => {
-        e.preventDefault();
-        decide(false);
-      }}
-    >
+    <section className="cookie-dialog cookie-notice overlay-content" role="region" aria-labelledby="cookie-title">
       <h2 id="cookie-title">{t.cookies?.title ?? 'Pliki cookies'}</h2>
 
-      <article className="cookies">
+      <div className="cookies">
         <p>
           {t.cookies?.message ??
-            'Używamy plików cookies niezbędnych do działania serwisu. Możesz zgodzić się także na cookies analityczne.'}
-        </p>
-
-        <div className="cookie-actions" style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
-          <button type="button" className="cookiesButton primaryBtn" onClick={() => decide(true)}>
-            {t.cookies?.accept ?? t.cookies?.button ?? 'Akceptuję wszystkie'}
-          </button>
-          <button type="button" className="cookiesButton" onClick={() => decide(false)}>
-            {t.cookies?.reject ?? 'Tylko niezbędne'}
-          </button>
-        </div>
-
-        <p>
+            'Ta strona używa tylko plików niezbędnych do działania. Nie śledzimy Cię i nie używamy analityki ani reklam.'}{' '}
           <a href="/polityka-prywatnosci.pdf" target="_blank" rel="noopener noreferrer">
             {t.cookies?.policy ?? 'Polityka prywatności'}
+            <span className="sr-only"> {t.a11y?.opensNewTab ?? '(otwiera się w nowej karcie)'}</span>
           </a>
         </p>
-      </article>
-    </dialog>
+
+        <div className="cookie-actions">
+          <button type="button" className="cookiesButton primaryBtn" onClick={dismiss}>
+            {t.cookies?.button ?? 'Rozumiem'}
+          </button>
+        </div>
+      </div>
+    </section>
   );
 }

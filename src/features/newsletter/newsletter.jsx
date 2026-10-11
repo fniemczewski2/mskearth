@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+import { useId, useRef, useState } from 'react';
 
 import { useTranslations } from '../../shared/i18n/useTranslations.js';
 
@@ -7,6 +7,8 @@ const REQUEST_TIMEOUT_MS = 15000;
 
 export default function NewsletterForm() {
   const { t } = useTranslations();
+  const uid = useId();
+  const emailRef = useRef(null);
 
   const [email, setEmail] = useState('');
   const [consent, setConsent] = useState(false);
@@ -20,8 +22,8 @@ export default function NewsletterForm() {
     if (company.trim().length > 0) {
       return { ok: false, msg: t.newsletter?.failed || 'Coś poszło nie tak.' };
     }
-    if (!consent) return { ok: false, msg: t.newsletter?.consentRequired || 'Zaznacz zgodę.' };
-    if (!/^\S+@\S+\.\S+$/.test(email)) return { ok: false, msg: t.newsletter?.invalidEmail || 'Nieprawidłowy e-mail.' };
+    if (!/^\S+@\S+\.\S+$/.test(email.trim())) return { ok: false, field: 'email', msg: t.newsletter?.invalidEmail || 'Podaj poprawny adres e-mail.' };
+    if (!consent) return { ok: false, field: 'consent', msg: t.newsletter?.consentRequired || 'Zaznacz zgodę na otrzymywanie newslettera.' };
     return { ok: true, msg: '' };
   };
 
@@ -33,10 +35,11 @@ export default function NewsletterForm() {
     setErrMsg('');
 
     const v = validate();
-    if (!v.ok) { 
-      setStatus('error'); 
-      setErrMsg(v.msg); 
-      return; 
+    if (!v.ok) {
+      setStatus('error');
+      setErrMsg(v.msg);
+      if (v.field === 'email') emailRef.current?.focus();
+      return;
     }
 
     if (abortRef.current) abortRef.current.abort();
@@ -52,7 +55,7 @@ export default function NewsletterForm() {
           'Content-Type': 'application/json; charset=utf-8',
           Accept: 'application/json',
         },
-        body: JSON.stringify({ email, consent, company }),
+        body: JSON.stringify({ email: email.trim(), consent, company }),
         signal: controller.signal,
       });
 
@@ -84,8 +87,6 @@ export default function NewsletterForm() {
         setErrMsg(
           isTimeout
             ? (t.newsletter?.timeout || 'Przekroczono czas. Spróbuj ponownie.')
-            : /already/i.test(err?.message || '')
-            ? (t.newsletter?.success || 'Dziękujemy! Sprawdź skrzynkę e-mail.')
             : (t.newsletter?.failed || 'Nie udało się zapisać do newslettera.')
         );
         console.error('Newsletter subscribe error:', err);
@@ -101,18 +102,18 @@ export default function NewsletterForm() {
     <>
       <h2>{t.newsletter?.h2 || 'Newsletter'}</h2>
 
-      <aside className="newsletter">
+      <div className="panel newsletter">
         <form
           className="newsletter-form"
           onSubmit={handleSubmit}
           noValidate
           aria-busy={busy ? 'true' : 'false'}
         >
-          <label htmlFor="company" style={{ position: 'absolute', left: '-9999px' }}>
+          <label aria-hidden="true" htmlFor={`${uid}-company`} style={{ position: 'absolute', left: '-9999px' }}>
             Company
           </label>
           <input
-            id="company"
+            id={`${uid}-company`}
             type="text"
             name="company"
             tabIndex={-1}
@@ -123,41 +124,39 @@ export default function NewsletterForm() {
             onChange={(e) => setCompany(e.target.value)}
           />
 
-          <label className="formLabel" htmlFor="newsletter-email">
+          <label className="formLabel" htmlFor={`${uid}-email`}>
             {t.newsletter?.emailLabel || 'E-mail'}
           </label>
           <input
             className="formField"
-            id="newsletter-email"
+            id={`${uid}-email`}
+            ref={emailRef}
             type="email"
             name="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             required
-            aria-required="true"
             autoComplete="email"
             inputMode="email"
           />
 
           <div className="agreementContainer">
             <input
-              id="newsletter-consent"
+              id={`${uid}-consent`}
               type="checkbox"
               name="consent"
               checked={consent}
               onChange={(e) => setConsent(e.target.checked)}
               required
-              aria-required="true"
             />
-            <label className="agreement" htmlFor="newsletter-consent">
-              {t.newsletter?.consent || 'Wyrażam zgodę na przetwarzanie danych zgodnie z polityką prywatności.'}
+            <label className="agreement" htmlFor={`${uid}-consent`}>
+              {t.newsletter?.consent || 'Chcę otrzymywać newsletter fundacji na podany adres e-mail.'}
             </label>
           </div>
 
           <button
             type="submit"
             className="newsletterButton"
-            disabled={busy}
             aria-disabled={busy ? 'true' : 'false'}
           >
             {busy ? (t.newsletter?.pending || 'Przetwarzanie…') : (t.newsletter?.submit || 'Zapisz się')}
@@ -167,7 +166,7 @@ export default function NewsletterForm() {
           {busy && (
             <div className="loader" role="status" aria-live="polite">
               <span className="spinner" aria-hidden="true" />
-              <span className="sr-only">Ładowanie…</span>
+              <span className="sr-only">{t.a11y?.loading ?? 'Ładowanie…'}</span>
             </div>
           )}
           {status === 'error' && (
@@ -176,12 +175,12 @@ export default function NewsletterForm() {
             </p>
           )}
           {status === 'ok' && (
-            <p className="succeeded" role="status" aria-live="polite">
+            <p className="succeeded" role="status">
               {t.newsletter?.success || 'Dziękujemy! Sprawdź skrzynkę e-mail.'}
             </p>
           )}
         </form>
-      </aside>
+      </div>
     </>
   );
 }

@@ -1,19 +1,28 @@
-import { useMemo, useState } from 'react';
+import { useId, useRef, useState } from 'react';
 
 import { useTranslations } from '../../shared/i18n/useTranslations.js';
+import useCheckout, { EMAIL_RE } from './useCheckout.js';
 import './donate.css';
 
-export default function DonateStripe() {
-  const { t, lang } = useTranslations();
+const AMOUNTS = [
+  { id: 0, amount: 70, desc: 'Godzina warsztatu dla\u00A0jednej\u00A0klasy' },
+  { id: 1, amount: 130, desc: 'Dzień warsztatów dla\u00A0jednej\u00A0szkoły' },
+  { id: 2, amount: 200, desc: 'Szkolenie osoby prowadzącej' },
+];
 
-  const amounts = useMemo(
-    () => [
-      { id: 0, amount: 70, desc: 'godzina warsztatu dla\u00A01\u00A0klasy' },
-      { id: 1, amount: 130, desc: 'dzień warsztatów dla\u00A01\u00A0szkoły' },
-      { id: 2, amount: 200, desc: 'szkolenie osoby prowadzącej' },
-    ],
-    []
-  );
+export default function DonateStripe({ headingLevel = 2, hideHeading = false }) {
+  const { t, lang } = useTranslations();
+  const d = t.donate ?? {};
+  const uid = useId();
+  const ids = {
+    custom: `${uid}-amount`,
+    customError: `${uid}-amount-error`,
+    name: `${uid}-name`,
+    email: `${uid}-email`,
+    emailError: `${uid}-email-error`,
+    newsletter: `${uid}-newsletter`,
+    notice: `${uid}-notice`,
+  };
 
   const [amount, setAmount] = useState(130);
   const [customAmount, setCustomAmount] = useState('');
@@ -21,66 +30,56 @@ export default function DonateStripe() {
   const [isRecurring, setIsRecurring] = useState(false);
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
-  const [consent, setConsent] = useState(false);
   const [newsletter, setNewsletter] = useState(false);
-  const [busy, setBusy] = useState(false);
-  const [err, setErr] = useState('');
+  const [submitted, setSubmitted] = useState(false);
 
-  const emailValid = !email || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-  const finalAmount = showCustom && customAmount ? Number(customAmount) : amount;
+  const emailRef = useRef(null);
+  const customRef = useRef(null);
+  const { busy, err, startPayment } = useCheckout({ t, lang });
+
+  const finalAmount = showCustom ? Number(customAmount) : amount;
   const amountValid = Number.isFinite(finalAmount) && finalAmount >= 5 && finalAmount <= 50_000;
-  const canPay = amountValid && consent && emailValid && Boolean(email) && !busy;
+  const emailValid = EMAIL_RE.test(email.trim());
 
-  const currencySuffix = t.donate?.currencySuffix ?? 'zł';
-  const formatAmount = (num) => new Intl.NumberFormat('pl-PL').format(Math.round(num || 0));
+  const currencySuffix = d.currencySuffix ?? 'zł';
+  const formatAmount = (num) =>
+    new Intl.NumberFormat(lang === 'en' ? 'en-GB' : 'pl-PL', { maximumFractionDigits: 2 }).format(num || 0);
 
-  async function startPayment() {
-    if (!canPay) return;
-    setBusy(true);
-    setErr('');
+  const showAmountError = (submitted || customAmount !== '') && showCustom && !amountValid;
+  const showEmailError = (submitted || email !== '') && !emailValid;
+  const emailErrorText = email.trim() === ''
+    ? (d.emailRequired ?? 'Podaj adres e-mail – wyślemy na niego potwierdzenie.')
+    : (d.invalidEmail ?? 'Podaj poprawny adres e-mail.');
 
-    try {
-      const res = await fetch('/api/create-checkout-session', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          amount: finalAmount,
-          name,
-          email,
-          newsletter,
-          locale: lang === 'en' ? 'en' : 'pl',
-          payment_type: isRecurring ? 'recurring' : 'onetime',
-          returnHost: window.location.hostname,
-        }),
-      });
-
-      const data = await res.json().catch(() => ({}));
-
-      if (!res.ok || !data?.url) {
-        throw new Error(data?.error ?? t.donate?.createPaymentFailed ?? 'Nie udało się utworzyć płatności.');
-      }
-
-      const target = window.top ?? window;
-      target.location.assign(data.url);
-    } catch (e) {
-      setErr(e.message || t.donate?.serverError || 'Wystąpił błąd po stronie serwera.');
-      setBusy(false);
+  function handlePay() {
+    setSubmitted(true);
+    // Przycisk jest zawsze aktywny, a brakujace pole dostaje komunikat i fokus (WCAG 3.3.1).
+    if (showCustom && !amountValid) {
+      customRef.current?.focus();
+      return;
     }
+    if (!emailValid) {
+      emailRef.current?.focus();
+      return;
+    }
+    startPayment({ amount: finalAmount, name, email: email.trim(), newsletter, isRecurring });
   }
+
+  const Heading = `h${headingLevel}`;
 
   return (
     <>
-      <h2>{t.donate?.h2 ?? 'Wesprzyj nas!'}</h2>
+      {!hideHeading && <Heading>{d.h2 ?? 'Wesprzyj nas!'}</Heading>}
 
-      <aside className="donate">
-        <div className="payment-type" role="group" aria-label="Rodzaj wsparcia">
+      <div className="panel donate">
+        <div className="payment-type" role="group" aria-label={d.paymentType ?? 'Rodzaj wsparcia'}>
           <button
             type="button"
             className={!isRecurring ? 'active' : undefined}
             aria-pressed={!isRecurring}
             onClick={() => setIsRecurring(false)}
           >
-            {t.donate?.onetime ?? 'Jednorazowo'}
+            {d.onetime ?? 'Jednorazowo'}
           </button>
           <button
             type="button"
@@ -88,12 +87,12 @@ export default function DonateStripe() {
             aria-pressed={isRecurring}
             onClick={() => setIsRecurring(true)}
           >
-            {t.donate?.recurring ?? 'Co miesiąc'}
+            {d.recurring ?? 'Co miesiąc'}
           </button>
         </div>
 
-        <div className="amounts" role="group" aria-label={t.donate?.amountsAria ?? 'Wybierz kwotę darowizny'}>
-          {amounts.map((v) => (
+        <div className="amounts" role="group" aria-label={d.amountsAria ?? 'Wybierz kwotę darowizny'}>
+          {AMOUNTS.map((v) => (
             <button
               key={v.id}
               type="button"
@@ -105,28 +104,32 @@ export default function DonateStripe() {
               className={!showCustom && amount === v.amount ? 'active' : undefined}
               aria-pressed={!showCustom && amount === v.amount}
             >
-              <p className="amount">{v.amount}{'\u00A0'}{currencySuffix}</p>
-              <p className="desc">{t.donate?.descriptions?.[v.id] ?? v.desc}</p>
+              <span className="amount">{v.amount}{'\u00A0'}{currencySuffix}</span>
+              <span className="desc">{d.descriptions?.[v.id] ?? v.desc}</span>
             </button>
           ))}
           <button
             type="button"
-            onClick={() => setShowCustom(true)}
+            onClick={() => {
+              setShowCustom(true);
+              requestAnimationFrame(() => customRef.current?.focus());
+            }}
             className={showCustom ? 'active' : undefined}
             aria-pressed={showCustom}
           >
-            {t.donate?.customAmount ?? 'Inna kwota'}
+            {d.customAmount ?? 'Inna kwota'}
           </button>
         </div>
 
         {showCustom && (
           <div className="custom-amount-container">
-            <label className="formLabel" htmlFor="custom-amount">
-              {t.donate?.customAmountLabel ?? 'Wpisz kwotę:'}
+            <label className="formLabel" htmlFor={ids.custom}>
+              {d.customAmountLabel ?? 'Wpisz kwotę:'}
             </label>
             <div className="input-with-suffix">
               <input
-                id="custom-amount"
+                id={ids.custom}
+                ref={customRef}
                 type="number"
                 min="5"
                 max="50000"
@@ -136,84 +139,77 @@ export default function DonateStripe() {
                 className="formField"
                 placeholder="50"
                 inputMode="numeric"
-                aria-label="Niestandardowa kwota darowizny"
-                aria-invalid={customAmount && !amountValid ? 'true' : 'false'}
+                aria-invalid={showAmountError ? 'true' : 'false'}
+                aria-describedby={showAmountError ? ids.customError : undefined}
               />
-              <span className="input-suffix">{currencySuffix}</span>
+              <span className="input-suffix" aria-hidden="true">{currencySuffix}</span>
             </div>
-            {customAmount && !amountValid && (
-              <p role="alert" className="formError">
-                {t.donate?.invalidAmount ?? 'Kwota musi mieścić się w przedziale 5–50 000 zł.'}
+            {showAmountError && (
+              <p id={ids.customError} className="formError">
+                {d.invalidAmount ?? 'Kwota musi mieścić się w przedziale 5–50 000 zł.'}
               </p>
             )}
           </div>
         )}
 
         <div>
-          <label className="formLabel" htmlFor="donor-name">
-            {t.donate?.nameLabel ?? 'Imię:'}
+          <label className="formLabel" htmlFor={ids.name}>
+            {d.nameLabel ?? 'Imię:'}
           </label>
           <input
-            id="donor-name"
+            id={ids.name}
             value={name}
             onChange={(e) => setName(e.target.value)}
             className="formField"
-            placeholder={t.donate?.namePlaceholder ?? 'Anna'}
+            placeholder={d.namePlaceholder ?? 'Anna'}
             autoComplete="name"
             maxLength={120}
           />
 
-          <label className="formLabel" htmlFor="donor-email">
-            {t.donate?.emailLabel ?? 'E-mail:'} <span aria-hidden="true" className="required-mark">*</span>
+          <label className="formLabel" htmlFor={ids.email}>
+            {d.emailLabel ?? 'E-mail:'} <span aria-hidden="true" className="required-mark">*</span>
           </label>
           <input
-            id="donor-email"
+            id={ids.email}
+            ref={emailRef}
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             className="formField"
-            placeholder={t.donate?.emailPlaceholder ?? 'jan@example.com'}
+            placeholder={d.emailPlaceholder ?? 'jan@example.com'}
             type="email"
             autoComplete="email"
             inputMode="email"
             required
-            aria-required="true"
-            aria-invalid={email && !emailValid ? 'true' : 'false'}
-            aria-describedby={email && !emailValid ? 'donor-email-error' : undefined}
+            aria-invalid={showEmailError ? 'true' : 'false'}
+            aria-describedby={showEmailError ? ids.emailError : undefined}
           />
-          {email && !emailValid && (
-            <p id="donor-email-error" role="alert" className="formError">
-              {t.donate?.invalidEmail ?? 'Podaj poprawny adres e-mail.'}
+          {showEmailError && (
+            <p id={ids.emailError} className="formError">
+              {emailErrorText}
             </p>
           )}
         </div>
 
         <div className="agreementContainer">
           <input
-            id="donate-consent"
-            type="checkbox"
-            checked={consent}
-            onChange={(e) => setConsent(e.target.checked)}
-            required
-          />
-          <label className="agreement" htmlFor="donate-consent">
-            <span aria-hidden="true" className="required-mark">*</span>{' '}
-            {t.donate?.consent ??
-              'Wyrażam zgodę na przetwarzanie moich danych osobowych w celu realizacji darowizny.'}
-          </label>
-        </div>
-
-        <div className="agreementContainer">
-          <input
-            id="donate-newsletter"
+            id={ids.newsletter}
             type="checkbox"
             checked={newsletter}
             onChange={(e) => setNewsletter(e.target.checked)}
           />
-          <label className="agreement" htmlFor="donate-newsletter">
-            {t.donate?.newsletter ??
-              'Wyrażam zgodę na wysyłanie mi informacji o działalności fundacji na podany adres e-mail.'}
+          <label className="agreement" htmlFor={ids.newsletter}>
+            {d.newsletter ?? 'Chcę otrzymywać newsletter fundacji na podany adres e-mail (opcjonalnie).'}
           </label>
         </div>
+
+        <p id={ids.notice} className="agreement privacy-notice">
+          {d.privacyNotice ??
+            'Darowiznę otrzymuje Fundacja Przyjaciół Młodzieżowego Strajku Klimatycznego. Twoje dane przetwarzamy, żeby zrealizować darowiznę. Płatność obsługuje Stripe.'}{' '}
+          <a href="/polityka-prywatnosci.pdf" target="_blank" rel="noopener noreferrer">
+            {t.cookies?.policy ?? 'Polityka prywatności'}
+            <span className="sr-only"> {t.a11y?.opensNewTab ?? '(otwiera się w nowej karcie)'}</span>
+          </a>
+        </p>
 
         {err && (
           <p role="alert" className="formError" style={{ marginTop: 8, marginBottom: 16 }}>
@@ -225,31 +221,29 @@ export default function DonateStripe() {
           <button
             type="button"
             className="primaryBtn"
-            disabled={!canPay}
-            onClick={startPayment}
-            aria-busy={busy ? 'true' : 'false'}
+            onClick={handlePay}
+            aria-disabled={busy ? 'true' : 'false'}
+            aria-describedby={ids.notice}
           >
-            <p>
-              {busy
-                ? (t.donate?.redirecting ?? 'Przekierowywanie…')
-                : `${t.donate?.payCta ?? 'Wpłać'} ${formatAmount(finalAmount)} ${currencySuffix}${
-                    isRecurring ? (t.donate?.monthlySuffix ?? ' / mies.') : ''
-                  }`}
-            </p>
+            {busy
+              ? (d.redirecting ?? 'Przekierowywanie…')
+              : `${d.payCta ?? 'Wpłać'} ${amountValid ? formatAmount(finalAmount) : '–'} ${currencySuffix}${
+                  isRecurring ? (d.monthlySuffix ?? ' / mies.') : ''
+                }`}
           </button>
         </div>
 
         <div className="trust-indicators">
           <p className="trust-text">
             <i className="bi bi-shield-check" aria-hidden="true" />
-            &nbsp;{t.donate?.secure ?? 'Bezpieczna płatność przez Stripe'}
+            &nbsp;{d.secure ?? 'Bezpieczna płatność przez Stripe'}
           </p>
           <p className="trust-text">
             <i className="bi bi-receipt" aria-hidden="true" />
-            &nbsp;{t.donate?.receipt ?? 'Otrzymasz potwierdzenie na e-mail'}
+            &nbsp;{d.receipt ?? 'Po zaksięgowaniu płatności dostaniesz potwierdzenie e-mailem.'}
           </p>
         </div>
-      </aside>
+      </div>
     </>
   );
 }

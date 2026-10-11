@@ -1,68 +1,59 @@
-import { useEffect, useMemo, useState } from "react";
-import { Link, useLocation } from "react-router-dom";
-import MobileNavbar from "./mobileNavbar.jsx";
-import ClimateNewsBar from "./climateNewsBar.jsx";
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { Link, useLocation } from 'react-router-dom';
 
-function MobileHeader({ lang = 'pl', handleLanguageChange }) {
+import MobileNavbar from './mobileNavbar.jsx';
+import { useTranslations } from '../shared/i18n/useTranslations.js';
+
+function MobileHeader({ lang = 'pl', handleLanguageChange, ticker }) {
+  const { t } = useTranslations();
   const [isOpen, setOpen] = useState(false);
   const location = useLocation();
+  const burgerRef = useRef(null);
 
-  const homeHref = useMemo(() => {
-    const l = (lang || '').trim();
-    return l && l !== 'pl' ? `/${l}` : '/';
-  }, [lang]);
+  const toggleOpen = () => setOpen((v) => !v);
+  const closeMenu = useCallback((restoreFocus = false) => {
+    setOpen((wasOpen) => {
+      if (wasOpen && restoreFocus) requestAnimationFrame(() => burgerRef.current?.focus());
+      return false;
+    });
+  }, []);
 
-  const toggleOpen = () => setOpen(v => !v);
-  const closeMenu = () => setOpen(false);
-
-  useEffect(() => { closeMenu(); }, [location.pathname]);
+  useEffect(() => {
+    closeMenu(false);
+  }, [location.pathname, closeMenu]);
 
   useEffect(() => {
     const { body } = document;
-    if (!body) return;
+    if (!body) return undefined;
     const prev = body.style.overflow;
     if (isOpen) body.style.overflow = 'hidden';
-    return () => { body.style.overflow = prev; };
+    return () => {
+      body.style.overflow = prev;
+    };
   }, [isOpen]);
 
   useEffect(() => {
-    if (!isOpen) return;
-    const onKey = (e) => { if (e.key === 'Escape') closeMenu(); };
+    if (!isOpen) return undefined;
+    const onKey = (e) => {
+      if (e.key === 'Escape') closeMenu(true);
+    };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [isOpen]);
+  }, [isOpen, closeMenu]);
 
   return (
     <>
-      {isOpen && (
-        <div
-          className="mobile-nav-backdrop"
-          onClick={closeMenu}
-          aria-hidden="true"
-        />
-      )}
-      <header
-        className={`mobileHeader ${isOpen ? 'is-open' : ''}`}
-      >
-        <Link to={homeHref} className="mobile logo" aria-label="Strona główna">
-          <img
-            src="/logoMSK.webp"
-            alt="MSK — Młodzieżowy Strajk Klimatyczny"
-            width="512"
-            height="512"
-            decoding="async"
-          />
-          <img
-            src="/logoFFF.png"
-            alt="FFF — Fridays For Future"
-            loading="lazy"
-            decoding="async"
-          />
+      {isOpen && <div className="mobile-nav-backdrop" onClick={() => closeMenu(true)} aria-hidden="true" />}
+      <header className={`mobileHeader ${isOpen ? 'is-open' : ''}`}>
+        <Link to={`/${lang}`} className="mobile logo" aria-label={t.a11y?.home ?? 'Strona główna'}>
+          <img src="/logoMSK.webp" alt="" width="512" height="512" decoding="async" />
+          <img src="/logoFFF.png" alt="" loading="lazy" decoding="async" />
         </Link>
         <button
+          ref={burgerRef}
           type="button"
           className={`burger ${isOpen ? 'is-open' : ''}`}
-          aria-label={isOpen ? 'Zamknij menu' : 'Otwórz menu'}
+          aria-label={isOpen ? (t.a11y?.closeMenu ?? 'Zamknij menu') : (t.a11y?.openMenu ?? 'Otwórz menu')}
           aria-expanded={isOpen}
           aria-controls="mobile-nav"
           onClick={toggleOpen}
@@ -72,13 +63,13 @@ function MobileHeader({ lang = 'pl', handleLanguageChange }) {
           <span className={isOpen ? 'open' : 'close'} aria-hidden="true" />
         </button>
 
-        <ClimateNewsBar />
+        {ticker}
       </header>
 
       <MobileNavbar
         id="mobile-nav"
         isOpen={isOpen}
-        toggleOpen={toggleOpen}
+        onNavigate={() => closeMenu(false)}
         lang={lang}
         handleLanguageChange={handleLanguageChange}
       />

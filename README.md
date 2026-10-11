@@ -32,6 +32,7 @@ stripe listen --forward-to localhost:3001/api/stripe-webhook
 | `npm run build` | build produkcyjny (strona główna + strony osadzeń) |
 | `npm run preview` | podgląd builda |
 | `npm run lint` | ESLint, zero tolerancji dla ostrzeżeń |
+| `npm test` | testy Vitest (uruchamiane też w CI) |
 
 ## Zmienne środowiskowe
 
@@ -39,9 +40,17 @@ Wszystko z prefiksem `VITE_` **trafia do bundla i jest publiczne**. Sekrety (`SU
 
 Pełna lista w `.env.example`.
 
+Sitemapa generowana po buildzie (`scripts/generate-sitemap.mjs`) potrzebuje tylko klucza **anon** (`VITE_SUPABASE_URL` + `VITE_SUPABASE_ANON_KEY` albo `SUPABASE_URL` + `SUPABASE_ANON_KEY`). Bez nich artykuły nie trafią do sitemapy.
+
+Kanoniczny host to `https://msk.earth`; `www.msk.earth` przekierowuje na niego (`vercel.json`).
+
+Darczyńcy, którzy zaznaczą newsletter, są zapisywani do Kit przez webhook Stripe po zaksięgowaniu płatności (`KIT_API_KEY`, `KIT_FORM_ID`). W Stripe włącz zdarzenia `checkout.session.completed`, `checkout.session.async_payment_succeeded` i `checkout.session.async_payment_failed` (BLIK, Przelewy24).
+
 ## Baza danych
 
-Schemat i polityki RLS są wersjonowane w `supabase/migrations/`.
+Schemat i polityki RLS powinny być wersjonowane w `supabase/migrations/`.
+
+> **Uwaga:** na gałęzi `refactor2` katalogu `supabase/migrations/` nie ma. Zrzuć aktualny schemat (`npx supabase db pull`) i dodaj go do repo, zanim zaczniesz polegać na poniższych zasadach. Sprawdź przy tym, czy kolumny `phone` i `email` w `local_contact_people` nie są czytelne dla roli `anon`.
 
 ```bash
 npx supabase link --project-ref <id-projektu>

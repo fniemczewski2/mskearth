@@ -3,13 +3,14 @@ import { createClient } from '@supabase/supabase-js';
 
 const base = 'https://msk.earth';
 const langs = ['pl', 'en'];
-const paths = ['', '/aktualnosci', '/o-nas', '/miasta', '/fundacja', '/kontakt'];
+const paths = ['', '/aktualnosci', '/o-nas', '/miasta', '/fundacja', '/kontakt', '/wesprzyj'];
 
 async function fetchArticles() {
-  const url = process.env.SUPABASE_URL;
-  const key = process.env.SUPABASE_SERVICE_KEY;
+  // Wystarczy klucz anon: polityki RLS i tak udostepniaja tylko opublikowane artykuly.
+  const url = process.env.SUPABASE_URL ?? process.env.VITE_SUPABASE_URL;
+  const key = process.env.SUPABASE_ANON_KEY ?? process.env.VITE_SUPABASE_ANON_KEY;
   if (!url || !key) {
-    console.warn('[sitemap] Brak SUPABASE_URL/SUPABASE_SERVICE_KEY - pomijam artykuly.');
+    console.warn('[sitemap] Brak SUPABASE_URL/SUPABASE_ANON_KEY - pomijam artykuly.');
     return [];
   }
 
@@ -20,6 +21,7 @@ async function fetchArticles() {
       .select('id, published')
       .eq('accepted', true)
       .not('published', 'is', null)
+      .lte('published', new Date().toISOString())
       .order('published', { ascending: false })
       .limit(1000);
 
@@ -38,10 +40,12 @@ function entry(loc, lastmod) {
       return `    <xhtml:link rel="alternate" hreflang="${l}" href="${href}"/>`;
     })
     .join('\n');
+  const xDefault = loc.replace(/^(https:\/\/[^/]+)\/(pl|en)/, '$1/pl');
 
   return `  <url>
     <loc>${loc}</loc>${lastmod ? `\n    <lastmod>${String(lastmod).slice(0, 10)}</lastmod>` : ''}
 ${alternates}
+    <xhtml:link rel="alternate" hreflang="x-default" href="${xDefault}"/>
   </url>`;
 }
 

@@ -122,8 +122,8 @@ export default function ContactPeopleCMS() {
                     <td className="cms-td">{r.email || "—"}</td>
                     <td className="cms-td">
                       <div className="cms-actions">
-                        <button className="cms-btn" onClick={() => startEdit(r)}><i className="bi bi-pencil-fill" aria-hidden="true"></i></button>
-                        <button className="cms-btnDanger" onClick={() => handleDelete(r.id)}><i className="bi bi-trash-fill" aria-hidden="true"></i></button>
+                        <button type="button" className="cms-btn" onClick={() => startEdit(r)} aria-label={`Edytuj: ${r.name}`}><i className="bi bi-pencil-fill" aria-hidden="true"></i></button>
+                        <button type="button" className="cms-btnDanger" onClick={() => handleDelete(r.id)} aria-label={`Usuń: ${r.name}`}><i className="bi bi-trash-fill" aria-hidden="true"></i></button>
                       </div>
                     </td>
                   </tr>

@@ -17,6 +17,11 @@ export default function SignInForm({ onSignedIn }) {
     e.preventDefault();
     if (submitting) return;
 
+    if (email.trim().length < 4 || password.length < 8) {
+      setStatus({ type: 'error', message: 'Podaj e-mail i hasło (min. 8 znaków).' });
+      return;
+    }
+
     setSubmitting(true);
     setStatus({ type: 'loading', message: 'Logowanie…' });
 
@@ -37,7 +42,6 @@ export default function SignInForm({ onSignedIn }) {
     }
   }
 
-  const canSubmit = !submitting && email.trim().length > 3 && password.length >= 8;
 
   return (
     <div className="login">
@@ -87,7 +91,7 @@ export default function SignInForm({ onSignedIn }) {
         <button
           type="submit"
           className="loginBtn"
-          disabled={!canSubmit}
+          aria-disabled={submitting ? 'true' : 'false'}
           aria-busy={submitting ? 'true' : 'false'}
         >
           {submitting ? 'Logowanie…' : 'Zaloguj'}

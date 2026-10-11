@@ -47,3 +47,23 @@ describe('sanitizeArticle', () => {
     expect(result).not.toContain('target="_blank"');
   });
 });
+
+describe('sanitizeArticle hosts', () => {
+  it('drops images from hosts blocked by the CSP', () => {
+    const result = sanitizeArticle('<p>x</p><img src="https://evil.example/a.jpg" alt="a">');
+    expect(result).not.toContain('<img');
+  });
+
+  it('keeps images from Supabase storage and same-origin paths', () => {
+    expect(sanitizeArticle('<img src="https://abc.supabase.co/storage/v1/x.jpg" alt="a">')).toContain('<img');
+    expect(sanitizeArticle('<img src="/photo.webp" alt="a">')).toContain('<img');
+  });
+
+  it('rejects protocol-relative URLs', () => {
+    expect(sanitizeArticle('<a href="//evil.example">x</a>')).not.toContain('evil.example');
+  });
+
+  it('does not open own-domain links in a new tab', () => {
+    expect(sanitizeArticle('<a href="https://msk.earth/pl">x</a>')).not.toContain('target=');
+  });
+});

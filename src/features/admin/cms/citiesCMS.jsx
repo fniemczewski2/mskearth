@@ -125,8 +125,8 @@ export function CitiesCMS() {
                     <td className="cms-td">{r.meetings || "—"}</td>
                     <td className="cms-td">
                       <div className="cms-actions">
-                        <button className="cms-btn" onClick={() => startEdit(r)}><i className="bi bi-pencil-fill" aria-hidden="true"></i></button>
-                        <button className="cms-btnDanger" onClick={() => handleDelete(r.id)}><i className="bi bi-trash-fill" aria-hidden="true"></i></button>
+                        <button type="button" className="cms-btn" onClick={() => startEdit(r)} aria-label={`Edytuj: ${r.name}`}><i className="bi bi-pencil-fill" aria-hidden="true"></i></button>
+                        <button type="button" className="cms-btnDanger" onClick={() => handleDelete(r.id)} aria-label={`Usuń: ${r.name}`}><i className="bi bi-trash-fill" aria-hidden="true"></i></button>
                       </div>
                     </td>
                   </tr>
@@ -286,14 +286,14 @@ export function LocalContactsCMS() {
                 {rows.map((r) => (
                   <tr key={r.id}>
                     <td className="cms-td">{r.city || "—"}</td>
-                    <td className="cms-th" style={{ fontWeight: 500 }}>{r.name}</td>
+                    <td className="cms-td" style={{ fontWeight: 500 }}>{r.name}</td>
                     <td className="cms-td">{r.facebook ? <a href={r.facebook} target="_blank" rel="noreferrer">link</a> : "—"}</td>
                     <td className="cms-td">{r.phone || "—"}</td>
                     <td className="cms-td">{r.email || "—"}</td>
                     <td className="cms-td">
                       <div className="cms-actions">
-                        <button className="cms-btn" onClick={() => startEdit(r)}>Edytuj</button>
-                        <button className="cms-btnDanger" onClick={() => handleDelete(r.id)}>Usuń</button>
+                        <button type="button" className="cms-btn" onClick={() => startEdit(r)} aria-label={`Edytuj: ${r.name}`}>Edytuj</button>
+                        <button type="button" className="cms-btnDanger" onClick={() => handleDelete(r.id)} aria-label={`Usuń: ${r.name}`}>Usuń</button>
                       </div>
                     </td>
                   </tr>

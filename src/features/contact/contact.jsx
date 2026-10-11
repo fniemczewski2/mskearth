@@ -1,51 +1,31 @@
-import { useMemo, useState, useEffect } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useEffect, useRef, useState } from 'react';
+
 import { supabase } from '../../services/supabaseClient';
 import Seo from '../../shared/components/Seo.jsx';
+import { useTranslations } from '../../shared/i18n/useTranslations.js';
+import { SITE_URL } from '../../shared/config/site.js';
 
-const LOCALE_CACHE = new Map();
 const FORMSUBMIT_ENDPOINT = 'https://formsubmit.co/ajax/biuro@fpmsk.org.pl';
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 function Contact() {
-  const location = useLocation();
-  const language = useMemo(() => location.pathname.split('/')[1] || 'pl', [location.pathname]);
-
-  const [t, setT] = useState({ paths: [], cities: {}, contact: {} });
+  const { t, lang } = useTranslations();
+  const c = t.contact ?? {};
 
   const [contacts, setContacts] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [err, setErr] = useState('');
+  const [loadErr, setLoadErr] = useState(false);
 
+  const [fieldErrors, setFieldErrors] = useState({});
   const [submitting, setSubmitting] = useState(false);
   const [statusMsg, setStatusMsg] = useState('');
-  const [statusType, setStatusType] = useState(null); 
+  const [statusType, setStatusType] = useState(null);
+
+  const refs = { email: useRef(null), subject: useRef(null), message: useRef(null) };
 
   useEffect(() => {
     let active = true;
     (async () => {
-      try {
-        if (LOCALE_CACHE.has(language)) {
-          if (active) setT(LOCALE_CACHE.get(language));
-        } else {
-          const res = await fetch(`/locales/${language}.json`, { credentials: 'same-origin' });
-          if (!res.ok) throw new Error(`HTTP ${res.status}`);
-          const data = await res.json();
-          LOCALE_CACHE.set(language, data);
-          if (active) setT(data);
-        }
-      } catch (e) {
-        console.error('Error loading translations:', e);
-        if (active) setT({ paths: [], cities: {}, contact: {} });
-      }
-    })();
-    return () => { active = false; };
-  }, [language]);
-
-  useEffect(() => {
-    let active = true;
-    (async () => {
-      setLoading(true);
-      setErr('');
       try {
         const { data, error } = await supabase
           .from('contact_people')
@@ -57,15 +37,14 @@ function Contact() {
         if (active) setContacts(data || []);
       } catch (e) {
         console.error('Error fetching contact people:', e);
-        if (active) {
-          setContacts([]);
-          setErr('Nie udało się wczytać kontaktów.');
-        }
+        if (active) setLoadErr(true);
       } finally {
         if (active) setLoading(false);
       }
     })();
-    return () => { active = false; };
+    return () => {
+      active = false;
+    };
   }, []);
 
   const handleSubmit = async (e) => {
@@ -76,27 +55,24 @@ function Contact() {
     const formEl = e.currentTarget;
     const fd = new FormData(formEl);
 
-    const email = fd.get('email')?.toString().trim();
-    const subject = fd.get('_subject')?.toString().trim();
-    const message = fd.get('message')?.toString().trim();
-    const agreement = formEl.querySelector('#agreement')?.checked;
+    const email = fd.get('email')?.toString().trim() ?? '';
+    const subject = fd.get('_subject')?.toString().trim() ?? '';
+    const message = fd.get('message')?.toString().trim() ?? '';
 
-    if (!email || !/^\S+@\S+\.\S+$/.test(email)) {
-      setStatusMsg(t.contact?.invalidEmail || 'Nieprawidłowy e-mail.');
-      setStatusType('error');
-      return;
-    }
-    if (!subject || !message || !agreement) {
-      setStatusMsg(t.contact?.fillAll || 'Proszę uzupełnić wszystkie wymagane pola.');
-      setStatusType('error');
+    const errors = {};
+    if (!EMAIL_RE.test(email)) errors.email = c.invalidEmail || 'Podaj poprawny adres e-mail.';
+    if (!subject) errors.subject = c.missingSubject || 'Wpisz tytuł wiadomości.';
+    if (!message) errors.message = c.missingMessage || 'Wpisz treść wiadomości.';
+    setFieldErrors(errors);
+
+    const firstInvalid = ['email', 'subject', 'message'].find((k) => errors[k]);
+    if (firstInvalid) {
+      refs[firstInvalid].current?.focus();
       return;
     }
 
-    if (fd.get('_hp')) {
-      setStatusMsg('Bot submission blocked.');
-      setStatusType('error');
-      return;
-    }
+    // Pole-pulapka FormSubmit (_honey) odrzuca boty takze po stronie serwisu.
+    if (fd.get('_honey')) return;
 
     fd.set('_captcha', 'false');
     fd.set('_template', 'table');
@@ -104,145 +80,151 @@ function Contact() {
     try {
       const res = await fetch(FORMSUBMIT_ENDPOINT, {
         method: 'POST',
+        headers: { Accept: 'application/json' },
         body: fd,
       });
 
       if (res.ok) {
-        setStatusMsg(t.contact?.sent || 'Dziękujemy! Wiadomość wysłana.');
+        setStatusMsg(c.sent || 'Dziękujemy! Wiadomość wysłana.');
         setStatusType('ok');
         formEl.reset();
       } else {
-        const text = await res.text();
-        console.error('FormSubmit error:', text);
-        setStatusMsg(t.contact?.failed || 'Nie udało się wysłać wiadomości. Spróbuj ponownie.');
+        console.error('FormSubmit error:', await res.text());
+        setStatusMsg(c.failed || 'Nie udało się wysłać wiadomości. Spróbuj ponownie.');
         setStatusType('error');
       }
-    } catch (e) {
-      console.error('FormSubmit network error:', e);
-      setStatusMsg(t.contact?.failed || 'Nie udało się wysłać wiadomości. Spróbuj ponownie.');
+    } catch (err) {
+      console.error('FormSubmit network error:', err);
+      setStatusMsg(c.failed || 'Nie udało się wysłać wiadomości. Spróbuj ponownie.');
       setStatusType('error');
     } finally {
       setSubmitting(false);
     }
   };
 
+  const fieldProps = (key) => ({
+    ref: refs[key],
+    'aria-invalid': fieldErrors[key] ? 'true' : 'false',
+    'aria-describedby': fieldErrors[key] ? `contact-${key}-error` : undefined,
+  });
+
+  const fieldError = (key) =>
+    fieldErrors[key] ? (
+      <p id={`contact-${key}-error`} className="formError">
+        {fieldErrors[key]}
+      </p>
+    ) : null;
+
   return (
     <main className="contact">
       <Seo
-        title="Kontakt — Młodzieżowy Strajk Klimatyczny"
-        description="Skontaktuj się z Młodzieżowym Strajkiem Klimatycznym. Znajdź osoby kontaktowe w swoim regionie."
-        url={`https://msk.earth/${language}/kontakt`}
+        title={t.seo?.contact?.title ?? 'Kontakt – Młodzieżowy Strajk Klimatyczny'}
+        description={t.seo?.contact?.description}
+        url={`${SITE_URL}/${lang}/kontakt`}
       />
       <div className="page-intro">
-        <h1>{t.contact?.h1 || 'Kontakt'}</h1>
+        <h1>{c.h1 || 'Kontakt'}</h1>
         <span className="section-divider" aria-hidden="true" />
       </div>
 
-      <aside className="form-container">
+      <div className="panel form-container">
         <form id="form" className="contact-form" onSubmit={handleSubmit} noValidate>
           <input
             type="text"
-            name="_hp"
+            name="_honey"
             tabIndex={-1}
             autoComplete="off"
             aria-hidden="true"
             style={{ position: 'absolute', left: '-9999px', height: 0, width: 0, opacity: 0 }}
           />
 
-          <label className="formLabel" htmlFor="email">{t.contact?.email || 'E-mail'}</label>
+          <label className="formLabel" htmlFor="contact-email">{c.email || 'E-mail'}</label>
           <input
             className="formField"
-            id="email"
+            id="contact-email"
             name="email"
             type="email"
             placeholder="email@example.com"
             autoComplete="email"
             required
-            aria-required="true"
+            {...fieldProps('email')}
           />
+          {fieldError('email')}
 
-          <label className="formLabel" htmlFor="title">{t.contact?.title || 'Tytuł'}</label>
-          <input
-            className="formField"
-            name="_subject"
-            id="title"
-            type="text"
-            required
-            aria-required="true"
-          />
+          <label className="formLabel" htmlFor="contact-subject">{c.title || 'Tytuł'}</label>
+          <input className="formField" name="_subject" id="contact-subject" type="text" required {...fieldProps('subject')} />
+          {fieldError('subject')}
 
-          <label className="formLabel" htmlFor="content">{t.contact?.message || 'Wiadomość'}</label>
-          <textarea
-            className="formField"
-            name="message"
-            id="content"
-            rows={6}
-            required
-            aria-required="true"
-          />
+          <label className="formLabel" htmlFor="contact-message">{c.message || 'Wiadomość'}</label>
+          <textarea className="formField" name="message" id="contact-message" rows={6} required {...fieldProps('message')} />
+          {fieldError('message')}
 
-          <div className="agreementContainer">
-            <input type="checkbox" id="agreement" required aria-required="true" />
-            <label className="agreement" htmlFor="agreement">
-              {t.contact?.consent || 'Wyrażam zgodę na przetwarzanie danych…'}
-            </label>
-          </div>
+          <p className="agreement privacy-notice">
+            {c.privacyNotice ||
+              'Administratorem Twoich danych jest Fundacja Przyjaciół Młodzieżowego Strajku Klimatycznego. Użyjemy ich tylko, żeby odpowiedzieć na wiadomość.'}{' '}
+            <a href="/polityka-prywatnosci.pdf" target="_blank" rel="noopener noreferrer">
+              {t.cookies?.policy ?? 'Polityka prywatności'}
+              <span className="sr-only"> {t.a11y?.opensNewTab ?? '(otwiera się w nowej karcie)'}</span>
+            </a>
+          </p>
+
           <div className="buttonContainer">
-            <button className="primaryBtn" type="submit" disabled={submitting}>
-              {submitting ? (t.contact?.pending || 'Wysyłanie…') : (t.contact?.b1 || 'Wyślij')}
+            <button className="primaryBtn" type="submit" aria-disabled={submitting ? 'true' : 'false'}>
+              {submitting ? (c.pending || 'Wysyłanie…') : (c.b1 || 'Wyślij')}
             </button>
-          </div>  
-          {statusMsg && (
-            <p
-              className={`formStatus ${statusType === 'ok' ? 'formStatus--ok' : 'formStatus--error'}`}
-              role={statusType === 'ok' ? 'status' : 'alert'}
-              aria-live="polite"
-            >
-              {statusMsg}
-            </p>
-          )}
+          </div>
+          <div role={statusType === 'error' ? 'alert' : 'status'}>
+            {statusMsg && (
+              <p className={`formStatus ${statusType === 'ok' ? 'formStatus--ok' : 'formStatus--error'}`}>
+                {statusMsg}
+              </p>
+            )}
+          </div>
         </form>
-      </aside>
+      </div>
 
       <section className="contact-persons" data-reveal aria-busy={loading ? 'true' : 'false'}>
         {loading && (
           <div className="loader" role="status" aria-live="polite">
             <span className="spinner" aria-hidden="true" />
-            <span className="sr-only">Ładowanie…</span>
+            <span className="sr-only">{t.a11y?.loading ?? 'Ładowanie…'}</span>
           </div>
         )}
 
-        {!loading && err && <p role="alert">{err}</p>}
+        {!loading && loadErr && <p role="alert">{c.loadError ?? 'Nie udało się wczytać kontaktów.'}</p>}
 
-        {!loading && !err && contacts.length > 0 && contacts.map((c) => {
-          const tel = c.phone ? c.phone.replace(/\s+/g, '') : '';
-          const mail = c.email || '';
-          return (
-            <article className="contact-person" key={c.id}>
-              <div className="iconContainer" aria-hidden="true">
-                <i className="bi bi-person-fill" aria-hidden="true" />
-              </div>
-              <h3 className="personName">{c.name}</h3>
-              {c.city && <h4 className="personCity">{c.city}</h4>}
-              {c.phone && (
-                <p className="contactLink">
-                  <strong>
-                    <i className="bi bi-telephone-fill" aria-hidden="true" />&nbsp;
-                    <a href={`tel:${tel}`} aria-label={`Zadzwoń do ${c.name}`}>{c.phone}</a>
-                  </strong>
-                </p>
-              )}
-              {c.email && (
-                <p className="contactLink">
-                  <strong>
-                    <i className="bi bi-envelope-fill" aria-hidden="true" />&nbsp;
-                    <a href={`mailto:${mail}`} aria-label={`Napisz do ${c.name}`}>{c.email}</a>
-                  </strong>
-                </p>
-              )}
-            </article>
-          );
-        })}
+        {!loading &&
+          !loadErr &&
+          contacts.map((p) => {
+            const tel = p.phone ? p.phone.replace(/\s+/g, '') : '';
+            return (
+              <article className="contact-person" key={p.id}>
+                <div className="iconContainer" aria-hidden="true">
+                  <i className="bi bi-person-fill" aria-hidden="true" />
+                </div>
+                <h2 className="personName">{p.name}</h2>
+                {p.city && <p className="personCity">{p.city}</p>}
+                {p.phone && (
+                  <p className="contactLink">
+                    <strong>
+                      <i className="bi bi-telephone-fill" aria-hidden="true" />
+                      <span className="sr-only">{c.call ?? 'Zadzwoń:'} </span>&nbsp;
+                      <a href={`tel:${tel}`}>{p.phone}</a>
+                    </strong>
+                  </p>
+                )}
+                {p.email && (
+                  <p className="contactLink">
+                    <strong>
+                      <i className="bi bi-envelope-fill" aria-hidden="true" />
+                      <span className="sr-only">{c.write ?? 'Napisz:'} </span>&nbsp;
+                      <a href={`mailto:${p.email}`}>{p.email}</a>
+                    </strong>
+                  </p>
+                )}
+              </article>
+            );
+          })}
       </section>
     </main>
   );

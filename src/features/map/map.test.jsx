@@ -20,7 +20,7 @@ vi.mock('../../services/supabaseClient.js', () => ({
 vi.mock('./cities.jsx', () => ({
   default: ({ selectedRegion }) => (
     <div data-testid="cities-stub">
-      <h2 className="voivodeshipName" id={selectedRegion}>
+      <h2 className="voivodeshipName" id={`region-${selectedRegion}`}>
         Województwo {selectedRegion}
       </h2>
     </div>
@@ -82,7 +82,7 @@ describe('MapElement auto-scroll', () => {
     });
     const scrolledEl = Element.prototype.scrollIntoView.mock.instances[0];
     expect(scrolledEl.tagName).toBe('H2');
-    expect(scrolledEl.id).toBe('mazowieckie');
+    expect(scrolledEl.id).toBe('region-mazowieckie');
   });
 
   it('does not scroll when selecting a region on larger screens', async () => {

@@ -1,160 +1,102 @@
-import { useEffect, useMemo, useState } from 'react';
-import { useLocation } from 'react-router-dom';
+import Seo from '../../shared/components/Seo.jsx';
+import { format, useTranslations } from '../../shared/i18n/useTranslations.js';
+import { SITE_URL } from '../../shared/config/site.js';
 
-const LOCALE_CACHE = new Map();
+const PLATFORMS = [
+  { id: 'facebook', name: 'Facebook', icon: 'bi-facebook' },
+  { id: 'x', name: 'X', icon: 'bi-twitter-x' },
+  { id: 'linkedin', name: 'LinkedIn', icon: 'bi-linkedin' },
+];
 
 export default function ThankYou() {
-  const location = useLocation();
-  const language = useMemo(() => location.pathname.split('/')[1] || 'pl', [location.pathname]);
+  const { t, lang, ready } = useTranslations();
+  const ty = t.thankyou ?? {};
 
-  const [t, setT] = useState({ thankyou: {} });
-  const [loading, setLoading] = useState(true);
-  const [err, setErr] = useState('');
-
-  useEffect(() => {
-    let active = true;
-    (async () => {
-      setLoading(true);
-      setErr('');
-      try {
-        if (LOCALE_CACHE.has(language)) {
-          if (active) setT(LOCALE_CACHE.get(language));
-        } else {
-          const res = await fetch(`/locales/${language}.json`, { credentials: 'same-origin' });
-          if (!res.ok) throw new Error(`HTTP ${res.status}`);
-          const data = await res.json();
-          LOCALE_CACHE.set(language, data);
-          if (active) setT(data);
-        }
-      } catch (e) {
-        console.error('ThankYou i18n error:', e);
-        if (active) {
-          setT({ thankyou: {} });
-          setErr('Nie udało się wczytać treści.');
-        }
-      } finally {
-        if (active) setLoading(false);
-      }
-    })();
-    return () => { active = false; };
-  }, [language]);
-
-  const shareUrl = typeof window !== 'undefined' ? window.location.origin : '';
-  
-  const handleShare = async (platform) => {
-    const text = t.thankyou?.shareText || 'Wspieram Młodzieżowy Strajk Klimatyczny!';
-    const url = shareUrl;
+  const handleShare = (platform) => {
+    const text = ty.shareText || 'Wspieram Młodzieżowy Strajk Klimatyczny!';
+    const url = `${SITE_URL}/${lang}`;
 
     const urls = {
       facebook: `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`,
-      twitter: `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`,
+      x: `https://x.com/intent/post?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`,
       linkedin: `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(url)}`,
     };
 
-    if (urls[platform]) {
-      window.open(urls[platform], '_blank', 'width=600,height=400');
-    }
+    if (urls[platform]) window.open(urls[platform], '_blank', 'noopener,noreferrer,width=600,height=400');
   };
 
+  const description = Array.isArray(ty.description)
+    ? ty.description
+    : [
+        'Dzięki Tobie możemy kontynuować edukację klimatyczną w szkołach i organizować działania na rzecz klimatu.',
+        'Twoje wsparcie pomaga nam docierać do młodych ludzi i budować ruch na rzecz sprawiedliwości klimatycznej.',
+      ];
+
   return (
-    <main className="thankyou" aria-busy={loading ? 'true' : 'false'}>
-      {loading && (
-        <div className="loader" role="status" aria-live="polite" aria-busy="true">
-          <span className="spinner" aria-hidden="true"/>
-        </div>
-      )}
+    <main className="thankyou" aria-busy={ready ? 'false' : 'true'}>
+      <Seo title={t.seo?.thankyou?.title ?? 'Dziękujemy za wsparcie – MSK'} noindex />
 
-      {!loading && !err && (
-        <section className="thankyou-content" aria-labelledby="thankyou-title">
+      <section className="thankyou-content" aria-labelledby="thankyou-title">
+        <i className="bi bi-heart-fill emptyStateIcon" aria-hidden="true" style={{ color: 'var(--purple)' }} />
+        <h1 id="thankyou-title">{ty.title || 'Dziękujemy za wsparcie!'}</h1>
 
-          <i className="bi bi-heart-fill emptyStateIcon" aria-hidden="true" style={{ color: 'var(--purple)' }} />
-          <h1 id="thankyou-title">
-            {t.thankyou?.title || 'Dziękujemy za wsparcie!'}
-          </h1>
-        <div className='thankyou'>
+        <div className="thankyou">
           <aside className="thankyou-message">
-            <h3 className="share-title">
-              {t.thankyou?.supportTitle || 'To ogromne wsparcie'}
-            </h3>
+            <h3 className="share-title">{ty.supportTitle || 'To ogromne wsparcie'}</h3>
             <p className="lead">
-              {t.thankyou?.subtitle || 'Twoja darowizna ma ogromne znaczenie dla naszej działalności.'}
+              {ty.subtitle || 'Twoja darowizna ma ogromne znaczenie dla naszej działalności.'}
             </p>
 
             <div className="info-box">
               <p>
-                {t.thankyou?.confirmation || 'Potwierdzenie płatności zostało wysłane na Twój adres email.'}
+                {ty.confirmation ||
+                  'Gdy płatność zostanie zaksięgowana, Stripe wyśle potwierdzenie na Twój adres e-mail.'}
               </p>
             </div>
 
-              {t.thankyou?.description?.map((paragraph, i) => (
-                <p key={i}>{paragraph}</p>
-              )) || (
-                <>
-                  <p>Dzięki Tobie możemy kontynuować edukację klimatyczną w szkołach i organizować działania na rzecz klimatu.</p>
-                  <p>Twoje wsparcie pomaga nam docierać do młodych ludzi i budować ruch na rzecz sprawiedliwości klimatycznej.</p>
-                </>
-              )}
+            {description.map((paragraph) => (
+              <p key={paragraph}>{paragraph}</p>
+            ))}
           </aside>
 
           <aside className="share-section">
-            <h3 className="share-title">
-              {t.thankyou?.shareTitle || 'Podziel się z innymi'}
-            </h3>
-            <p className="share-subtitle">
-              {t.thankyou?.shareSubtitle || 'Pomóż nam dotrzeć do większej liczby osób'}
-            </p>
-            
+            <h3 className="share-title">{ty.shareTitle || 'Podziel się z innymi'}</h3>
+            <p className="share-subtitle">{ty.shareSubtitle || 'Pomóż nam dotrzeć do większej liczby osób'}</p>
+
             <div className="share-buttons">
-              <button
-                onClick={() => handleShare('facebook')}
-                className="share-btn facebook"
-                aria-label="Udostępnij na Facebooku"
-              >
-                <i className="bi bi-facebook" aria-hidden="true"></i>
-                Facebook
-              </button>
-              
-              <button
-                onClick={() => handleShare('twitter')}
-                className="share-btn twitter"
-                aria-label="Udostępnij na Twitterze"
-              >
-                <i className="bi bi-twitter-x" aria-hidden="true"></i>
-                Twitter
-              </button>
-              
-              <button
-                onClick={() => handleShare('linkedin')}
-                className="share-btn linkedin"
-                aria-label="Udostępnij na LinkedIn"
-              >
-                <i className="bi bi-linkedin" aria-hidden="true"></i>
-                LinkedIn
-              </button>
+              {PLATFORMS.map((p) => (
+                <button
+                  key={p.id}
+                  type="button"
+                  onClick={() => handleShare(p.id)}
+                  className={`share-btn ${p.id === 'x' ? 'twitter' : p.id}`}
+                  aria-label={format(ty.shareOn ?? 'Udostępnij na {platform}', { platform: p.name })}
+                >
+                  <i className={`bi ${p.icon}`} aria-hidden="true" />
+                  {p.name}
+                </button>
+              ))}
             </div>
           </aside>
 
           <aside className="next-steps">
-            <h3>{t.thankyou?.nextSteps || 'Co dalej?'}</h3>
+            <h3>{ty.nextSteps || 'Co dalej?'}</h3>
             <ul>
-              <li>
-                <i className="bi bi-check2" aria-hidden="true"></i>
-                {t.thankyou?.step1 || 'Sprawdź swoją skrzynkę email - otrzymasz potwierdzenie płatności'}
-              </li>
-              <li>
-                <i className="bi bi-check2" aria-hidden="true"></i>
-                {t.thankyou?.step2 || 'Obserwuj nas w mediach społecznościowych'}
-              </li>
-              <li>
-                <i className="bi bi-check2" aria-hidden="true"></i>
-                {t.thankyou?.step3 || 'Zostań wolontariuszem lub dołącz do lokalnej grupy'}
-              </li>
+              {[ty.step1, ty.step2, ty.step3].map((step, i) => (
+                <li key={i}>
+                  <i className="bi bi-check2" aria-hidden="true" />
+                  {step ||
+                    [
+                      'Sprawdź skrzynkę e-mail – wyślemy tam potwierdzenie płatności',
+                      'Obserwuj nas w mediach społecznościowych',
+                      'Zostań wolontariuszem lub dołącz do lokalnej grupy',
+                    ][i]}
+                </li>
+              ))}
             </ul>
           </aside>
-          </div>
-        </section>
-        
-      )}
+        </div>
+      </section>
     </main>
   );
 }

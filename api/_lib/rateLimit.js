@@ -3,25 +3,31 @@ const memory = new Map();
 async function upstash(parts) {
   const url = process.env.UPSTASH_REDIS_REST_URL;
   const token = process.env.UPSTASH_REDIS_REST_TOKEN;
-  if (!url || !token) return null;
+  if (!url || !token) return undefined;
 
-  const res = await fetch(`${url}/${parts.join('/')}`, {
+  const res = await fetch(`${url}/${parts.map(encodeURIComponent).join('/')}`, {
     headers: { Authorization: `Bearer ${token}` },
     signal: AbortSignal.timeout(2000),
   });
-  if (!res.ok) return null;
+  if (!res.ok) throw new Error(`Upstash HTTP ${res.status}`);
   const data = await res.json();
   return data.result;
 }
 
-export async function isLimited(key, { max = 5, windowSec = 60 } = {}) {
-  const safeKey = encodeURIComponent(key);
+let warnedNoUpstash = false;
 
+export async function isLimited(key, { max = 5, windowSec = 60 } = {}) {
   try {
-    const hits = await upstash(['INCR', safeKey]);
-    if (hits !== null) {
-      if (hits === 1) await upstash(['EXPIRE', safeKey, String(windowSec)]);
-      return hits > max;
+    // Klucz dostaje TTL zanim zostanie zwiekszony, wiec nawet przy bledzie
+    // drugiego wywolania nie zostanie zablokowany na zawsze.
+    const created = await upstash(['SET', key, '0', 'EX', String(windowSec), 'NX']);
+    if (created !== undefined) {
+      const hits = await upstash(['INCR', key]);
+      return Number(hits) > max;
+    }
+    if (!warnedNoUpstash) {
+      warnedNoUpstash = true;
+      console.warn(JSON.stringify({ level: 'warn', msg: 'ratelimit.memory_fallback' }));
     }
   } catch (err) {
     void err;

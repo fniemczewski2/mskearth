@@ -104,7 +104,7 @@ function AdminPanelNav() {
               className="formBtn"
               role="tab"
               aria-selected={selected}
-              aria-controls={`panel-${tab.id}`}
+              aria-controls={selected ? `panel-${tab.id}` : undefined}
               id={`tab-${tab.id}`}
               onClick={() => activate(tab.id)}
               tabIndex={selected ? 0 : -1}

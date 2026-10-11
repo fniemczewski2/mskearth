@@ -18,48 +18,37 @@ function renderWithRouter() {
 describe('CookieConsent', () => {
   beforeEach(() => {
     localStorage.clear();
-    vi.stubGlobal(
-      'fetch',
-      vi.fn().mockResolvedValue({
-        ok: true,
-        json: async () => ({}),
-      })
-    );
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue({ ok: true, json: async () => ({}) }));
   });
 
   afterEach(() => {
     vi.unstubAllGlobals();
   });
 
-  it('shows the consent dialog when no choice has been stored yet', () => {
+  it('shows the notice when it has not been dismissed yet', () => {
     renderWithRouter();
-    expect(screen.getByRole('dialog', { hidden: true })).toBeInTheDocument();
+    expect(screen.getByRole('region', { name: /cookies/i })).toBeInTheDocument();
   });
 
-  it('does not render when a choice was already stored', () => {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify({ analytics: true }));
+  it('does not render when it was already dismissed', () => {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify({ analytics: false }));
     renderWithRouter();
-    expect(screen.queryByRole('dialog', { hidden: true })).not.toBeInTheDocument();
+    expect(screen.queryByRole('region', { name: /cookies/i })).not.toBeInTheDocument();
   });
 
-  it('stores the decision and hides the dialog after accepting', async () => {
+  it('is not a modal and does not ask for consent to tracking', () => {
+    renderWithRouter();
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /akceptuj/i })).not.toBeInTheDocument();
+  });
+
+  it('stores the dismissal and hides the notice', async () => {
     const user = userEvent.setup();
     renderWithRouter();
 
-    await user.click(screen.getByRole('button', { name: /akceptuj/i }));
+    await user.click(screen.getByRole('button', { name: /rozumiem/i }));
 
-    expect(screen.queryByRole('dialog', { hidden: true })).not.toBeInTheDocument();
-    const stored = JSON.parse(localStorage.getItem(STORAGE_KEY));
-    expect(stored.analytics).toBe(true);
-  });
-
-  it('stores a rejection when only essential cookies are accepted', async () => {
-    const user = userEvent.setup();
-    renderWithRouter();
-
-    await user.click(screen.getByRole('button', { name: /tylko niezbędne/i }));
-
-    const stored = JSON.parse(localStorage.getItem(STORAGE_KEY));
-    expect(stored.analytics).toBe(false);
+    expect(screen.queryByRole('region', { name: /cookies/i })).not.toBeInTheDocument();
+    expect(JSON.parse(localStorage.getItem(STORAGE_KEY)).analytics).toBe(false);
   });
 });

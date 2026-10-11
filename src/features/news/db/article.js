@@ -16,14 +16,17 @@ function mapArticleRow(a) {
   return {
     ...a,
     imgPaths: paths,
-    imgurl: paths.map((p) => toPublicUrl(p, 'mskearth')),
+    imgurl: paths.map((p) => toPublicUrl(p, 'mskearth')).filter(Boolean),
   };
 }
 
-export async function fetchPublishedArticles({ limit = 20, offset = 0 } = {}) {
+/** Lista na strone aktualnosci: tylko opublikowane, bez przyszlych dat. */
+export async function fetchPublishedArticles({ limit = 30, offset = 0 } = {}) {
   const { data, error } = await supabase
     .from('articles')
-    .select('id, title, subtitle, titleen, subtitleen, titleua, subtitleua, imgurl, imgalt, author, published, pinned')
+    .select(
+      'id, title, subtitle, content, titleen, subtitleen, contenten, imgurl, imgalt, published, pinned'
+    )
     .eq('accepted', true)
     .not('published', 'is', null)
     .lte('published', new Date().toISOString())
@@ -42,6 +45,7 @@ export async function getPublishedArticleById(id) {
     .eq('id', id)
     .eq('accepted', true)
     .not('published', 'is', null)
+    .lte('published', new Date().toISOString())
     .maybeSingle();
 
   if (error) throw error;

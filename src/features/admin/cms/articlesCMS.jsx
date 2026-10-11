@@ -32,9 +32,12 @@ const emptyForm = {
   sourcelink: "",
   sourcetext: "",
   accepted: false,
-  published: new Date().toISOString(),
+  published: null,
   pinned: false,
 };
+
+// Data publikacji liczona w chwili tworzenia formularza, nie przy zaladowaniu modulu.
+const freshForm = (author = "") => ({ ...emptyForm, author, published: new Date().toISOString() });
 
 export default function ArticlesCMS() {
   const [sessionChecked, setSessionChecked] = useState(false);
@@ -45,7 +48,7 @@ export default function ArticlesCMS() {
   const [err, setErr] = useState("");
 
   const [editingId, setEditingId] = useState(null);
-  const [form, setForm] = useState(emptyForm);
+  const [form, setForm] = useState(() => freshForm());
   const [saving, setSaving] = useState(false);
 
   const { fileIds, uploadFiles, uploading, errors: uploadErrors, reset: resetUploads } = useUploadFiles("mskearth");
@@ -85,7 +88,7 @@ export default function ArticlesCMS() {
 
   const startCreate = () => {
     setEditingId(null);
-    setForm({ ...emptyForm, author: user?.email || "" });
+    setForm(freshForm(user?.email || ""));
     resetUploads();
   };
 
@@ -115,7 +118,7 @@ export default function ArticlesCMS() {
 
   const cancelEdit = () => {
     setEditingId(null);
-    setForm(emptyForm);
+    setForm(freshForm(user?.email || ""));
     resetUploads();
   };
 
@@ -200,14 +203,14 @@ export default function ArticlesCMS() {
                     </td>
                     <td className="cms-td">{r.author || "—"}</td>
                     <td className="cms-td">{fmt(r.created)}</td>
-                    <td className="cms-td">{r.accepted ? "✓" : "—"}</td>
-                    <td className="cms-td">{r.pinned ? "✓" : "—"}</td>
+                    <td className="cms-td">{r.accepted ? "Tak" : "Nie"}</td>
+                    <td className="cms-td">{r.pinned ? "Tak" : "Nie"}</td>
                     <td className="cms-td">
                       <div style={{ display: "flex", gap: 8, justifyContent: "flex-end" }}>
-                        <button className="cms-btn" onClick={() => startEdit(r)}><i className="bi bi-pencil-fill" aria-hidden="true"></i></button>
-                        <button className="cms-btn" onClick={() => handleToggle(r, "accept")}>{r.accepted ? <i className="bi bi-eye-slash-fill" aria-hidden="true"></i> : <i className="bi bi-send-check-fill" aria-hidden="true"></i>}</button>
-                        <button className="cms-btn" onClick={() => handleToggle(r, "pin")}>{r.pinned ? <i className="bi bi-pin-angle" aria-hidden="true"></i> : <i className="bi bi-pin-fill" aria-hidden="true"></i>}</button>
-                        <button className="cms-btnDanger" onClick={() => handleDelete(r.id)}><i className="bi bi-trash-fill" aria-hidden="true"></i></button>
+                        <button type="button" className="cms-btn" onClick={() => startEdit(r)} aria-label={`Edytuj: ${r.title || "bez tytułu"}`}><i className="bi bi-pencil-fill" aria-hidden="true"></i></button>
+                        <button type="button" className="cms-btn" onClick={() => handleToggle(r, "accept")} aria-label={`${r.accepted ? "Cofnij akceptację" : "Zaakceptuj"}: ${r.title || "bez tytułu"}`}>{r.accepted ? <i className="bi bi-eye-slash-fill" aria-hidden="true"></i> : <i className="bi bi-send-check-fill" aria-hidden="true"></i>}</button>
+                        <button type="button" className="cms-btn" onClick={() => handleToggle(r, "pin")} aria-label={`${r.pinned ? "Odepnij" : "Przypnij"}: ${r.title || "bez tytułu"}`}>{r.pinned ? <i className="bi bi-pin-angle" aria-hidden="true"></i> : <i className="bi bi-pin-fill" aria-hidden="true"></i>}</button>
+                        <button type="button" className="cms-btnDanger" onClick={() => handleDelete(r.id)} aria-label={`Usuń: ${r.title || "bez tytułu"}`}><i className="bi bi-trash-fill" aria-hidden="true"></i></button>
                       </div>
                     </td>
                   </tr>
@@ -243,12 +246,12 @@ export default function ArticlesCMS() {
           <details>
             <summary className="cms-detailsSummary">Wersje EN / UA</summary>
             <div className="cms-detailsBody">
-              <input placeholder="Title (EN)" className="cms-input" value={form.titleen} onChange={(e) => setForm((f) => ({ ...f, titleen: e.target.value }))} />
-              <input placeholder="Subtitle (EN)" className="cms-input" value={form.subtitleen} onChange={(e) => setForm((f) => ({ ...f, subtitleen: e.target.value }))} />
-              <textarea placeholder="Content (EN)" className="cms-input"  style={{ minHeight: 80 }} value={form.contenten} onChange={(e) => setForm((f) => ({ ...f, contenten: e.target.value }))} />
-              <input placeholder="Title (UA)" className="cms-input" value={form.titleua} onChange={(e) => setForm((f) => ({ ...f, titleua: e.target.value }))} />
-              <input placeholder="Subtitle (UA)" className="cms-input" value={form.subtitleua} onChange={(e) => setForm((f) => ({ ...f, subtitleua: e.target.value }))} />
-              <textarea placeholder="Content (UA)" className="cms-input"  style={{ minHeight: 80 }} value={form.contentua} onChange={(e) => setForm((f) => ({ ...f, contentua: e.target.value }))} />
+              <input aria-label="Tytuł (EN)" placeholder="Title (EN)" className="cms-input" value={form.titleen} onChange={(e) => setForm((f) => ({ ...f, titleen: e.target.value }))} />
+              <input aria-label="Podtytuł (EN)" placeholder="Subtitle (EN)" className="cms-input" value={form.subtitleen} onChange={(e) => setForm((f) => ({ ...f, subtitleen: e.target.value }))} />
+              <textarea aria-label="Treść (EN)" placeholder="Content (EN)" className="cms-input"  style={{ minHeight: 80 }} value={form.contenten} onChange={(e) => setForm((f) => ({ ...f, contenten: e.target.value }))} />
+              <input aria-label="Tytuł (UA)" placeholder="Title (UA)" className="cms-input" value={form.titleua} onChange={(e) => setForm((f) => ({ ...f, titleua: e.target.value }))} />
+              <input aria-label="Podtytuł (UA)" placeholder="Subtitle (UA)" className="cms-input" value={form.subtitleua} onChange={(e) => setForm((f) => ({ ...f, subtitleua: e.target.value }))} />
+              <textarea aria-label="Treść (UA)" placeholder="Content (UA)" className="cms-input"  style={{ minHeight: 80 }} value={form.contentua} onChange={(e) => setForm((f) => ({ ...f, contentua: e.target.value }))} />
             </div>
           </details>
 
@@ -259,8 +262,8 @@ export default function ArticlesCMS() {
 
           <label className="cms-labelWrap">
             <span className="cms-label">Źródło (link i tekst)</span>
-            <input placeholder="https://…" className="cms-input" value={form.sourcelink} onChange={(e) => setForm((f) => ({ ...f, sourcelink: e.target.value }))} />
-            <input placeholder="Źródło: opis" className="cms-input" style={{ marginTop: 8 }} value={form.sourcetext} onChange={(e) => setForm((f) => ({ ...f, sourcetext: e.target.value }))} />
+            <input aria-label="Link do źródła" placeholder="https://…" className="cms-input" value={form.sourcelink} onChange={(e) => setForm((f) => ({ ...f, sourcelink: e.target.value }))} />
+            <input aria-label="Opis źródła" placeholder="Źródło: opis" className="cms-input" style={{ marginTop: 8 }} value={form.sourcetext} onChange={(e) => setForm((f) => ({ ...f, sourcetext: e.target.value }))} />
           </label>
 
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
@@ -300,7 +303,7 @@ export default function ArticlesCMS() {
                 {form.imgurl.map((p) => (
                   <span key={p} className="cms-chip">
                     {p}
-                    <button type="button" className="cms-chipRemove" onClick={() => setForm((f) => ({ ...f, imgurl: f.imgurl.filter((x) => x !== p) }))}>×</button>
+                    <button type="button" className="cms-chipRemove" aria-label={`Usuń obraz ${p}`} onClick={() => setForm((f) => ({ ...f, imgurl: f.imgurl.filter((x) => x !== p) }))}>×</button>
                   </span>
                 ))}
               </div>
@@ -314,7 +317,7 @@ export default function ArticlesCMS() {
             {editingId && (
               <button type="button" className="cms-btn" onClick={cancelEdit}>Anuluj</button>
             )}
-            <button disabled={saving} className="cms-btnPrimary">
+            <button type="submit" disabled={saving || uploading} className="cms-btnPrimary">
               {saving ? "Zapisywanie…" : editingId ? "Zapisz zmiany" : "Dodaj artykuł"}
             </button>
           </div>
