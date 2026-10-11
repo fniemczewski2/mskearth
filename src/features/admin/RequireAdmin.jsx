@@ -9,14 +9,17 @@ export default function RequireAdmin({ children }) {
 
   useEffect(() => {
     let active = true;
+    let seq = 0;
 
+    // Liczy sie tylko wynik ostatniego sprawdzenia (np. wylogowanie w trakcie is_admin).
     const evaluate = async (session) => {
+      const current = ++seq;
       if (!session) {
         if (active) setState({ status: 'anon', isAdmin: false });
         return;
       }
       const isAdmin = await checkIsAdmin();
-      if (active) setState({ status: 'ready', isAdmin });
+      if (active && current === seq) setState({ status: 'ready', isAdmin });
     };
 
     supabase.auth.getSession().then(({ data }) => evaluate(data.session));

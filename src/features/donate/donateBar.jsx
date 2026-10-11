@@ -133,7 +133,12 @@ export default function DonateBar() {
           </label>
         </div>
         <p id={`${uid}-notice`} className="agreement privacy-notice">
-          {d.privacyNotice ?? 'Darowiznę otrzymuje Fundacja Przyjaciół Młodzieżowego Strajku Klimatycznego.'}
+          {d.privacyNotice ?? 'Darowiznę otrzymuje Fundacja Przyjaciół Młodzieżowego Strajku Klimatycznego.'}{' '}
+          {/* Pasek jest osadzany na innych domenach, wiec link musi byc bezwzgledny. */}
+          <a href="https://msk.earth/polityka-prywatnosci.pdf" target="_blank" rel="noopener noreferrer">
+            {t.cookies?.policy ?? 'Polityka prywatności'}
+            <span className="sr-only"> {t.a11y?.opensNewTab ?? '(otwiera się w nowej karcie)'}</span>
+          </a>
         </p>
       </div>
 

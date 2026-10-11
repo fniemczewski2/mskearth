@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 export const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -11,6 +11,18 @@ export default function useCheckout({ t, lang }) {
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState('');
   const attemptRef = useRef(newAttemptId());
+
+  // Powrot z Stripe przyciskiem "Wstecz" przywraca strone z bfcache razem ze stanem
+  // busy=true: odblokuj przycisk i uzyj nowego klucza idempotencji.
+  useEffect(() => {
+    const onPageShow = (e) => {
+      if (!e.persisted) return;
+      attemptRef.current = newAttemptId();
+      setBusy(false);
+    };
+    window.addEventListener('pageshow', onPageShow);
+    return () => window.removeEventListener('pageshow', onPageShow);
+  }, []);
 
   async function startPayment({ amount, name, email, newsletter, isRecurring }) {
     if (busy) return;
@@ -38,7 +50,13 @@ export default function useCheckout({ t, lang }) {
         throw new Error(data?.error ?? t.donate?.createPaymentFailed ?? 'Nie udało się utworzyć płatności.');
       }
 
-      (window.top ?? window).location.assign(data.url);
+      try {
+        (window.top ?? window).location.assign(data.url);
+      } catch {
+        // Osadzony iframe bez allow-top-navigation: otworz platnosc w nowej karcie.
+        window.open(data.url, '_blank', 'noopener');
+        setBusy(false);
+      }
     } catch (e) {
       // Nowa proba = nowy klucz idempotencji.
       attemptRef.current = newAttemptId();

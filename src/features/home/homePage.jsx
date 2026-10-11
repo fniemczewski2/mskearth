@@ -148,7 +148,6 @@ function Main() {
             type="button"
             className="mute-button"
             onClick={toggleMute}
-            aria-pressed={!isMuted}
             aria-label={isMuted ? (h.mute ?? 'Włącz dźwięk') : (h.unmute ?? 'Wycisz wideo')}
           >
             <i className={isMuted ? 'bi bi-volume-mute' : 'bi bi-volume-up'} aria-hidden="true" />

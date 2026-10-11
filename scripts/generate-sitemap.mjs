@@ -18,7 +18,7 @@ async function fetchArticles() {
     const supabase = createClient(url, key, { auth: { persistSession: false } });
     const { data, error } = await supabase
       .from('articles')
-      .select('id, published')
+      .select('id, published, content, contenten')
       .eq('accepted', true)
       .not('published', 'is', null)
       .lte('published', new Date().toISOString())
@@ -33,8 +33,16 @@ async function fetchArticles() {
   }
 }
 
-function entry(loc, lastmod) {
-  const alternates = langs
+const hasText = (v) => typeof v === 'string' && v.trim().length > 0;
+const articleLangs = (a) => langs.filter((l) => hasText(l === 'en' ? a.contenten : a.content));
+
+function entry(loc, lastmod, entryLangs = langs) {
+  if (entryLangs.length < 2) {
+    return `  <url>
+    <loc>${loc}</loc>${lastmod ? `\n    <lastmod>${String(lastmod).slice(0, 10)}</lastmod>` : ''}
+  </url>`;
+  }
+  const alternates = entryLangs
     .map((l) => {
       const href = loc.replace(/^(https:\/\/[^/]+)\/(pl|en)/, `$1/${l}`);
       return `    <xhtml:link rel="alternate" hreflang="${l}" href="${href}"/>`;
@@ -53,7 +61,11 @@ const articles = await fetchArticles();
 
 const urls = [
   ...langs.flatMap((l) => paths.map((p) => entry(`${base}/${l}${p}`))),
-  ...langs.flatMap((l) => articles.map((a) => entry(`${base}/${l}/aktualnosci/${a.id}`, a.published))),
+  // Tylko wersje jezykowe, ktore maja tresc (artykul bez tlumaczenia EN ma noindex).
+  ...articles.flatMap((a) => {
+    const available = articleLangs(a);
+    return available.map((l) => entry(`${base}/${l}/aktualnosci/${a.id}`, a.published, available));
+  }),
 ];
 
 const xml = `<?xml version="1.0" encoding="UTF-8"?>

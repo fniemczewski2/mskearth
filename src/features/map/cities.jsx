@@ -28,7 +28,11 @@ function Cities({ selectedRegion = null, onSelectCity, selectedCity = null }) {
         const { data, error } = await supabase
           .from('cities')
           .select('id,name,voivodeship,facebook,instagram,meetings')
-          .eq('voivodeship', selectedRegion)
+          // Starsze wpisy w bazie moga miec literowke "świetokrzyskie".
+          .in(
+            'voivodeship',
+            selectedRegion === 'świętokrzyskie' ? ['świętokrzyskie', 'świetokrzyskie'] : [selectedRegion]
+          )
           .order('name', { ascending: true });
 
         if (error) throw error;

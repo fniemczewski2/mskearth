@@ -22,6 +22,7 @@ function toDbVoiv(value) {
     lodzkie: 'łódzkie',
     slaskie: 'śląskie',
     swietokrzyskie: 'świętokrzyskie',
+    'świetokrzyskie': 'świętokrzyskie',
     warminsko_mazurskie: 'warmińsko-mazurskie',
     warminsko_mazurskie2: 'warmińsko-mazurskie',
     warminsko_mazurskie3: 'warmińsko-mazurskie',

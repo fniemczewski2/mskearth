@@ -46,7 +46,14 @@ export default function App() {
       firstRender.current = false;
       return;
     }
-    contentRef.current?.focus({ preventScroll: true });
+    // Fokus na naglowku nowej strony, zeby czytnik ekranu ja oglosil; awaryjnie na kontenerze.
+    const heading = contentRef.current?.querySelector('h1');
+    if (heading) {
+      if (!heading.hasAttribute('tabindex')) heading.setAttribute('tabindex', '-1');
+      heading.focus({ preventScroll: true });
+    } else {
+      contentRef.current?.focus({ preventScroll: true });
+    }
     window.scrollTo({ top: 0, behavior: 'instant' });
   }, [location.pathname]);
 

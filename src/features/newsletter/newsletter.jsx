@@ -9,6 +9,8 @@ export default function NewsletterForm() {
   const { t } = useTranslations();
   const uid = useId();
   const emailRef = useRef(null);
+  const consentRef = useRef(null);
+  const [errField, setErrField] = useState('');
 
   const [email, setEmail] = useState('');
   const [consent, setConsent] = useState(false);
@@ -33,12 +35,15 @@ export default function NewsletterForm() {
 
     setStatus('loading'); 
     setErrMsg('');
+    setErrField('');
 
     const v = validate();
     if (!v.ok) {
       setStatus('error');
       setErrMsg(v.msg);
+      setErrField(v.field);
       if (v.field === 'email') emailRef.current?.focus();
+      if (v.field === 'consent') consentRef.current?.focus();
       return;
     }
 
@@ -138,21 +143,35 @@ export default function NewsletterForm() {
             required
             autoComplete="email"
             inputMode="email"
+            aria-invalid={errField === 'email' ? 'true' : undefined}
+            aria-describedby={errField === 'email' ? `${uid}-error` : undefined}
           />
 
           <div className="agreementContainer">
             <input
               id={`${uid}-consent`}
+              ref={consentRef}
               type="checkbox"
               name="consent"
               checked={consent}
               onChange={(e) => setConsent(e.target.checked)}
               required
+              aria-invalid={errField === 'consent' ? 'true' : undefined}
+              aria-describedby={errField === 'consent' ? `${uid}-error` : undefined}
             />
             <label className="agreement" htmlFor={`${uid}-consent`}>
               {t.newsletter?.consent || 'Chcę otrzymywać newsletter fundacji na podany adres e-mail.'}
             </label>
           </div>
+
+          <p className="agreement privacy-notice">
+            {t.newsletter?.privacyNotice ||
+              'Administratorem danych jest Fundacja Przyjaciół Młodzieżowego Strajku Klimatycznego. Wysyłkę obsługuje Kit (ConvertKit).'}{' '}
+            <a href="/polityka-prywatnosci.pdf" target="_blank" rel="noopener noreferrer">
+              {t.cookies?.policy ?? 'Polityka prywatności'}
+              <span className="sr-only"> {t.a11y?.opensNewTab ?? '(otwiera się w nowej karcie)'}</span>
+            </a>
+          </p>
 
           <button
             type="submit"
@@ -170,7 +189,7 @@ export default function NewsletterForm() {
             </div>
           )}
           {status === 'error' && (
-            <p className="failed" role="alert">
+            <p className="failed" role="alert" id={`${uid}-error`}>
               {errMsg || t.newsletter?.failed || 'Coś poszło nie tak.'}
             </p>
           )}

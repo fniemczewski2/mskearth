@@ -120,7 +120,14 @@ export default function ArticlePage() {
   const imgs = Array.isArray(article.imgurl) ? article.imgurl : [];
   const canonical = `${SITE_URL}/${lang}/aktualnosci/${article.id}`;
   const manyImages = imgs.length > 1;
-  const description = subtitle || plainText(contentHtml).slice(0, 155) || title;
+  const rawText = plainText(contentHtml);
+  // Skracamy na granicy slowa, zeby opis nie konczyl sie w polowie wyrazu.
+  const shortText =
+    rawText.length > 155 ? `${rawText.slice(0, Math.max(rawText.lastIndexOf(' ', 152), 80)).trimEnd()}…` : rawText;
+  const description = subtitle || shortText || title;
+  const availableLangs = ['pl', 'en'].filter((l) =>
+    String((l === 'en' ? article.contenten : article.content) ?? '').trim()
+  );
   const publishedISO = article.published || article.created || '';
   const publishedDate = publishedISO
     ? new Intl.DateTimeFormat(lang === 'en' ? 'en-GB' : 'pl-PL', { dateStyle: 'long' }).format(new Date(publishedISO))
@@ -163,7 +170,7 @@ export default function ArticlePage() {
 
   return (
     <main>
-      <Seo title={`${title}${t.seo?.articleSuffix ?? ' – MSK'}`} description={description} image={imgs[0]} url={canonical} type="article" />
+      <Seo title={`${title}${t.seo?.articleSuffix ?? ' – MSK'}`} description={description} image={imgs[0]} url={canonical} type="article" langs={availableLangs.length ? availableLangs : [lang]} />
       <script type="application/ld+json">{JSON.stringify(jsonLd)}</script>
 
       <article className="singleNewsElement" aria-labelledby="article-title">

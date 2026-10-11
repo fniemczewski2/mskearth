@@ -30,7 +30,8 @@ export async function isLimited(key, { max = 5, windowSec = 60 } = {}) {
       console.warn(JSON.stringify({ level: 'warn', msg: 'ratelimit.memory_fallback' }));
     }
   } catch (err) {
-    void err;
+    // Bez Upstash limit dziala tylko w pamieci jednej instancji: niech bedzie to widac w logach.
+    console.warn(JSON.stringify({ level: 'warn', msg: 'ratelimit.upstash_error', err: err?.message }));
   }
 
   const now = Date.now();

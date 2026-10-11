@@ -7,21 +7,33 @@ const ABS_SPEED = 80;
 const MIN_DURATION = 20;
 const MAX_DURATION = 180;
 
-function NewsGroup({ items, duplicate = false, groupRef }) {
+function NewsGroup({ items, duplicate = false, groupRef, newTabLabel }) {
   return (
-    <div className="ticker-group" ref={groupRef} aria-hidden={duplicate || undefined}>
-      {items.map((item, idx) => (
-        <a
-          key={`${idx}-${item?.headline?.slice(0, 24) || 'x'}`}
-          href={item?.link || '#'}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="ticker-item"
-          tabIndex={duplicate ? -1 : undefined}
-        >
-          {item?.headline}
-        </a>
-      ))}
+    // Naglowki z Climate Clock sa po angielsku.
+    <div className="ticker-group" ref={groupRef} aria-hidden={duplicate || undefined} lang="en">
+      {items.map((item, idx) => {
+        const key = `${idx}-${item?.headline?.slice(0, 24) || 'x'}`;
+        if (!item?.link) {
+          return (
+            <span key={key} className="ticker-item">
+              {item?.headline}
+            </span>
+          );
+        }
+        return (
+          <a
+            key={key}
+            href={item.link}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="ticker-item"
+            tabIndex={duplicate ? -1 : undefined}
+          >
+            {item.headline}
+            {!duplicate && newTabLabel && <span className="sr-only" lang="pl"> {newTabLabel}</span>}
+          </a>
+        );
+      })}
     </div>
   );
 }
@@ -84,7 +96,7 @@ export default function ClimateNewsBar() {
       </button>
       <div className="ticker-viewport">
         <div className="ticker-track" ref={trackRef}>
-          <NewsGroup items={feed} groupRef={groupRef} />
+          <NewsGroup items={feed} groupRef={groupRef} newTabLabel={t.a11y?.opensNewTab} />
           <NewsGroup items={feed} duplicate />
         </div>
       </div>

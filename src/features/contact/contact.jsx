@@ -173,9 +173,13 @@ function Contact() {
               {submitting ? (c.pending || 'Wysyłanie…') : (c.b1 || 'Wyślij')}
             </button>
           </div>
-          <div role={statusType === 'error' ? 'alert' : 'status'}>
+          {/* Region na stale w DOM, zeby czytniki ekranu ogloszaly zmiany komunikatu. */}
+          <div role="status" aria-live="polite">
             {statusMsg && (
-              <p className={`formStatus ${statusType === 'ok' ? 'formStatus--ok' : 'formStatus--error'}`}>
+              <p
+                className={`formStatus ${statusType === 'ok' ? 'formStatus--ok' : 'formStatus--error'}`}
+                role={statusType === 'error' ? 'alert' : undefined}
+              >
                 {statusMsg}
               </p>
             )}

@@ -43,6 +43,8 @@ export default async function handler(req, res) {
   const { amount, email, name, newsletter, locale, payment_type, returnHost, attemptId } = parsed.data;
 
   const unitAmount = Math.round(amount * 100);
+  // Zapisujemy dokladnie to, co pobiera Stripe (np. 12.345 -> 12.35).
+  const chargedAmount = unitAmount / 100;
   const { success: successUrl, cancel: cancelUrl } = buildReturnUrls({
     host: returnHost,
     lang: locale,
@@ -52,7 +54,7 @@ export default async function handler(req, res) {
     donor_name: name,
     donor_email: email,
     newsletter: newsletter ? 'true' : 'false',
-    amount: String(amount),
+    amount: String(chargedAmount),
     source: 'mskearth',
     payment_type,
   };
@@ -131,7 +133,7 @@ export default async function handler(req, res) {
     // Wiersz "pending" jest pomocniczy. Jesli zapis sie nie uda, webhook utworzy wiersz
     // na podstawie metadanych sesji, wiec darowizna nie zginie.
     const { error: dbError } = await supabaseAdmin.from('donations').insert({
-      amount,
+      amount: chargedAmount,
       currency: 'PLN',
       donor_name: name || null,
       donor_email: email,
@@ -148,7 +150,7 @@ export default async function handler(req, res) {
     log.info('checkout.created', {
       session_id: session.id,
       payment_type,
-      amount,
+      amount: chargedAmount,
       email: redact(email),
     });
 

@@ -634,8 +634,8 @@ a.mailto { color: var(--second-color); margin: 0; }
   to { transform: translateX(-50%); }
 }
 
-.succed { color: var(--first-color); }
-.failed { color: var(--fourth-dark-color); }
+.succeeded { color: var(--first-color); }
+.failed { color: var(--danger); }
 
 @media (max-width: 768px) {
   html { background-attachment: scroll; }
@@ -755,13 +755,21 @@ nav ul, .bm-menu ul {
   transition: scale .28s var(--ease-bounce);
 }
 
-.navbarItems li:hover {
-  background-color: rgba(255, 255, 255, .14);
+/* Tlo przy najechaniu tylko dla nieaktywnych pozycji i tylko na urzadzeniach z kursorem:
+   po kliknieciu kursor zostaje nad nowa aktywna pozycja (lub dotyk "przykleja" :hover),
+   co dawalo jasna ramke wokol aktywnej zakladki. Aktywna pozycja ma tylko podkreslenie. */
+@media (hover: hover) {
+  .navbarItems li:not(.active):not(.flags-item):hover {
+    background-color: rgba(255, 255, 255, .14);
+  }
 }
 
-.navbarItems li:hover::after {
+.navbarItems li:hover::after,
+.navbarItems li:focus-within::after {
   scale: 1 1;
 }
+
+.navbarItems li.flags-item::after { display: none; }
 
 .navbarItems li.active::after {
   scale: 1 1;
@@ -3198,6 +3206,7 @@ footer > p:last-child {
 
 /* Ciemne tla: bialy fokus */
 footer :focus-visible,
+.desktopHeader :focus-visible,
 .ccw-ticker :focus-visible,
 .clock:focus-visible,
 .side-button:focus-visible,
@@ -3321,3 +3330,8 @@ dl.foundationData { margin: 0; }
   flex-direction: column;
   align-items: center;
 }
+
+/* Fokus ustawiany programowo po zmianie strony (App.jsx) sluzy czytnikom ekranu:
+   nie rysujemy wokol naglowka/kontenera ramki jak przy fokusie z klawiatury. */
+#main-content:focus,
+#main-content h1[tabindex="-1"]:focus { outline: none; }

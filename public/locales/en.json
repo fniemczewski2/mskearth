@@ -2,7 +2,7 @@
   "about": [
     "About Us",
     "We are a social movement that is part of the global Fridays for Future initiative.",
-    "By acting, we express our opposition to the passivity of politicians in the face of the climate crisis.",
+    "Through our actions, we oppose politicians' inaction in the face of the climate crisis.",
     "We are not experts in ecology and climate change but young people aware of the threat posed by the climate crisis and fighting for our right to our future.",
     "We started as a group of high school students inspired by Greta Thunberg's activities, and our activism quickly turned into a nationwide movement.",
     "We organize various campaigns, influence politicians and society. We act locally and nationally."
@@ -21,7 +21,7 @@
       "title": "PEOPLE MUST KNOW",
       "icon": "bi bi-book-half",
       "content": [
-        "We demand that comprehensive and up-to-date knowledge about the mechanisms of the climate crisis be included in the curriculum at all levels of education, with mandatory teacher training in this area. At the same time, climate education should be fully provided by local governments.",
+        "We demand that comprehensive and up-to-date knowledge about the mechanisms of the climate crisis be included in the curriculum at all levels of education, with mandatory teacher training in this area. Local governments should also provide climate education to the full extent of their powers.",
         "We demand that the media take responsibility for raising public awareness of the immediate threats associated with the climate crisis. We call for prioritizing the issue of the climate crisis in media coverage and using language that reflects the seriousness of the problem."
       ]
     },
@@ -43,7 +43,7 @@
     "error": "Unfortunately, we do not yet have a local group in this voivodeship. We encourage you to start one.",
     "content": [
       "Start a new group",
-      "Is there no MSK group in your area?",
+      "No MSK group in your area?",
       "You can start a new one – don't worry, we'll help you with everything.",
       "Thanks to you, MSK will be able to reach a new place and new people!",
       "Message us on",
@@ -154,8 +154,8 @@
     "secure": "Secure payment powered by Stripe.",
     "receipt": "You will get an email confirmation once the payment clears.",
     "descriptions": [
-      "Hour of workshop for one class",
-      "Day of workshops for one school",
+      "One workshop hour for a class",
+      "A day of workshops for a school",
       "Training for a workshop facilitator"
     ],
     "privacyNotice": "Your donation goes to Fundacja Przyjaciół Młodzieżowego Strajku Klimatycznego (Friends of the Youth Climate Strike Foundation), Smolnik 77, 59-820 Leśna, Poland (KRS 0000915501). We process your data to complete the donation and send a confirmation. Payments are handled by Stripe.",
@@ -166,7 +166,7 @@
     "recurring": "Monthly",
     "monthlySuffix": " / month",
     "paymentType": "Donation type",
-    "progress": "{current} raised of {goal}"
+    "progress": "{current} of {goal} raised"
   },
   "buttons": {
     "joinUs": "Join Us",
@@ -180,7 +180,7 @@
     "error": "Sorry, an error occurred. Please try again later.",
     "source": "Source: ",
     "linkCopied": "Link copied to clipboard!",
-    "linkNotCopied": "An error occurred! Failed to copy the link.",
+    "linkNotCopied": "Could not copy the link.",
     "back": "Back to news",
     "share": "Share or copy link",
     "published": "Published",
@@ -191,8 +191,9 @@
     "backToList": "Back to news"
   },
   "clock": {
-    "title": "According to the Climate Clock, Earth will warm by 1.5°C in:",
+    "title": "According to the Climate Clock, global warming will pass 1.5°C in:",
     "years": "years",
+    "yearForms": { "one": "year", "other": "years" },
     "days": "days"
   },
   "news": {
@@ -203,9 +204,10 @@
   "newsletter": {
     "h2": "Newsletter",
     "submit": "Sign up",
-    "pending": "Signing up...",
+    "pending": "Signing up…",
     "failed": "An error occurred. Please try again later or contact us.",
-    "consent": "I want to receive the newsletter of Fundacja Przyjaciół Młodzieżowego Strajku Klimatycznego at this email address. I can withdraw consent at any time via the link in each email. See our privacy policy for details.",
+    "consent": "I want to receive the newsletter of Fundacja Przyjaciół Młodzieżowego Strajku Klimatycznego at this email address. I can withdraw consent at any time via the link in each email.",
+    "privacyNotice": "The data controller is Fundacja Przyjaciół Młodzieżowego Strajku Klimatycznego (KRS 0000915501). We use your email address only to send the newsletter, until you withdraw consent. Emails are sent via Kit (ConvertKit).",
     "success": "Done! Check your inbox to confirm.",
     "emailLabel": "Email address",
     "invalidEmail": "Please enter a valid email address.",
@@ -241,8 +243,16 @@
         "link": "/:lang/kontakt"
       },
       {
+        "label": "Support us",
+        "link": "/:lang/wesprzyj"
+      },
+      {
         "label": "Privacy policy",
         "link": "/polityka-prywatnosci.pdf"
+      },
+      {
+        "label": "Child protection policy (PL)",
+        "link": "/podpk.pdf"
       }
     ],
     "title": "Youth Climate Strike (Młodzieżowy Strajk Klimatyczny)",
@@ -321,7 +331,7 @@
     "shareSubtitle": "Help us reach more people",
     "shareText": "I'm supporting the Youth Climate Strike (Młodzieżowy Strajk Klimatyczny)!",
     "nextSteps": "What's next?",
-    "step1": "Check your inbox – we will send the payment confirmation there",
+    "step1": "Check your inbox – Stripe will send the payment confirmation there",
     "step2": "Follow us on social media",
     "step3": "Become a volunteer or join a local group",
     "backHome": "Back to homepage",
@@ -379,7 +389,7 @@
       "d": "M 525 877 L 525 870 518 862 521 856 510 850 503 837 495 834 493 823 486 823 500 796 518 781 510 774 525 759 530 748 563 743 573 733 560 724 568 713 562 709 560 698 549 694 558 678 552 675 547 678 536 669 523 669 516 655 506 647 497 655 467 638 463 644 443 644 444 650 437 662 440 667 428 685 429 697 423 701 434 720 434 726 420 726 422 740 417 737 412 741 415 773 383 786 376 804 386 816 392 815 402 825 430 828 437 859 456 868 459 889 471 894 474 908 478 911 492 910 502 892 Z"
     },
     {
-      "id": "świetokrzyskie",
+      "id": "świętokrzyskie",
       "d": "M 620 598 L 616 610 604 611 602 619 581 622 576 640 581 643 581 656 576 657 565 647 560 667 552 675 558 678 549 694 560 698 562 709 568 713 560 724 573 733 601 735 606 740 613 754 612 763 627 782 640 782 654 776 662 766 703 754 743 725 750 712 765 697 768 680 760 637 755 641 734 639 724 646 714 637 694 635 687 618 680 626 673 621 649 626 643 617 631 611 627 600 Z"
     },
     {
@@ -436,7 +446,7 @@
       "description": "Find a local MSK group in your voivodeship, or start a new one."
     },
     "foundation": {
-      "title": "Friends of MSK Foundation – documents and board",
+      "title": "Friends of the Youth Climate Strike Foundation – documents and board",
       "description": "Details, financial reports, statute and board of the Friends of the Youth Climate Strike Foundation."
     },
     "contact": {

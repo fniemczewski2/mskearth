@@ -15,12 +15,11 @@
     <meta property="og:site_name" content="Młodzieżowy Strajk Klimatyczny">
     <meta property="og:title" content="Młodzieżowy Strajk Klimatyczny – Fridays for Future Polska">
     <meta property="og:description" content="Dołącz do Młodzieżowego Strajku Klimatycznego. Sprawdź wydarzenia i działania.">
-    <meta property="og:url" content="https://msk.earth/">
     <meta property="og:image" content="https://msk.earth/og-image.png">
     <meta property="og:image:width" content="1200">
     <meta property="og:image:height" content="630">
     <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="Młodzieżowy Strajk Klimatyczny">
+    <meta name="twitter:title" content="Młodzieżowy Strajk Klimatyczny – Fridays for Future Polska">
     <meta name="twitter:description" content="Działamy dla klimatu. Dołącz do nas.">
     <meta name="twitter:image" content="https://msk.earth/og-image.png">
 
@@ -31,24 +30,46 @@
     <script type="application/ld+json">
       {
         "@context":"https://schema.org",
-        "@type":"Organization",
-        "name":"Młodzieżowy Strajk Klimatyczny",
-        "url":"https://msk.earth/",
-        "logo":"https://msk.earth/icons/icon-512.png",
-        "sameAs":[
-          "https://www.facebook.com/msk.polska",
-          "https://www.instagram.com/mlodziezowystrajkklimatyczny",
-          "https://x.com/msklimatyczny",
-          "https://www.tiktok.com/@msklimatyczny",
-          "https://www.youtube.com/@ModziezowyStrajkKlimatyczny"
-        ],
-        "contactPoint":[{
-          "@type":"ContactPoint",
-          "contactType":"media inquiries",
-          "email":"biuro@fpmsk.org.pl",
-          "areaServed":"PL",
-          "availableLanguage":["pl","en"]
-        }]
+        "@graph":[
+          {
+            "@type":"NGO",
+            "@id":"https://msk.earth/#msk",
+            "name":"Młodzieżowy Strajk Klimatyczny",
+            "alternateName":["MSK","Fridays for Future Polska","Youth Climate Strike Poland"],
+            "url":"https://msk.earth/",
+            "logo":"https://msk.earth/icons/icon-512.png",
+            "sameAs":[
+              "https://www.facebook.com/msk.polska",
+              "https://www.instagram.com/mlodziezowystrajkklimatyczny",
+              "https://x.com/msklimatyczny",
+              "https://www.tiktok.com/@msklimatyczny",
+              "https://www.youtube.com/@ModziezowyStrajkKlimatyczny"
+            ],
+            "contactPoint":[{
+              "@type":"ContactPoint",
+              "contactType":"media inquiries",
+              "email":"biuro@fpmsk.org.pl",
+              "areaServed":"PL",
+              "availableLanguage":["pl","en"]
+            }]
+          },
+          {
+            "@type":"NGO",
+            "@id":"https://msk.earth/#fundacja",
+            "name":"Fundacja Przyjaciół Młodzieżowego Strajku Klimatycznego",
+            "url":"https://msk.earth/pl/fundacja",
+            "email":"fundacja@msk.earth",
+            "telephone":"+48697302674",
+            "identifier":{"@type":"PropertyValue","propertyID":"KRS","value":"0000915501"},
+            "address":{
+              "@type":"PostalAddress",
+              "streetAddress":"Smolnik 77",
+              "postalCode":"59-820",
+              "addressLocality":"Leśna",
+              "addressCountry":"PL"
+            }
+          }
+        ]
       }
       </script>
 

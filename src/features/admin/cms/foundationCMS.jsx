@@ -221,7 +221,7 @@ function BoardMembersCMS() {
             {editingId && (
               <button type="button" className="cms-btn" onClick={cancelEdit}>Anuluj</button>
             )}
-            <button disabled={saving} className="cms-btnPrimary">
+            <button type="submit" disabled={saving || uploading} className="cms-btnPrimary">
               {saving ? "Zapisywanie…" : editingId ? "Zapisz zmiany" : "Dodaj osobę"}
             </button>
           </div>

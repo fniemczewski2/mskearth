@@ -106,14 +106,23 @@ async function handleSession(session, forcedStatus) {
     stripe_payment_intent_id: paymentIntentId,
   };
 
-  const { data: updated, error } = await supabaseAdmin
-    .from('donations')
-    .update(patch)
-    .eq('stripe_session_id', session.id)
-    .select('id');
+  let query = supabaseAdmin.from('donations').update(patch).eq('stripe_session_id', session.id);
+  // Stripe nie gwarantuje kolejnosci zdarzen: spozniony/ponowiony "pending" nie moze
+  // cofnac juz zaksiegowanej wplaty.
+  if (status === 'pending') query = query.eq('status', 'pending');
+  const { data: updated, error } = await query.select('id');
   if (error) throw error;
 
   if (!updated || updated.length === 0) {
+    if (status === 'pending') {
+      const { data: existing, error: existingError } = await supabaseAdmin
+        .from('donations')
+        .select('id')
+        .eq('stripe_session_id', session.id)
+        .limit(1);
+      if (existingError) throw existingError;
+      if (existing && existing.length > 0) return;
+    }
     // Wiersz "pending" nie powstal przy tworzeniu sesji: odtwarzamy go z metadanych.
     const { error: insertError } = await supabaseAdmin.from('donations').insert({
       ...patch,

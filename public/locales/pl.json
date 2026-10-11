@@ -3,7 +3,7 @@
     "O nas",
     "Jesteśmy ruchem społecznym będącym częścią globalnej inicjatywy Fridays for Future.",
     "Działając, wyrażamy swój sprzeciw wobec bierności polityków w obliczu katastrofy klimatycznej.",
-    "Nie jesteśmy osobami eksperckimi ds. ekologii i zmian klimatu, lecz młodzieżą świadomą zagrożenia jakim jest katastrofa klimatyczna i walczącą o prawo do swojej przyszłości.",
+    "Nie jesteśmy osobami eksperckimi ds. ekologii i zmian klimatu, lecz młodzieżą świadomą zagrożenia, jakim jest katastrofa klimatyczna, i walczącą o prawo do swojej przyszłości.",
     "Zaczynaliśmy jako grupa osób uczących się w szkołach średnich zainspirowanych działalnością Grety Thunberg, których aktywność szybko przerodziła się w ogólnopolski ruch.",
     "Organizujemy różne kampanie, wpływamy na polityków i społeczeństwo. Działamy lokalnie i ogólnopolsko."
   ],
@@ -30,7 +30,7 @@
       "icon": "bi bi-flag-fill",
       "content": [
         "Żądamy przyjęcia przez parlament RP ustawy powołującej ekspercką i niezależną Radę Klimatyczną, której zadaniem będzie opracowanie strategii osiągnięcia neutralności klimatycznej Polski do roku 2040 oraz kontrola realizacji tej strategii. Ustawa ta musi być stworzona przy aprobacie środowiska naukowego, maksymalnej transparentności i przy szerokich konsultacjach społecznych.",
-        "Oczekujemy podjęcia natychmiastowych kroków ku przeprowadzeniu sprawiedliwej transformacji gospodarki w celu redukcji emisji gazów cieplarnianych. Wymagamy, by respektowano prawa i potrzeby wszystkich których dotkną skutki transformacji, szczególnie osób zatrudnionych w sektorach energetyki, rolnictwa, przemysłu i transportu."
+        "Oczekujemy podjęcia natychmiastowych kroków ku przeprowadzeniu sprawiedliwej transformacji gospodarki w celu redukcji emisji gazów cieplarnianych. Wymagamy, by respektowano prawa i potrzeby wszystkich, których dotkną skutki transformacji, szczególnie osób zatrudnionych w sektorach energetyki, rolnictwa, przemysłu i transportu."
       ]
     }
   ],
@@ -40,11 +40,11 @@
     "voivodeship": "województwo",
     "meetings": "Spotkania: ",
     "contactPeople": "Osoby kontaktowe: ",
-    "error": "W tym województwie, niestety, nie mamy jeszcze grupy lokalnej. Zachęcamy Ciebie do jej założenia.",
+    "error": "W tym województwie, niestety, nie mamy jeszcze grupy lokalnej. Zachęcamy Cię do jej założenia.",
     "content": [
       "Załóż nową grupę",
-      "W twojej okolicy nie ma grupy MSK?",
-      "Możesz założyć nową – spokojnie, we wszystkim Tobie pomożemy.",
+      "W Twojej okolicy nie ma grupy MSK?",
+      "Możesz założyć nową – spokojnie, we wszystkim Ci pomożemy.",
       "Dzięki Tobie MSK będzie mogło dotrzeć do nowego miejsca i nowych ludzi!",
       "Napisz do nas na",
       "Instagramie",
@@ -87,7 +87,7 @@
     "h1": "Zapraszamy do kontaktu!",
     "h2": "Wypełnij formularz",
     "b1": "Wyślij",
-    "email": "Twój adres email: ",
+    "email": "Twój adres e-mail: ",
     "title": "Tytuł wiadomości: ",
     "message": "Twoja wiadomość: ",
     "privacyNotice": "Administratorem Twoich danych jest Fundacja Przyjaciół Młodzieżowego Strajku Klimatycznego, Smolnik 77, 59-820 Leśna. Użyjemy ich tylko, żeby odpowiedzieć na wiadomość. Formularz obsługuje serwis FormSubmit. Szczegóły w polityce prywatności.",
@@ -189,8 +189,9 @@
     "backToList": "Wróć do aktualności"
   },
   "clock": {
-    "title": "Według Climate Clock Ziemia ociepli się o 1,5°C za:",
+    "title": "Według Climate Clock globalne ocieplenie przekroczy 1,5°C za:",
     "years": "lata",
+    "yearForms": { "one": "rok", "few": "lata", "many": "lat", "other": "roku" },
     "days": "dni"
   },
   "news": {
@@ -201,9 +202,10 @@
   "newsletter": {
     "h2": "Newsletter",
     "submit": "Zapisz się",
-    "pending": "Zapisywanie...",
+    "pending": "Zapisywanie…",
     "failed": "Wystąpił błąd. Spróbuj ponownie później lub skontaktuj się z nami.",
-    "consent": "Chcę otrzymywać newsletter Fundacja Przyjaciół Młodzieżowego Strajku Klimatycznego na podany adres e-mail. Zgodę mogę wycofać w każdej chwili, klikając link w wiadomości. Szczegóły w polityce prywatności.",
+    "consent": "Chcę otrzymywać newsletter Fundacji Przyjaciół Młodzieżowego Strajku Klimatycznego na podany adres e-mail. Zgodę mogę wycofać w każdej chwili, klikając link w wiadomości.",
+    "privacyNotice": "Administratorem danych jest Fundacja Przyjaciół Młodzieżowego Strajku Klimatycznego (KRS 0000915501). Adres e-mail przetwarzamy wyłącznie w celu wysyłki newslettera, do czasu wycofania zgody. Wysyłkę obsługuje Kit (ConvertKit).",
     "success": "Gotowe! Sprawdź skrzynkę i potwierdź zapis.",
     "emailLabel": "Adres e-mail",
     "invalidEmail": "Podaj poprawny adres e-mail.",
@@ -239,8 +241,16 @@
         "link": "/:lang/kontakt"
       },
       {
+        "label": "Wesprzyj nas",
+        "link": "/:lang/wesprzyj"
+      },
+      {
         "label": "Polityka prywatności",
         "link": "/polityka-prywatnosci.pdf"
+      },
+      {
+        "label": "Standardy ochrony małoletnich",
+        "link": "/podpk.pdf"
       }
     ],
     "title": "Młodzieżowy Strajk Klimatyczny",
@@ -319,7 +329,7 @@
     "shareSubtitle": "Pomóż nam dotrzeć do większej liczby osób",
     "shareText": "Wspieram Młodzieżowy Strajk Klimatyczny!",
     "nextSteps": "Co dalej?",
-    "step1": "Sprawdź skrzynkę e-mail – wyślemy tam potwierdzenie płatności",
+    "step1": "Sprawdź skrzynkę e-mail – Stripe wyśle tam potwierdzenie płatności",
     "step2": "Obserwuj nas w mediach społecznościowych",
     "step3": "Zostań wolontariuszem lub dołącz do lokalnej grupy",
     "backHome": "Wróć do strony głównej",
@@ -377,7 +387,7 @@
       "d": "M 525 877 L 525 870 518 862 521 856 510 850 503 837 495 834 493 823 486 823 500 796 518 781 510 774 525 759 530 748 563 743 573 733 560 724 568 713 562 709 560 698 549 694 558 678 552 675 547 678 536 669 523 669 516 655 506 647 497 655 467 638 463 644 443 644 444 650 437 662 440 667 428 685 429 697 423 701 434 720 434 726 420 726 422 740 417 737 412 741 415 773 383 786 376 804 386 816 392 815 402 825 430 828 437 859 456 868 459 889 471 894 474 908 478 911 492 910 502 892 Z"
     },
     {
-      "id": "świetokrzyskie",
+      "id": "świętokrzyskie",
       "d": "M 620 598 L 616 610 604 611 602 619 581 622 576 640 581 643 581 656 576 657 565 647 560 667 552 675 558 678 549 694 560 698 562 709 568 713 560 724 573 733 601 735 606 740 613 754 612 763 627 782 640 782 654 776 662 766 703 754 743 725 750 712 765 697 768 680 760 637 755 641 734 639 724 646 714 637 694 635 687 618 680 626 673 621 649 626 643 617 631 611 627 600 Z"
     },
     {

@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import PropTypes from 'prop-types';
 
 import LanguageSwitch from './languageSwitch.jsx';
@@ -7,6 +7,7 @@ import { useTranslations } from '../shared/i18n/useTranslations.js';
 
 export default function MobileNavbar({ id = 'mobile-nav', lang = 'pl', handleLanguageChange, isOpen, onNavigate }) {
   const { t } = useTranslations();
+  const { pathname } = useLocation();
   const menuItems = useMemo(() => t.mobileNavbar?.menuItems ?? [], [t.mobileNavbar?.menuItems]);
   const navRef = useRef(null);
 
@@ -46,13 +47,17 @@ export default function MobileNavbar({ id = 'mobile-nav', lang = 'pl', handleLan
       inert={!isOpen ? true : undefined}
     >
       <ul className="navbarItems">
-        {menuItems.map((item) => (
-          <li key={item.link}>
-            <Link to={`/${lang}${item.link === '/' ? '' : item.link}`} onClick={onNavigate}>
-              {item.label}
-            </Link>
-          </li>
-        ))}
+        {menuItems.map((item) => {
+          const to = `/${lang}${item.link === '/' ? '' : item.link}`;
+          const active = item.link === '/' ? pathname === to : pathname === to || pathname.startsWith(`${to}/`);
+          return (
+            <li key={item.link}>
+              <Link to={to} onClick={onNavigate} aria-current={active ? 'page' : undefined}>
+                {item.label}
+              </Link>
+            </li>
+          );
+        })}
 
         <li>
           <LanguageSwitch

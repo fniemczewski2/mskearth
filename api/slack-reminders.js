@@ -1,6 +1,14 @@
 // api/slack-reminders.js
+import crypto from 'node:crypto';
 
 export const config = { maxDuration: 60 };
+
+// Konfiguracja listy Slack (ID kolumn i listy) z env, zeby nie trzymac jej w kodzie.
+const LIST_ID = process.env.SLACK_LIST_ID;
+const LIST_URL = process.env.SLACK_LIST_URL;
+const STATUS_COL = process.env.SLACK_STATUS_COL;
+const ASSIGNEE_COL = process.env.SLACK_ASSIGNEE_COL;
+const TITLE_COL = process.env.SLACK_TITLE_COL;
 
 const OPEN_STATUS_VALUES = new Set(['OptHLOTJ6CC', 'OptNYET7N6L', 'OptHERGQPA4']);
 
@@ -12,6 +20,7 @@ async function slackApi(method, body) {
       Authorization: `Bearer ${process.env.SLACK_BOT_TOKEN}`,
     },
     body: JSON.stringify(body),
+    signal: AbortSignal.timeout(8000),
   });
   const data = await res.json();
   if (!data.ok) throw new Error(`${method}: ${data.error}`);
@@ -85,7 +94,7 @@ async function sendReminders(tasksByUser) {
     try {
       const main = await slackApi('chat.postMessage', {
         channel: userId,
-        text: `Cześć! 👋 Przypominam o zadaniach na agendzie (<${LIST_URL}|zobacz>). Szczegóły znajdziesz w wątku tej wiadomości 👇`,
+        text: `Cześć! 👋 Przypominam o zadaniach na agendzie${LIST_URL ? ` (<${LIST_URL}|zobacz>)` : ''}. Szczegóły znajdziesz w wątku tej wiadomości 👇`,
       });
 
       const threadText =
@@ -107,16 +116,24 @@ async function sendReminders(tasksByUser) {
   return results;
 }
 
-function isoWeekWarsaw(date = new Date()) {
+/**
+ * Numer tygodnia liczony od stalego poniedzialku (2024-01-08), w strefie Europe/Warsaw.
+ * Parzystosc tego licznika nie "przeskakuje" na przelomie lat 53-tygodniowych
+ * (np. 2026 -> 2027), w przeciwienstwie do numeru tygodnia ISO.
+ */
+function weekIndexWarsaw(date = new Date()) {
   const [y, m, d] = date
     .toLocaleDateString('en-CA', { timeZone: 'Europe/Warsaw' })
     .split('-')
     .map(Number);
-  const t = new Date(Date.UTC(y, m - 1, d));
-  const day = t.getUTCDay() || 7;
-  t.setUTCDate(t.getUTCDate() + 4 - day);
-  const yearStart = new Date(Date.UTC(t.getUTCFullYear(), 0, 1));
-  return Math.ceil(((t - yearStart) / 86400000 + 1) / 7);
+  return Math.floor((Date.UTC(y, m - 1, d) - Date.UTC(2024, 0, 8)) / (7 * 86400000));
+}
+
+function isAuthorized(header, secret) {
+  if (!secret) return false;
+  const got = Buffer.from(String(header ?? ''));
+  const expected = Buffer.from(`Bearer ${secret}`);
+  return got.length === expected.length && crypto.timingSafeEqual(got, expected);
 }
 
 export default async function handler(req, res) {
@@ -124,18 +141,20 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  const secret = process.env.CRON_SECRET;
-  if (!secret || req.headers.authorization !== `Bearer ${secret}`) {
+  if (!isAuthorized(req.headers.authorization, process.env.CRON_SECRET)) {
     return res.status(401).json({ error: 'Unauthorized' });
   }
 
   if (!process.env.SLACK_BOT_TOKEN) {
     return res.status(500).json({ error: 'SLACK_BOT_TOKEN not set' });
   }
+  if (!LIST_ID || !STATUS_COL || !ASSIGNEE_COL || !TITLE_COL) {
+    return res.status(500).json({ error: 'Slack list config missing (SLACK_LIST_ID, SLACK_*_COL)' });
+  }
   const force = req.query?.force === '1';
-  const week = isoWeekWarsaw();
+  const week = weekIndexWarsaw();
   if (!force && week % 2 !== 0) {
-    return res.status(200).json({ skipped: true, reason: `odd ISO week (${week})` });
+    return res.status(200).json({ skipped: true, reason: `odd week (${week})` });
   }
 
   try {

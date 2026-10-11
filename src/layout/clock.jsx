@@ -7,7 +7,7 @@ import { fetchClimateClock } from './climateClockApi.js';
 const pad = (number, length) => String(number ?? 0).padStart(length, '0');
 
 function Clock() {
-  const { t } = useTranslations();
+  const { t, lang } = useTranslations();
   const [now, setNow] = useState(() => DateTime.utc());
   const [deadline, setDeadline] = useState(null);
 
@@ -32,6 +32,13 @@ function Clock() {
     : null;
 
   const clock = t.clock ?? {};
+  // "1 rok", "2 lata", "5 lat" – forma zalezna od liczby (Intl.PluralRules).
+  const yearsLabel = (n) => {
+    const forms = clock.yearForms;
+    if (!forms) return clock.years || '';
+    const rule = new Intl.PluralRules(lang === 'en' ? 'en' : 'pl').select(n);
+    return forms[rule] ?? forms.other ?? clock.years ?? '';
+  };
 
   return (
     <a
@@ -39,7 +46,7 @@ function Clock() {
       href="https://climateclock.world/"
       target="_blank"
       rel="noopener noreferrer"
-      aria-label={`${t.a11y?.openClock ?? 'Climate Clock'} ${t.a11y?.opensNewTab ?? '(otwiera się w nowej karcie)'}`}
+      aria-label={`${clock.title ? `${clock.title} ` : ''}${t.a11y?.openClock ?? 'Climate Clock'} ${t.a11y?.opensNewTab ?? '(otwiera się w nowej karcie)'}`}
     >
       {remaining && (
         <span aria-hidden="true">
@@ -48,7 +55,7 @@ function Clock() {
           </span>
           <span className="clock-time">
             {remaining.years}
-            <span>&nbsp;{clock.years || ''}&nbsp;</span>
+            <span>&nbsp;{yearsLabel(remaining.years)}&nbsp;</span>
             {pad(remaining.days, 3)}
             <span>&nbsp;{clock.days || ''}&nbsp;</span>
             <br />
