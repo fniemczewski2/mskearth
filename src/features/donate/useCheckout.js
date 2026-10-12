@@ -2,6 +2,14 @@ import { useEffect, useRef, useState } from 'react';
 
 export const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
+function isEmbedded() {
+  try {
+    return window.self !== window.top;
+  } catch {
+    return true;
+  }
+}
+
 function newAttemptId() {
   return globalThis.crypto?.randomUUID?.() ?? `${Date.now()}-${Math.random().toString(36).slice(2)}`;
 }
@@ -10,6 +18,7 @@ function newAttemptId() {
 export default function useCheckout({ t, lang }) {
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState('');
+  const [fallbackUrl, setFallbackUrl] = useState('');
   const attemptRef = useRef(newAttemptId());
 
   // Powrot z Stripe przyciskiem "Wstecz" przywraca strone z bfcache razem ze stanem
@@ -28,6 +37,7 @@ export default function useCheckout({ t, lang }) {
     if (busy) return;
     setBusy(true);
     setErr('');
+    setFallbackUrl('');
 
     try {
       const res = await fetch('/api/create-checkout-session', {
@@ -50,12 +60,20 @@ export default function useCheckout({ t, lang }) {
         throw new Error(data?.error ?? t.donate?.createPaymentFailed ?? 'Nie udało się utworzyć płatności.');
       }
 
+      if (!isEmbedded()) {
+        window.location.assign(data.url);
+        return;
+      }
+
+      // W ramce u partnera nawigacja okna nadrzednego bywa zablokowana (sandbox,
+      // brak aktywacji uzytkownika po await). Przegladarka nie zawsze rzuca wtedy
+      // wyjatek, wiec zawsze pokazujemy tez link, ktory zadziala po kliknieciu.
+      setFallbackUrl(data.url);
+      setBusy(false);
       try {
-        (window.top ?? window).location.assign(data.url);
+        window.top.location.assign(data.url);
       } catch {
-        // Osadzony iframe bez allow-top-navigation: otworz platnosc w nowej karcie.
         window.open(data.url, '_blank', 'noopener');
-        setBusy(false);
       }
     } catch (e) {
       // Nowa proba = nowy klucz idempotencji.
@@ -65,5 +83,5 @@ export default function useCheckout({ t, lang }) {
     }
   }
 
-  return { busy, err, startPayment };
+  return { busy, err, fallbackUrl, startPayment };
 }

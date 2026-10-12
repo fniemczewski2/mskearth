@@ -1,5 +1,5 @@
 import { log, redact } from './_lib/log.js';
-import { supabaseAdmin } from './_lib/supabaseAdmin.js';
+import { requireSupabaseAdmin } from './_lib/supabaseAdmin.js';
 import { stripe } from './_lib/stripe.js';
 import { subscribeToKit } from './_lib/kit.js';
 
@@ -106,7 +106,7 @@ async function handleSession(session, forcedStatus) {
     stripe_payment_intent_id: paymentIntentId,
   };
 
-  let query = supabaseAdmin.from('donations').update(patch).eq('stripe_session_id', session.id);
+  let query = requireSupabaseAdmin().from('donations').update(patch).eq('stripe_session_id', session.id);
   // Stripe nie gwarantuje kolejnosci zdarzen: spozniony/ponowiony "pending" nie moze
   // cofnac juz zaksiegowanej wplaty.
   if (status === 'pending') query = query.eq('status', 'pending');
@@ -115,7 +115,7 @@ async function handleSession(session, forcedStatus) {
 
   if (!updated || updated.length === 0) {
     if (status === 'pending') {
-      const { data: existing, error: existingError } = await supabaseAdmin
+      const { data: existing, error: existingError } = await requireSupabaseAdmin()
         .from('donations')
         .select('id')
         .eq('stripe_session_id', session.id)
@@ -124,7 +124,7 @@ async function handleSession(session, forcedStatus) {
       if (existing && existing.length > 0) return;
     }
     // Wiersz "pending" nie powstal przy tworzeniu sesji: odtwarzamy go z metadanych.
-    const { error: insertError } = await supabaseAdmin.from('donations').insert({
+    const { error: insertError } = await requireSupabaseAdmin().from('donations').insert({
       ...patch,
       amount: (session.amount_total ?? 0) / 100,
       currency: (session.currency ?? 'pln').toUpperCase(),
@@ -154,7 +154,7 @@ async function handleSession(session, forcedStatus) {
 }
 
 async function updateByPaymentIntent(paymentIntentId, patch) {
-  const { data, error } = await supabaseAdmin
+  const { data, error } = await requireSupabaseAdmin()
     .from('donations')
     .update(patch)
     .eq('stripe_payment_intent_id', paymentIntentId)
@@ -176,7 +176,7 @@ async function handleInvoicePaymentSucceeded(invoice, eventId) {
   const subscription = await stripe.subscriptions.retrieve(subscriptionId);
   const metadata = subscription.metadata ?? {};
 
-  const { error } = await supabaseAdmin.from('donations').insert({
+  const { error } = await requireSupabaseAdmin().from('donations').insert({
     stripe_event_id: eventId,
     amount: invoice.amount_paid / 100,
     currency: (invoice.currency ?? 'pln').toUpperCase(),
@@ -198,7 +198,7 @@ async function handleInvoicePaymentSucceeded(invoice, eventId) {
 async function handleInvoicePaymentFailed(invoice, eventId) {
   if (!subscriptionIdOf(invoice)) return;
 
-  const { error } = await supabaseAdmin.from('donations').insert({
+  const { error } = await requireSupabaseAdmin().from('donations').insert({
     stripe_event_id: eventId,
     amount: invoice.amount_due / 100,
     currency: (invoice.currency ?? 'pln').toUpperCase(),

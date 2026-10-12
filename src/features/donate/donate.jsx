@@ -35,7 +35,7 @@ export default function DonateStripe({ headingLevel = 2, hideHeading = false }) 
 
   const emailRef = useRef(null);
   const customRef = useRef(null);
-  const { busy, err, startPayment } = useCheckout({ t, lang });
+  const { busy, err, fallbackUrl, startPayment } = useCheckout({ t, lang });
 
   const finalAmount = showCustom ? Number(customAmount) : amount;
   const amountValid = Number.isFinite(finalAmount) && finalAmount >= 5 && finalAmount <= 50_000;
@@ -210,6 +210,15 @@ export default function DonateStripe({ headingLevel = 2, hideHeading = false }) 
             <span className="sr-only"> {t.a11y?.opensNewTab ?? '(otwiera się w nowej karcie)'}</span>
           </a>
         </p>
+
+        {fallbackUrl && (
+          <p className="formStatus" role="status">
+            <a href={fallbackUrl} target="_blank" rel="noopener noreferrer">
+              {d.openCheckout ?? 'Jeśli płatność się nie otworzyła, kliknij tutaj'}
+              <span className="sr-only"> {t.a11y?.opensNewTab ?? '(otwiera się w nowej karcie)'}</span>
+            </a>
+          </p>
+        )}
 
         {err && (
           <p role="alert" className="formError" style={{ marginTop: 8, marginBottom: 16 }}>

@@ -106,7 +106,9 @@ supabase/         migracje bazy
 <iframe src="https://msk.earth/embed/belka" title="Wesprzyj MSK"></iframe>
 ```
 
-Stare adresy `/donate-iframe.html` i `/donate-belka.html` są przekierowywane w `vercel.json`, więc już osadzone ramki działają dalej. Domeny, które mogą osadzać serwis, kontroluje dyrektywa `frame-ancestors` w tym samym pliku.
+Stare adresy `/donate-iframe.html` i `/donate-belka.html` działają dalej: `cleanUrls` najpierw przekierowuje je na `/donate-iframe` i `/donate-belka`, a te są przepisywane na `/embed/*` w `vercel.json` (reguły rewrite muszą więc mieć źródła **bez** `.html`).
+
+Strony osadzeń mają własne CSP z `frame-ancestors 'self' https:` – można je osadzić na dowolnej stronie HTTPS (także w Google Sites, które opakowuje ramki w `*.googleusercontent.com`). Reszta serwisu nadal może być osadzana tylko przez domeny wymienione w głównej regule CSP.
 
 ## Tłumaczenia
 

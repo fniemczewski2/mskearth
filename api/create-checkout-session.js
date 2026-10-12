@@ -4,7 +4,7 @@ import { z } from 'zod';
 import { applyCors } from './_lib/cors.js';
 import { log, redact } from './_lib/log.js';
 import { buildReturnUrls } from './_lib/urls.js';
-import { supabaseAdmin } from './_lib/supabaseAdmin.js';
+import { getSupabaseAdmin } from './_lib/supabaseAdmin.js';
 import { isLimited, clientIp } from './_lib/rateLimit.js';
 import { stripe, DONATION_RECIPIENT } from './_lib/stripe.js';
 
@@ -97,7 +97,11 @@ export default async function handler(req, res) {
                 {
                   price_data: {
                     currency: 'pln',
-                    product: process.env.STRIPE_RECURRING_PRODUCT_ID,
+                    // Bez STRIPE_RECURRING_PRODUCT_ID Stripe odrzucal sesje ("product" jest wymagany),
+                    // wiec wplaty comiesieczne nie dzialaly. Awaryjnie tworzymy produkt w locie.
+                    ...(process.env.STRIPE_RECURRING_PRODUCT_ID
+                      ? { product: process.env.STRIPE_RECURRING_PRODUCT_ID }
+                      : { product_data: { name: `Regularna darowizna na cele statutowe: ${DONATION_RECIPIENT}` } }),
                     unit_amount: unitAmount,
                     recurring: { interval: 'month' },
                   },
@@ -132,16 +136,19 @@ export default async function handler(req, res) {
 
     // Wiersz "pending" jest pomocniczy. Jesli zapis sie nie uda, webhook utworzy wiersz
     // na podstawie metadanych sesji, wiec darowizna nie zginie.
-    const { error: dbError } = await supabaseAdmin.from('donations').insert({
-      amount: chargedAmount,
-      currency: 'PLN',
-      donor_name: name || null,
-      donor_email: email,
-      status: 'pending',
-      stripe_session_id: session.id,
-      newsletter,
-      payment_type,
-    });
+    const supabaseAdmin = getSupabaseAdmin();
+    const { error: dbError } = supabaseAdmin
+      ? await supabaseAdmin.from('donations').insert({
+          amount: chargedAmount,
+          currency: 'PLN',
+          donor_name: name || null,
+          donor_email: email,
+          status: 'pending',
+          stripe_session_id: session.id,
+          newsletter,
+          payment_type,
+        })
+      : { error: null };
 
     if (dbError && dbError.code !== '23505') {
       log.error('donations.insert', dbError, { session_id: session.id });

@@ -166,7 +166,8 @@
     "recurring": "Monthly",
     "monthlySuffix": " / month",
     "paymentType": "Donation type",
-    "progress": "{current} of {goal} raised"
+    "progress": "{current} of {goal} raised",
+    "openCheckout": "If the payment page didn't open, click here"
   },
   "buttons": {
     "joinUs": "Join Us",
@@ -193,7 +194,10 @@
   "clock": {
     "title": "Global warming will pass 1.5°C in:",
     "years": "years",
-    "yearForms": { "one": "year", "other": "years" },
+    "yearForms": {
+      "one": "year",
+      "other": "years"
+    },
     "days": "days"
   },
   "news": {

@@ -166,7 +166,8 @@
     "recurring": "Co miesiąc",
     "monthlySuffix": " / mies.",
     "paymentType": "Rodzaj wsparcia",
-    "progress": "Zebrano {current} z {goal}"
+    "progress": "Zebrano {current} z {goal}",
+    "openCheckout": "Jeśli płatność się nie otworzyła, kliknij tutaj"
   },
   "buttons": {
     "joinUs": "Dołącz do nas",
@@ -191,7 +192,12 @@
   "clock": {
     "title": "Globalne ocieplenie przekroczy 1,5°C za:",
     "years": "lata",
-    "yearForms": { "one": "rok", "few": "lata", "many": "lat", "other": "roku" },
+    "yearForms": {
+      "one": "rok",
+      "few": "lata",
+      "many": "lat",
+      "other": "roku"
+    },
     "days": "dni"
   },
   "news": {

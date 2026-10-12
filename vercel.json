@@ -1,36 +1,168 @@
 {
-  "regions": ["fra1"],
+  "regions": [
+    "fra1"
+  ],
   "cleanUrls": true,
   "redirects": [
-    { "source": "/(.*)", "has": [{ "type": "host", "value": "www.msk.earth" }], "destination": "https://msk.earth/$1", "permanent": true }
+    {
+      "source": "/(.*)",
+      "has": [
+        {
+          "type": "host",
+          "value": "www.msk.earth"
+        }
+      ],
+      "destination": "https://msk.earth/$1",
+      "permanent": true
+    }
   ],
   "rewrites": [
-    { "source": "/donate-iframe.html", "destination": "/embed/donate.html" },
-    { "source": "/donate-belka.html", "destination": "/embed/belka.html" },
-    { "source": "/((?!api/|embed/).*)", "destination": "/" }
+    {
+      "source": "/donate-iframe",
+      "destination": "/embed/donate"
+    },
+    {
+      "source": "/donate-belka",
+      "destination": "/embed/belka"
+    },
+    {
+      "source": "/((?!api/|embed/).*)",
+      "destination": "/"
+    }
   ],
   "headers": [
     {
-      "source": "/(.*)",
+      "source": "/((?!embed/|donate-iframe|donate-belka).*)",
       "headers": [
-        { "key": "Strict-Transport-Security", "value": "max-age=63072000; includeSubDomains; preload" },
-        { "key": "X-Content-Type-Options", "value": "nosniff" },
-        { "key": "Referrer-Policy", "value": "strict-origin-when-cross-origin" },
-        { "key": "Cross-Origin-Opener-Policy", "value": "same-origin-allow-popups" },
-        { "key": "Permissions-Policy", "value": "camera=(), microphone=(), geolocation=(), payment=(), browsing-topics=()" },
-        { "key": "Content-Security-Policy", "value": "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data: blob: https://*.supabase.co; media-src 'self'; connect-src 'self' https://*.supabase.co wss://*.supabase.co https://api.climateclock.world https://formsubmit.co; frame-src https://checkout.stripe.com; frame-ancestors 'self' https://fpmsk.org.pl https://www.fpmsk.org.pl https://*.google.com; form-action 'self' https://checkout.stripe.com; base-uri 'none'; object-src 'none'; upgrade-insecure-requests" }
+        {
+          "key": "Strict-Transport-Security",
+          "value": "max-age=63072000; includeSubDomains; preload"
+        },
+        {
+          "key": "X-Content-Type-Options",
+          "value": "nosniff"
+        },
+        {
+          "key": "Referrer-Policy",
+          "value": "strict-origin-when-cross-origin"
+        },
+        {
+          "key": "Cross-Origin-Opener-Policy",
+          "value": "same-origin-allow-popups"
+        },
+        {
+          "key": "Permissions-Policy",
+          "value": "camera=(), microphone=(), geolocation=(), payment=(), browsing-topics=()"
+        },
+        {
+          "key": "Content-Security-Policy",
+          "value": "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data: blob: https://*.supabase.co; media-src 'self'; connect-src 'self' https://*.supabase.co wss://*.supabase.co https://api.climateclock.world https://formsubmit.co; frame-src https://checkout.stripe.com; frame-ancestors 'self' https://fpmsk.org.pl https://www.fpmsk.org.pl https://*.google.com; form-action 'self' https://checkout.stripe.com; base-uri 'none'; object-src 'none'; upgrade-insecure-requests"
+        }
+      ]
+    },
+    {
+      "source": "/embed/(.*)",
+      "headers": [
+        {
+          "key": "Strict-Transport-Security",
+          "value": "max-age=63072000; includeSubDomains; preload"
+        },
+        {
+          "key": "X-Content-Type-Options",
+          "value": "nosniff"
+        },
+        {
+          "key": "Referrer-Policy",
+          "value": "strict-origin-when-cross-origin"
+        },
+        {
+          "key": "Cross-Origin-Opener-Policy",
+          "value": "same-origin-allow-popups"
+        },
+        {
+          "key": "Permissions-Policy",
+          "value": "camera=(), microphone=(), geolocation=(), payment=(), browsing-topics=()"
+        },
+        {
+          "key": "Content-Security-Policy",
+          "value": "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data: blob: https://*.supabase.co; media-src 'self'; connect-src 'self' https://*.supabase.co wss://*.supabase.co https://api.climateclock.world https://formsubmit.co; frame-src https://checkout.stripe.com; frame-ancestors 'self' https:; form-action 'self' https://checkout.stripe.com; base-uri 'none'; object-src 'none'; upgrade-insecure-requests"
+        }
+      ]
+    },
+    {
+      "source": "/donate-iframe(.*)",
+      "headers": [
+        {
+          "key": "Strict-Transport-Security",
+          "value": "max-age=63072000; includeSubDomains; preload"
+        },
+        {
+          "key": "X-Content-Type-Options",
+          "value": "nosniff"
+        },
+        {
+          "key": "Referrer-Policy",
+          "value": "strict-origin-when-cross-origin"
+        },
+        {
+          "key": "Cross-Origin-Opener-Policy",
+          "value": "same-origin-allow-popups"
+        },
+        {
+          "key": "Permissions-Policy",
+          "value": "camera=(), microphone=(), geolocation=(), payment=(), browsing-topics=()"
+        },
+        {
+          "key": "Content-Security-Policy",
+          "value": "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data: blob: https://*.supabase.co; media-src 'self'; connect-src 'self' https://*.supabase.co wss://*.supabase.co https://api.climateclock.world https://formsubmit.co; frame-src https://checkout.stripe.com; frame-ancestors 'self' https:; form-action 'self' https://checkout.stripe.com; base-uri 'none'; object-src 'none'; upgrade-insecure-requests"
+        }
+      ]
+    },
+    {
+      "source": "/donate-belka(.*)",
+      "headers": [
+        {
+          "key": "Strict-Transport-Security",
+          "value": "max-age=63072000; includeSubDomains; preload"
+        },
+        {
+          "key": "X-Content-Type-Options",
+          "value": "nosniff"
+        },
+        {
+          "key": "Referrer-Policy",
+          "value": "strict-origin-when-cross-origin"
+        },
+        {
+          "key": "Cross-Origin-Opener-Policy",
+          "value": "same-origin-allow-popups"
+        },
+        {
+          "key": "Permissions-Policy",
+          "value": "camera=(), microphone=(), geolocation=(), payment=(), browsing-topics=()"
+        },
+        {
+          "key": "Content-Security-Policy",
+          "value": "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data: blob: https://*.supabase.co; media-src 'self'; connect-src 'self' https://*.supabase.co wss://*.supabase.co https://api.climateclock.world https://formsubmit.co; frame-src https://checkout.stripe.com; frame-ancestors 'self' https:; form-action 'self' https://checkout.stripe.com; base-uri 'none'; object-src 'none'; upgrade-insecure-requests"
+        }
       ]
     },
     {
       "source": "/admin(.*)",
       "headers": [
-        { "key": "X-Robots-Tag", "value": "noindex, nofollow" }
+        {
+          "key": "X-Robots-Tag",
+          "value": "noindex, nofollow"
+        }
       ]
     },
     {
       "source": "/(assets|fonts|icons)/(.*)",
       "headers": [
-        { "key": "Cache-Control", "value": "public, max-age=31536000, immutable" }
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=31536000, immutable"
+        }
       ]
     }
   ]

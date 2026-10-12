@@ -19,7 +19,7 @@ export default function DonateBar() {
   const [newsletter, setNewsletter] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const emailRef = useRef(null);
-  const { busy, err, startPayment } = useCheckout({ t, lang });
+  const { busy, err, fallbackUrl, startPayment } = useCheckout({ t, lang });
 
   const emailValid = EMAIL_RE.test(email.trim());
   const showEmailError = (submitted || email !== '') && !emailValid;
@@ -141,6 +141,15 @@ export default function DonateBar() {
           </a>
         </p>
       </div>
+
+      {fallbackUrl && (
+        <p className="formStatus" role="status">
+          <a href={fallbackUrl} target="_blank" rel="noopener noreferrer">
+            {d.openCheckout ?? 'Jeśli płatność się nie otworzyła, kliknij tutaj'}
+            <span className="sr-only"> {t.a11y?.opensNewTab ?? '(otwiera się w nowej karcie)'}</span>
+          </a>
+        </p>
+      )}
 
       {err && <p className="formError" role="alert">{err}</p>}
 
