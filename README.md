@@ -86,6 +86,16 @@ Zasady, na których stoi model dostępu:
 - Panel administracyjny sprawdza funkcję `is_admin()`. Sama sesja nie wystarcza.
 - Treści publiczne filtrują polityki RLS (`accepted = true and published is not null`), nie tylko zapytanie w kliencie.
 
+### Ankiety rezerwacji terminów
+
+W panelu (`/admin` → zakładka **Ankiety**) tworzysz ankietę: tytuł, liczba miejsc w jednym slocie, maksymalna liczba slotów na osobę i terminy dostępności (np. wtorek 12:00–16:00). Dla każdego terminu wybierasz, czy zapis dotyczy **całego slotu**, czy **krótszego fragmentu** (np. co 60 min, wtedy okno dzieli się na sloty). Po utworzeniu panel pokazuje publiczny adres `https://msk.earth/pl/ankieta/<slug>` (slug jest losowy, 16 znaków). Strony nie ma w menu, stopce ani w `sitemap.xml`, ma `noindex` i nagłówek `X-Robots-Tag`.
+
+- Schemat: `supabase/migrations/20261021120000_booking_surveys.sql` (`npx supabase db push`). Tabele mają RLS: czytają i zmieniają je tylko administratorzy (`is_admin()`).
+- Strona publiczna czyta dane przez funkcję `get_survey_public` (liczniki wolnych miejsc, bez adresów e-mail).
+- Zapis idzie przez `POST /api/survey-book` (zod, limit 10 prób/h z IP, honeypot, wymagana zgoda RODO), który wywołuje funkcję `book_survey_slots` kluczem `service_role`. Funkcja blokuje wiersze slotów, więc limit miejsc, limit slotów na osobę i brak dubli (ten sam e-mail na ten sam slot) są egzekwowane atomowo. Pełny slot znika dla kolejnych osób.
+- Przy każdym zapisie zapisywane są data zgody i wersja treści zgody (`CONSENT_VERSION` w `api/survey-book.js`). Zmieniając treść zgody w `public/locales/*.json`, zwiększ wersję.
+- W panelu można podejrzeć zapisy, usunąć zapis, zamknąć ankietę i pobrać zapisy jako CSV. Usunięcie ankiety kasuje też wszystkie zapisy (dane osobowe). Pamiętaj o usuwaniu starych ankiet zgodnie z polityką prywatności.
+
 ## Struktura
 
 ```

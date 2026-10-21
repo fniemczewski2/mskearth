@@ -17,6 +17,7 @@ const Foundation = lazy(() => import('../features/foundation/foundation.jsx'));
 const Contact = lazy(() => import('../features/contact/contact.jsx'));
 const DonatePage = lazy(() => import('../features/donate/donatePage.jsx'));
 const ThankYou = lazy(() => import('../features/donate/thankyou.jsx'));
+const SurveyPage = lazy(() => import('../features/survey/surveyPage.jsx'));
 const NotFound = lazy(() => import('../features/notFound/notFound.jsx'));
 
 function PageLoader({ label }) {
@@ -85,6 +86,7 @@ export default function App() {
             <Route path="kontakt" element={<Contact />} />
             <Route path="wesprzyj" element={<DonatePage />} />
             <Route path="dziekujemy" element={<ThankYou />} />
+            <Route path="ankieta/:slug" element={<SurveyPage />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </Suspense>

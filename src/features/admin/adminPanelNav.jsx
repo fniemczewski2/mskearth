@@ -5,6 +5,7 @@ import CitiesLocalCMS from './cms/citiesCMS.jsx';
 import FoundationCMS from './cms/foundationCMS.jsx';
 import ContactPeopleCMS from './cms/contactCMS.jsx';
 import RecruitmentCMS from './cms/recruitmentCMS.jsx';
+import SurveysCMS from './cms/surveysCMS.jsx';
 
 const TABS = [
   { id: 'recrutation', label: 'Rekrutacja' },
@@ -12,6 +13,7 @@ const TABS = [
   { id: 'map', label: 'Miasta' },
   { id: 'foundation', label: 'Fundacja' },
   { id: 'contact', label: 'Kontakt' },
+  { id: 'surveys', label: 'Ankiety' },
 ];
 
 function AdminPanelNav() {
@@ -75,6 +77,8 @@ function AdminPanelNav() {
             <ContactPeopleCMS/>
           </>
         );
+      case 'surveys':
+        return <SurveysCMS />;
       default:
         return (
           <>
