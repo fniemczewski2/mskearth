@@ -13,7 +13,8 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "preview": "vite preview",
-    "postbuild": "node scripts/generate-sitemap.mjs && cp public/robots.txt dist/robots.txt && cp public/manifest.webmanifest dist/manifest.webmanifest"
+    "postbuild": "node scripts/generate-sitemap.mjs && cp public/robots.txt dist/robots.txt && cp public/manifest.webmanifest dist/manifest.webmanifest",
+    "remind-tasks": "python scripts/tasks-reminder.py"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.58.0",
