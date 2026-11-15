@@ -1,4 +1,5 @@
 import { useTranslations } from '../../shared/i18n/useTranslations.js';
+import Loader from '../../shared/components/Loader.jsx';
 
 export default function Goals() {
   const { t, ready } = useTranslations();
@@ -8,12 +9,7 @@ export default function Goals() {
     <section className="goals" data-reveal aria-busy={ready ? 'false' : 'true'}>
       <h2>{t.goals_h2 || 'Nasze cele'}</h2>
 
-      {!ready && (
-        <div className="loader" role="status" aria-live="polite">
-          <span className="spinner" aria-hidden="true" />
-          <span className="sr-only">{t.a11y?.loading ?? 'Ładowanie…'}</span>
-        </div>
-      )}
+      {!ready && <Loader />}
 
       {ready &&
         goals.map((section, idx) => {

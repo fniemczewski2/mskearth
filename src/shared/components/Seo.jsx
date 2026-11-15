@@ -1,16 +1,20 @@
 import PropTypes from 'prop-types';
 
-import { DEFAULT_OG_IMAGE, SITE_URL } from '../config/site.js';
-
-const LANGS = ['pl', 'en'];
+import { DEFAULT_OG_IMAGE, LANGS, OG_LOCALE, SITE_URL } from '../config/site.js';
 
 function alternateFor(url, lang) {
   return url.replace(/^(https:\/\/[^/]+)\/(pl|en)(?=\/|$)/, `$1/${lang}`);
 }
 
-const OG_LOCALE = { pl: 'pl_PL', en: 'en_GB' };
-
-export default function Seo({ title, description, image, url, type = 'website', noindex = false, langs = LANGS }) {
+export default function Seo({
+  title,
+  description,
+  image,
+  url,
+  type = 'website',
+  noindex = false,
+  langs = LANGS,
+}) {
   const absImage = image?.startsWith('http') ? image : `${SITE_URL}${image ?? DEFAULT_OG_IMAGE}`;
   const hasLangPrefix = url && /^https:\/\/[^/]+\/(pl|en)(\/|$)/.test(url);
   const pageLang = url?.match(/^https:\/\/[^/]+\/(pl|en)(?=\/|$)/)?.[1];

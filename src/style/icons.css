@@ -1,0 +1,161 @@
+/* Podzbior Bootstrap Icons (MIT): tylko ikony uzywane w serwisie.
+   Plik generowany przez scripts/build-icons.py (npm run icons). */
+@font-face {
+  font-display: block;
+  font-family: 'msk-icons';
+  src: url('/fonts/msk-icons.woff2') format('woff2');
+}
+
+.bi::before,
+[class^='bi-']::before,
+[class*=' bi-']::before {
+  display: inline-block;
+  font-family: 'msk-icons' !important;
+  font-style: normal;
+  font-weight: normal !important;
+  font-variant: normal;
+  text-transform: none;
+  line-height: 1;
+  vertical-align: -0.125em;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.bi-arrow-down::before {
+  content: '\f128';
+}
+.bi-arrow-left::before {
+  content: '\f12f';
+}
+.bi-arrow-left-short::before {
+  content: '\f12c';
+}
+.bi-arrow-right-short::before {
+  content: '\f135';
+}
+.bi-arrow-up::before {
+  content: '\f148';
+}
+.bi-book-half::before {
+  content: '\f193';
+}
+.bi-box-arrow-up-right::before {
+  content: '\f1c5';
+}
+.bi-buildings::before {
+  content: '\f87d';
+}
+.bi-calendar-check::before {
+  content: '\f1e2';
+}
+.bi-check2::before {
+  content: '\f272';
+}
+.bi-chevron-double-down::before {
+  content: '\f27e';
+}
+.bi-download::before {
+  content: '\f30a';
+}
+.bi-envelope::before {
+  content: '\f32f';
+}
+.bi-envelope-check::before {
+  content: '\f68c';
+}
+.bi-envelope-fill::before {
+  content: '\f32c';
+}
+.bi-exclamation-triangle::before {
+  content: '\f33b';
+}
+.bi-eye-slash-fill::before {
+  content: '\f33f';
+}
+.bi-facebook::before {
+  content: '\f344';
+}
+.bi-flag-fill::before {
+  content: '\f3cb';
+}
+.bi-heart-fill::before {
+  content: '\f415';
+}
+.bi-instagram::before {
+  content: '\f437';
+}
+.bi-journal-richtext::before {
+  content: '\f443';
+}
+.bi-linkedin::before {
+  content: '\f472';
+}
+.bi-megaphone-fill::before {
+  content: '\f483';
+}
+.bi-pause-fill::before {
+  content: '\f4c3';
+}
+.bi-pencil-fill::before {
+  content: '\f4c9';
+}
+.bi-person-fill::before {
+  content: '\f4da';
+}
+.bi-piggy-bank::before {
+  content: '\f64a';
+}
+.bi-pin-angle::before {
+  content: '\f4eb';
+}
+.bi-pin-fill::before {
+  content: '\f4ec';
+}
+.bi-play-fill::before {
+  content: '\f4f4';
+}
+.bi-plus-lg::before {
+  content: '\f64d';
+}
+.bi-receipt::before {
+  content: '\f50f';
+}
+.bi-rocket-takeoff::before {
+  content: '\f845';
+}
+.bi-send-check-fill::before {
+  content: '\f6b2';
+}
+.bi-share::before {
+  content: '\f52e';
+}
+.bi-shield-check::before {
+  content: '\f52f';
+}
+.bi-signpost-split::before {
+  content: '\f549';
+}
+.bi-telephone-fill::before {
+  content: '\f5b4';
+}
+.bi-tiktok::before {
+  content: '\f6cc';
+}
+.bi-trash-fill::before {
+  content: '\f5dd';
+}
+.bi-twitter-x::before {
+  content: '\f8db';
+}
+.bi-volume-mute::before {
+  content: '\f60d';
+}
+.bi-volume-up::before {
+  content: '\f611';
+}
+.bi-x::before {
+  content: '\f62a';
+}
+.bi-youtube::before {
+  content: '\f62b';
+}

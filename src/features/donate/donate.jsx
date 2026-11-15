@@ -1,14 +1,17 @@
 import { useId, useRef, useState } from 'react';
 
 import { useTranslations } from '../../shared/i18n/useTranslations.js';
-import useCheckout, { EMAIL_RE } from './useCheckout.js';
+import {
+  DONATION,
+  EMAIL_RE,
+  INTL_LOCALE,
+  NAME_MAX_LENGTH,
+  PRIVACY_POLICY_PATH,
+} from '../../shared/config/site.js';
+import useCheckout from './useCheckout.js';
 import './donate.css';
 
-const AMOUNTS = [
-  { id: 0, amount: 70, desc: 'Godzina warsztatu dla\u00A0jednej\u00A0klasy' },
-  { id: 1, amount: 130, desc: 'Dzień warsztatów dla\u00A0jednej\u00A0szkoły' },
-  { id: 2, amount: 200, desc: 'Szkolenie osoby prowadzącej' },
-];
+const AMOUNTS = DONATION.presets.map((amount, id) => ({ id, amount }));
 
 export default function DonateStripe({ headingLevel = 2, hideHeading = false }) {
   const { t, lang } = useTranslations();
@@ -24,7 +27,7 @@ export default function DonateStripe({ headingLevel = 2, hideHeading = false }) 
     notice: `${uid}-notice`,
   };
 
-  const [amount, setAmount] = useState(130);
+  const [amount, setAmount] = useState(DONATION.defaultAmount);
   const [customAmount, setCustomAmount] = useState('');
   const [showCustom, setShowCustom] = useState(false);
   const [isRecurring, setIsRecurring] = useState(false);
@@ -38,18 +41,20 @@ export default function DonateStripe({ headingLevel = 2, hideHeading = false }) 
   const { busy, err, fallbackUrl, startPayment } = useCheckout({ t, lang });
 
   const finalAmount = showCustom ? Number(customAmount) : amount;
-  const amountValid = Number.isFinite(finalAmount) && finalAmount >= 5 && finalAmount <= 50_000;
+  const amountValid =
+    Number.isFinite(finalAmount) && finalAmount >= DONATION.min && finalAmount <= DONATION.max;
   const emailValid = EMAIL_RE.test(email.trim());
 
   const currencySuffix = d.currencySuffix ?? 'zł';
   const formatAmount = (num) =>
-    new Intl.NumberFormat(lang === 'en' ? 'en-GB' : 'pl-PL', { maximumFractionDigits: 2 }).format(num || 0);
+    new Intl.NumberFormat(INTL_LOCALE[lang], { maximumFractionDigits: 2 }).format(num || 0);
 
   const showAmountError = (submitted || customAmount !== '') && showCustom && !amountValid;
   const showEmailError = (submitted || email !== '') && !emailValid;
-  const emailErrorText = email.trim() === ''
-    ? (d.emailRequired ?? 'Podaj adres e-mail – wyślemy na niego potwierdzenie.')
-    : (d.invalidEmail ?? 'Podaj poprawny adres e-mail.');
+  const emailErrorText =
+    email.trim() === ''
+      ? (d.emailRequired ?? 'Podaj adres e-mail - wyślemy na niego potwierdzenie.')
+      : (d.invalidEmail ?? 'Podaj poprawny adres e-mail.');
 
   function handlePay() {
     setSubmitted(true);
@@ -104,8 +109,11 @@ export default function DonateStripe({ headingLevel = 2, hideHeading = false }) 
               className={!showCustom && amount === v.amount ? 'active' : undefined}
               aria-pressed={!showCustom && amount === v.amount}
             >
-              <span className="amount">{v.amount}{'\u00A0'}{currencySuffix}</span>
-              <span className="desc">{d.descriptions?.[v.id] ?? v.desc}</span>
+              <span className="amount">
+                {v.amount}
+                {'\u00A0'}
+                {currencySuffix}
+              </span>
             </button>
           ))}
           <button
@@ -131,8 +139,8 @@ export default function DonateStripe({ headingLevel = 2, hideHeading = false }) 
                 id={ids.custom}
                 ref={customRef}
                 type="number"
-                min="5"
-                max="50000"
+                min={DONATION.min}
+                max={DONATION.max}
                 step="1"
                 value={customAmount}
                 onChange={(e) => setCustomAmount(e.target.value)}
@@ -142,11 +150,13 @@ export default function DonateStripe({ headingLevel = 2, hideHeading = false }) 
                 aria-invalid={showAmountError ? 'true' : 'false'}
                 aria-describedby={showAmountError ? ids.customError : undefined}
               />
-              <span className="input-suffix" aria-hidden="true">{currencySuffix}</span>
+              <span className="input-suffix" aria-hidden="true">
+                {currencySuffix}
+              </span>
             </div>
             {showAmountError && (
               <p id={ids.customError} className="formError">
-                {d.invalidAmount ?? 'Kwota musi mieścić się w przedziale 5–50 000 zł.'}
+                {d.invalidAmount ?? 'Kwota musi mieścić się w przedziale 5-50 000 zł.'}
               </p>
             )}
           </div>
@@ -163,11 +173,14 @@ export default function DonateStripe({ headingLevel = 2, hideHeading = false }) 
             className="formField"
             placeholder={d.namePlaceholder ?? 'Anna'}
             autoComplete="name"
-            maxLength={120}
+            maxLength={NAME_MAX_LENGTH}
           />
 
           <label className="formLabel" htmlFor={ids.email}>
-            {d.emailLabel ?? 'E-mail:'} <span aria-hidden="true" className="required-mark">*</span>
+            {d.emailLabel ?? 'E-mail:'}{' '}
+            <span aria-hidden="true" className="required-mark">
+              *
+            </span>
           </label>
           <input
             id={ids.email}
@@ -205,7 +218,7 @@ export default function DonateStripe({ headingLevel = 2, hideHeading = false }) 
         <p id={ids.notice} className="agreement privacy-notice">
           {d.privacyNotice ??
             'Darowiznę otrzymuje Fundacja Przyjaciół Młodzieżowego Strajku Klimatycznego. Twoje dane przetwarzamy, żeby zrealizować darowiznę. Płatność obsługuje Stripe.'}{' '}
-          <a href="/polityka-prywatnosci.pdf" target="_blank" rel="noopener noreferrer">
+          <a href={PRIVACY_POLICY_PATH} target="_blank" rel="noopener noreferrer">
             {t.cookies?.policy ?? 'Polityka prywatności'}
             <span className="sr-only"> {t.a11y?.opensNewTab ?? '(otwiera się w nowej karcie)'}</span>
           </a>
@@ -221,7 +234,7 @@ export default function DonateStripe({ headingLevel = 2, hideHeading = false }) 
         )}
 
         {err && (
-          <p role="alert" className="formError" style={{ marginTop: 8, marginBottom: 16 }}>
+          <p role="alert" className="formError formError--spaced">
             {err}
           </p>
         )}
@@ -236,7 +249,7 @@ export default function DonateStripe({ headingLevel = 2, hideHeading = false }) 
           >
             {busy
               ? (d.redirecting ?? 'Przekierowywanie…')
-              : `${d.payCta ?? 'Wpłać'} ${amountValid ? formatAmount(finalAmount) : '–'} ${currencySuffix}${
+              : `${d.payCta ?? 'Wpłać'} ${amountValid ? formatAmount(finalAmount) : '-'} ${currencySuffix}${
                   isRecurring ? (d.monthlySuffix ?? ' / mies.') : ''
                 }`}
           </button>

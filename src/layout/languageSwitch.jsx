@@ -14,7 +14,7 @@ export default function LanguageSwitch({ lang, onChange, label = 'Wybór języka
           className="flag-btn"
           lang={l.code}
           title={l.name}
-          aria-label={`${l.short} – ${l.name}`}
+          aria-label={`${l.short} - ${l.name}`}
         >
           {l.short}
         </button>

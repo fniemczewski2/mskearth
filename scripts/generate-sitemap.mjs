@@ -1,17 +1,28 @@
 import { writeFile } from 'node:fs/promises';
 import { createClient } from '@supabase/supabase-js';
 
-const base = 'https://msk.earth';
-const langs = ['pl', 'en'];
-const paths = ['', '/aktualnosci', '/o-nas', '/miasta', '/fundacja', '/kontakt', '/wesprzyj'];
+import { LANGS as langs, PUBLIC_PATHS as paths, SITE_URL as base } from '../src/shared/config/site.js';
+
+const SITEMAP_ARTICLE_LIMIT = 1000;
+const buildDate = new Date().toISOString();
+// Na produkcji brak artykulow w sitemapie jest bledem, a nie ostrzezeniem.
+const strict = process.env.VERCEL_ENV === 'production';
+
+function fail(message) {
+  if (strict) throw new Error(`[sitemap] ${message}`);
+  console.warn(`[sitemap] ${message}`);
+  return [];
+}
 
 async function fetchArticles() {
-  // Wystarczy klucz anon: polityki RLS i tak udostepniaja tylko opublikowane artykuly.
+  // Wystarczy klucz publishable: polityki RLS i tak udostepniaja tylko opublikowane artykuly.
   const url = process.env.SUPABASE_URL ?? process.env.VITE_SUPABASE_URL;
-  const key = process.env.SUPABASE_ANON_KEY ?? process.env.VITE_SUPABASE_ANON_KEY;
+  const key =
+    process.env.SUPABASE_PUBLISHABLE_KEY ??
+    process.env.SUPABASE_ANON_KEY ??
+    process.env.VITE_SUPABASE_ANON_KEY;
   if (!url || !key) {
-    console.warn('[sitemap] Brak SUPABASE_URL/SUPABASE_ANON_KEY - pomijam artykuly.');
-    return [];
+    return fail('Brak SUPABASE_URL/SUPABASE_PUBLISHABLE_KEY: artykuly pominiete.');
   }
 
   try {
@@ -23,13 +34,12 @@ async function fetchArticles() {
       .not('published', 'is', null)
       .lte('published', new Date().toISOString())
       .order('published', { ascending: false })
-      .limit(1000);
+      .limit(SITEMAP_ARTICLE_LIMIT);
 
     if (error) throw error;
     return data ?? [];
   } catch (err) {
-    console.warn('[sitemap] Nie udalo sie pobrac artykulow:', err.message);
-    return [];
+    return fail(`Nie udalo sie pobrac artykulow: ${err.message}`);
   }
 }
 
@@ -60,7 +70,7 @@ ${alternates}
 const articles = await fetchArticles();
 
 const urls = [
-  ...langs.flatMap((l) => paths.map((p) => entry(`${base}/${l}${p}`))),
+  ...langs.flatMap((l) => paths.map((p) => entry(`${base}/${l}${p}`, buildDate))),
   // Tylko wersje jezykowe, ktore maja tresc (artykul bez tlumaczenia EN ma noindex).
   ...articles.flatMap((a) => {
     const available = articleLangs(a);

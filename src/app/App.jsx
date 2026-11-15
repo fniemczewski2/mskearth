@@ -1,4 +1,4 @@
-import { lazy, Suspense, useEffect, useRef } from 'react';
+import { Suspense, useEffect, useRef } from 'react';
 import { Routes, Route, useLocation, useNavigate } from 'react-router-dom';
 
 import Header from '../layout/header.jsx';
@@ -8,26 +8,21 @@ import SideButtons from '../layout/sideButtons.jsx';
 import CookieConsent from '../layout/cookies.jsx';
 import { langFromPath, SUPPORTED_LANGS, useTranslations } from '../shared/i18n/useTranslations.js';
 import useReveal from '../shared/hooks/useReveal.js';
+import ErrorBoundary from '../shared/components/ErrorBoundary.jsx';
+import Loader from '../shared/components/Loader.jsx';
+import lazyWithRetry from '../shared/lib/lazyWithRetry.js';
+import { initAnalytics, trackPageView } from '../shared/lib/analytics.js';
 
-const News = lazy(() => import('../features/news/news.jsx'));
-const ArticlePage = lazy(() => import('../features/news/articlePage.jsx'));
-const About = lazy(() => import('../features/about/about.jsx'));
-const MapPage = lazy(() => import('../features/map/map.jsx'));
-const Foundation = lazy(() => import('../features/foundation/foundation.jsx'));
-const Contact = lazy(() => import('../features/contact/contact.jsx'));
-const DonatePage = lazy(() => import('../features/donate/donatePage.jsx'));
-const ThankYou = lazy(() => import('../features/donate/thankyou.jsx'));
-const SurveyPage = lazy(() => import('../features/survey/surveyPage.jsx'));
-const NotFound = lazy(() => import('../features/notFound/notFound.jsx'));
-
-function PageLoader({ label }) {
-  return (
-    <div className="loader" role="status" aria-live="polite">
-      <span className="spinner" aria-hidden="true" />
-      <span className="sr-only">{label}</span>
-    </div>
-  );
-}
+const News = lazyWithRetry(() => import('../features/news/news.jsx'));
+const ArticlePage = lazyWithRetry(() => import('../features/news/articlePage.jsx'));
+const About = lazyWithRetry(() => import('../features/about/about.jsx'));
+const MapPage = lazyWithRetry(() => import('../features/map/map.jsx'));
+const Foundation = lazyWithRetry(() => import('../features/foundation/foundation.jsx'));
+const Contact = lazyWithRetry(() => import('../features/contact/contact.jsx'));
+const DonatePage = lazyWithRetry(() => import('../features/donate/donatePage.jsx'));
+const ThankYou = lazyWithRetry(() => import('../features/donate/thankyou.jsx'));
+const SurveyPage = lazyWithRetry(() => import('../features/survey/surveyPage.jsx'));
+const NotFound = lazyWithRetry(() => import('../features/notFound/notFound.jsx'));
 
 export default function App() {
   const location = useLocation();
@@ -41,6 +36,14 @@ export default function App() {
   useEffect(() => {
     document.documentElement.lang = lang;
   }, [lang]);
+
+  useEffect(() => initAnalytics(), []);
+
+  useEffect(() => {
+    // Tytul strony ustawia komponent Seo po renderze, stad odroczenie pomiaru.
+    const id = setTimeout(() => trackPageView(), 0);
+    return () => clearTimeout(id);
+  }, [location.pathname]);
 
   useEffect(() => {
     if (firstRender.current) {
@@ -75,21 +78,23 @@ export default function App() {
       <CookieConsent />
 
       <div id="main-content" ref={contentRef} tabIndex={-1}>
-        <Suspense fallback={<PageLoader label={t.a11y?.loading ?? 'Ładowanie…'} />}>
-          <Routes>
-            <Route index element={<Main />} />
-            <Route path="aktualnosci" element={<News />} />
-            <Route path="aktualnosci/:id" element={<ArticlePage />} />
-            <Route path="o-nas" element={<About />} />
-            <Route path="miasta" element={<MapPage />} />
-            <Route path="fundacja" element={<Foundation />} />
-            <Route path="kontakt" element={<Contact />} />
-            <Route path="wesprzyj" element={<DonatePage />} />
-            <Route path="dziekujemy" element={<ThankYou />} />
-            <Route path="ankieta/:slug" element={<SurveyPage />} />
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </Suspense>
+        <ErrorBoundary resetKey={location.pathname}>
+          <Suspense fallback={<Loader />}>
+            <Routes>
+              <Route index element={<Main />} />
+              <Route path="aktualnosci" element={<News />} />
+              <Route path="aktualnosci/:id" element={<ArticlePage />} />
+              <Route path="o-nas" element={<About />} />
+              <Route path="miasta" element={<MapPage />} />
+              <Route path="fundacja" element={<Foundation />} />
+              <Route path="kontakt" element={<Contact />} />
+              <Route path="wesprzyj" element={<DonatePage />} />
+              <Route path="dziekujemy" element={<ThankYou />} />
+              <Route path="ankieta/:slug" element={<SurveyPage />} />
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </Suspense>
+        </ErrorBoundary>
       </div>
 
       <SideButtons />

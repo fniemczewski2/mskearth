@@ -14,7 +14,7 @@
       "icon": "bi bi-megaphone-fill",
       "content": [
         "We demand climate policy based on the current scientific position expressed in the latest reports of the Intergovernmental Panel on Climate Change (IPCC) established by the UN. We expect that the solutions suggested by the scientific community will be implemented promptly in international cooperation.",
-        "We call on the Polish government to officially acknowledge the climate crisis by declaring a climate emergency. The issue of the crisis should not be subject to ideological disputes – in the face of catastrophe, we must speak with one voice, beyond divisions."
+        "We call on the Polish government to officially acknowledge the climate crisis by declaring a climate emergency. The issue of the crisis should not be subject to ideological disputes - in the face of catastrophe, we must speak with one voice, beyond divisions."
       ]
     },
     {
@@ -44,7 +44,7 @@
     "content": [
       "Start a new group",
       "No MSK group in your area?",
-      "You can start a new one – don't worry, we'll help you with everything.",
+      "You can start a new one - don't worry, we'll help you with everything.",
       "Thanks to you, MSK will be able to reach a new place and new people!",
       "Message us on",
       "Instagram",
@@ -90,16 +90,18 @@
     "email": "Your email address: ",
     "title": "Message title: ",
     "message": "Your message: ",
-    "privacyNotice": "Your data is controlled by Fundacja Przyjaciół Młodzieżowego Strajku Klimatycznego (Friends of the Youth Climate Strike Foundation), Smolnik 77, 59-820 Leśna, Poland. We use it only to reply to your message. The form is processed by FormSubmit. See our privacy policy for details.",
+    "privacyNotice": "Your data is controlled by Fundacja Przyjaciół Młodzieżowego Strajku Klimatycznego (Friends of the Youth Climate Strike Foundation), Smolnik 77, 59-820 Leśna, Poland. We use it only to reply to your message. The message is delivered to our Gmail (Google) mailbox. See our privacy policy for details.",
     "call": "Call:",
     "write": "Email:",
     "loadError": "Could not load contacts.",
     "invalidEmail": "Please enter a valid email address.",
     "missingSubject": "Please enter a subject.",
     "missingMessage": "Please enter your message.",
-    "sent": "Thank you! Your message has been sent.",
+    "sent": "Thank you! We will reply to the address you provided.",
     "failed": "Could not send the message. Please try again.",
-    "pending": "Sending…"
+    "pending": "Sending…",
+    "sentTitle": "Message sent",
+    "sendAnother": "Write another message"
   },
   "joinUs": {
     "h2": "Join Us!",
@@ -153,13 +155,8 @@
     "amountPlaceholder": "Enter amount",
     "secure": "Secure payment powered by Stripe.",
     "receipt": "You will get an email confirmation once the payment clears.",
-    "descriptions": [
-      "One workshop hour for a class",
-      "A day of workshops for a school",
-      "Training for a workshop facilitator"
-    ],
     "privacyNotice": "Your donation goes to Fundacja Przyjaciół Młodzieżowego Strajku Klimatycznego (Friends of the Youth Climate Strike Foundation), Smolnik 77, 59-820 Leśna, Poland (KRS 0000915501). We process your data to complete the donation and send a confirmation. Payments are handled by Stripe.",
-    "emailRequired": "Enter your email address – we will send the confirmation there.",
+    "emailRequired": "Enter your email address - we will send the confirmation there.",
     "invalidAmount": "The amount must be between 5 and 50,000 PLN.",
     "customAmountLabel": "Enter amount:",
     "onetime": "One-time",
@@ -171,9 +168,7 @@
   },
   "buttons": {
     "joinUs": "Join Us",
-    "donate": "Donate",
-    "support": "Support Us",
-    "newsletter": "Newsletter"
+    "donate": "Donate"
   },
   "articlePage": {
     "noTranslationTitle": "No Translation",
@@ -203,7 +198,10 @@
   "news": {
     "h1": "News",
     "more": "Read more",
-    "empty": "No posts yet. Check back soon."
+    "empty": "No posts yet. Check back soon.",
+    "loadError": "Could not load the news.",
+    "retry": "Try again",
+    "loadMore": "Load older posts"
   },
   "newsletter": {
     "h2": "Newsletter",
@@ -211,7 +209,7 @@
     "pending": "Signing up…",
     "failed": "An error occurred. Please try again later or contact us.",
     "consent": "I want to receive the newsletter of Fundacja Przyjaciół Młodzieżowego Strajku Klimatycznego at this email address. I can withdraw consent at any time via the link in each email.",
-    "privacyNotice": "The data controller is Fundacja Przyjaciół Młodzieżowego Strajku Klimatycznego (KRS 0000915501). We use your email address only to send the newsletter, until you withdraw consent. Emails are sent via Kit (ConvertKit).",
+    "privacyNotice": "The data controller is Fundacja Przyjaciół Młodzieżowego Strajku Klimatycznego (KRS 0000915501). We use your email address only to send the newsletter, until you withdraw consent. Emails are sent via GetResponse.",
     "success": "Done! Check your inbox to confirm.",
     "emailLabel": "Email address",
     "invalidEmail": "Please enter a valid email address.",
@@ -222,7 +220,11 @@
     "title": "Cookies",
     "message": "This site only uses storage that is necessary for it to work (for example, to remember this notice). We do not track you or use analytics or advertising.",
     "button": "Got it",
-    "policy": "Privacy policy"
+    "policy": "Privacy policy",
+    "messageAnalytics": "We use storage that is necessary for the site to work. With your consent we will also enable Google Analytics to learn which content is read. You can change your choice in the page footer.",
+    "accept": "Allow analytics",
+    "reject": "Necessary only",
+    "settings": "Cookie settings"
   },
   "footer": {
     "menuItems": [
@@ -260,7 +262,7 @@
       }
     ],
     "title": "Youth Climate Strike (Młodzieżowy Strajk Klimatyczny)",
-    "copyright": "Młodzieżowy Strajk Klimatyczny – Fridays for Future Poland",
+    "copyright": "Młodzieżowy Strajk Klimatyczny - Fridays for Future Poland",
     "social": {
       "facebook": "MSK on Facebook",
       "instagram": "MSK on Instagram",
@@ -335,7 +337,7 @@
     "shareSubtitle": "Help us reach more people",
     "shareText": "I'm supporting the Youth Climate Strike (Młodzieżowy Strajk Klimatyczny)!",
     "nextSteps": "What's next?",
-    "step1": "Check your inbox – Stripe will send the payment confirmation there",
+    "step1": "Check your inbox - Stripe will send the payment confirmation there",
     "step2": "Follow us on social media",
     "step3": "Become a volunteer or join a local group",
     "backHome": "Back to homepage",
@@ -423,7 +425,7 @@
     "pauseTicker": "Pause news",
     "playTicker": "Resume news",
     "tickerHeading": "Climate news",
-    "openClock": "Climate Clock – time left until 1.5°C",
+    "openClock": "Climate Clock - time left until 1.5°C",
     "mapLabel": "Map of voivodeships",
     "required": "(required)"
   },
@@ -434,43 +436,43 @@
   },
   "seo": {
     "home": {
-      "title": "Youth Climate Strike Poland – Fridays for Future",
+      "title": "Youth Climate Strike Poland - Fridays for Future",
       "description": "Młodzieżowy Strajk Klimatyczny (MSK) is the Polish Fridays for Future movement. Read our news, find a local group and join us."
     },
     "news": {
-      "title": "News – Youth Climate Strike Poland",
+      "title": "News - Youth Climate Strike Poland",
       "description": "Latest news and actions of the Youth Climate Strike (Młodzieżowy Strajk Klimatyczny) in Poland."
     },
     "about": {
-      "title": "About us – Youth Climate Strike Poland",
+      "title": "About us - Youth Climate Strike Poland",
       "description": "We are part of the global Fridays for Future movement. Learn about our history and demands."
     },
     "cities": {
-      "title": "Local groups – Youth Climate Strike Poland",
+      "title": "Local groups - Youth Climate Strike Poland",
       "description": "Find a local MSK group in your voivodeship, or start a new one."
     },
     "foundation": {
-      "title": "Friends of the Youth Climate Strike Foundation – documents and board",
+      "title": "Friends of the Youth Climate Strike Foundation - documents and board",
       "description": "Details, financial reports, statute and board of the Friends of the Youth Climate Strike Foundation."
     },
     "contact": {
-      "title": "Contact – Youth Climate Strike Poland",
+      "title": "Contact - Youth Climate Strike Poland",
       "description": "Write to the Youth Climate Strike or find a contact person in your region."
     },
     "donate": {
-      "title": "Support us – Youth Climate Strike Poland",
+      "title": "Support us - Youth Climate Strike Poland",
       "description": "Make a one-time or monthly donation to the Friends of the Youth Climate Strike Foundation."
     },
     "thankyou": {
-      "title": "Thank you for your support – MSK"
+      "title": "Thank you for your support - MSK"
     },
     "notFound": {
-      "title": "Page not found – MSK"
+      "title": "Page not found - MSK"
     },
     "articleNotFound": {
-      "title": "Article not found – MSK"
+      "title": "Article not found - MSK"
     },
-    "articleSuffix": " – MSK"
+    "articleSuffix": " - MSK"
   },
   "home": {
     "h1": [
@@ -490,7 +492,7 @@
   "header": {
     "logoMsk": "Youth Climate Strike logo",
     "logoFff": "Fridays for Future logo",
-    "homeLink": "Youth Climate Strike – home page"
+    "homeLink": "Youth Climate Strike - home page"
   },
   "about_error": "Could not load content.",
   "about_logoAlt": "Youth Climate Strike logo",

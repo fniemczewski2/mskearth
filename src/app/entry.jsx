@@ -4,7 +4,7 @@ import { BrowserRouter } from 'react-router-dom';
 
 import RootRouter from './RootRouter.jsx';
 import ErrorBoundary from '../shared/components/ErrorBoundary.jsx';
-import 'bootstrap-icons/font/bootstrap-icons.css';
+import '../style/icons.css';
 import '../style/index.css';
 
 ReactDOM.createRoot(document.getElementById('root')).render(

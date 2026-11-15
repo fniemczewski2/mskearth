@@ -34,15 +34,15 @@ export default function ThankYou() {
 
   return (
     <main className="thankyou" aria-busy={ready ? 'false' : 'true'}>
-      <Seo title={t.seo?.thankyou?.title ?? 'Dziękujemy za wsparcie – MSK'} noindex />
+      <Seo title={t.seo?.thankyou?.title ?? 'Dziękujemy za wsparcie - MSK'} noindex />
 
       <section className="thankyou-content" aria-labelledby="thankyou-title">
-        <i className="bi bi-heart-fill emptyStateIcon" aria-hidden="true" style={{ color: 'var(--purple)' }} />
+        <i className="bi bi-heart-fill emptyStateIcon emptyStateIcon--accent" aria-hidden="true" />
         <h1 id="thankyou-title">{ty.title || 'Dziękujemy za wsparcie!'}</h1>
 
         <div className="thankyou">
-          <aside className="thankyou-message">
-            <h3 className="share-title">{ty.supportTitle || 'To ogromne wsparcie'}</h3>
+          <section className="thankyou-message">
+            <h2 className="share-title">{ty.supportTitle || 'To ogromne wsparcie'}</h2>
             <p className="lead">
               {ty.subtitle || 'Twoja darowizna ma ogromne znaczenie dla naszej działalności.'}
             </p>
@@ -57,11 +57,13 @@ export default function ThankYou() {
             {description.map((paragraph) => (
               <p key={paragraph}>{paragraph}</p>
             ))}
-          </aside>
+          </section>
 
-          <aside className="share-section">
-            <h3 className="share-title">{ty.shareTitle || 'Podziel się z innymi'}</h3>
-            <p className="share-subtitle">{ty.shareSubtitle || 'Pomóż nam dotrzeć do większej liczby osób'}</p>
+          <section className="share-section">
+            <h2 className="share-title">{ty.shareTitle || 'Podziel się z innymi'}</h2>
+            <p className="share-subtitle">
+              {ty.shareSubtitle || 'Pomóż nam dotrzeć do większej liczby osób'}
+            </p>
 
             <div className="share-buttons">
               {PLATFORMS.map((p) => (
@@ -77,24 +79,24 @@ export default function ThankYou() {
                 </button>
               ))}
             </div>
-          </aside>
+          </section>
 
-          <aside className="next-steps">
-            <h3>{ty.nextSteps || 'Co dalej?'}</h3>
+          <section className="next-steps">
+            <h2>{ty.nextSteps || 'Co dalej?'}</h2>
             <ul>
               {[ty.step1, ty.step2, ty.step3].map((step, i) => (
                 <li key={i}>
                   <i className="bi bi-check2" aria-hidden="true" />
                   {step ||
                     [
-                      'Sprawdź skrzynkę e-mail – wyślemy tam potwierdzenie płatności',
+                      'Sprawdź skrzynkę e-mail - wyślemy tam potwierdzenie płatności',
                       'Obserwuj nas w mediach społecznościowych',
                       'Zostań wolontariuszem lub dołącz do lokalnej grupy',
                     ][i]}
                 </li>
               ))}
             </ul>
-          </aside>
+          </section>
         </div>
       </section>
     </main>

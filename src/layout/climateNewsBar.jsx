@@ -30,7 +30,12 @@ function NewsGroup({ items, duplicate = false, groupRef, newTabLabel }) {
             tabIndex={duplicate ? -1 : undefined}
           >
             {item.headline}
-            {!duplicate && newTabLabel && <span className="sr-only" lang="pl"> {newTabLabel}</span>}
+            {!duplicate && newTabLabel && (
+              <span className="sr-only" lang="pl">
+                {' '}
+                {newTabLabel}
+              </span>
+            )}
           </a>
         );
       })}
@@ -90,7 +95,11 @@ export default function ClimateNewsBar() {
         className="ticker-toggle"
         onClick={() => setPaused((p) => !p)}
         aria-pressed={paused}
-        aria-label={paused ? (t.a11y?.playTicker ?? 'Wznów wiadomości') : (t.a11y?.pauseTicker ?? 'Zatrzymaj wiadomości')}
+        aria-label={
+          paused
+            ? (t.a11y?.playTicker ?? 'Wznów wiadomości')
+            : (t.a11y?.pauseTicker ?? 'Zatrzymaj wiadomości')
+        }
       >
         <i className={paused ? 'bi bi-play-fill' : 'bi bi-pause-fill'} aria-hidden="true" />
       </button>

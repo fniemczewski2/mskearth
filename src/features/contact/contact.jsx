@@ -1,62 +1,45 @@
-import { useEffect, useRef, useState } from 'react';
+import { useId, useRef, useState } from 'react';
 
-import { supabase } from '../../services/supabaseClient';
 import Seo from '../../shared/components/Seo.jsx';
+import Loader from '../../shared/components/Loader.jsx';
+import Honeypot from '../../shared/components/Honeypot.jsx';
+import useQuery from '../../shared/hooks/useQuery.js';
+import { getCaptchaToken } from '../../shared/lib/captcha.js';
 import { useTranslations } from '../../shared/i18n/useTranslations.js';
-import { SITE_URL } from '../../shared/config/site.js';
+import {
+  CONTACT_LIMITS,
+  EMAIL_MAX_LENGTH,
+  EMAIL_RE,
+  PRIVACY_POLICY_PATH,
+  REQUEST_TIMEOUT_MS,
+  SITE_URL,
+} from '../../shared/config/site.js';
+import { fetchContactPeople } from './db/contactPeople.js';
 
-const FORMSUBMIT_ENDPOINT = 'https://formsubmit.co/ajax/biuro@fpmsk.org.pl';
-const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const CONTACT_URL = '/api/contact';
+const FIELDS = ['email', 'subject', 'message'];
 
 function Contact() {
   const { t, lang } = useTranslations();
   const c = t.contact ?? {};
+  const uid = useId();
 
-  const [contacts, setContacts] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [loadErr, setLoadErr] = useState(false);
+  const { data: contacts = [], loading, error: loadErr } = useQuery('contact-people', fetchContactPeople);
 
   const [fieldErrors, setFieldErrors] = useState({});
-  const [submitting, setSubmitting] = useState(false);
-  const [statusMsg, setStatusMsg] = useState('');
-  const [statusType, setStatusType] = useState(null);
+  const [status, setStatus] = useState('idle');
+  const [company, setCompany] = useState('');
 
   const refs = { email: useRef(null), subject: useRef(null), message: useRef(null) };
-
-  useEffect(() => {
-    let active = true;
-    (async () => {
-      try {
-        const { data, error } = await supabase
-          .from('contact_people')
-          .select('id,name,city,phone,email')
-          .order('city', { ascending: true })
-          .order('name', { ascending: true });
-
-        if (error) throw error;
-        if (active) setContacts(data || []);
-      } catch (e) {
-        console.error('Error fetching contact people:', e);
-        if (active) setLoadErr(true);
-      } finally {
-        if (active) setLoading(false);
-      }
-    })();
-    return () => {
-      active = false;
-    };
-  }, []);
+  const submitting = status === 'loading';
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setStatusMsg('');
-    setStatusType(null);
+    if (submitting) return;
 
-    const formEl = e.currentTarget;
-    const fd = new FormData(formEl);
-
+    const fd = new FormData(e.currentTarget);
     const email = fd.get('email')?.toString().trim() ?? '';
-    const subject = fd.get('_subject')?.toString().trim() ?? '';
+    const subject = fd.get('subject')?.toString().trim() ?? '';
     const message = fd.get('message')?.toString().trim() ?? '';
 
     const errors = {};
@@ -65,52 +48,42 @@ function Contact() {
     if (!message) errors.message = c.missingMessage || 'Wpisz treść wiadomości.';
     setFieldErrors(errors);
 
-    const firstInvalid = ['email', 'subject', 'message'].find((k) => errors[k]);
+    const firstInvalid = FIELDS.find((k) => errors[k]);
     if (firstInvalid) {
       refs[firstInvalid].current?.focus();
       return;
     }
 
-    // Pole-pulapka FormSubmit (_honey) odrzuca boty takze po stronie serwisu.
-    if (fd.get('_honey')) return;
-
-    fd.set('_captcha', 'false');
-    fd.set('_template', 'table');
-    setSubmitting(true);
+    setStatus('loading');
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
     try {
-      const res = await fetch(FORMSUBMIT_ENDPOINT, {
+      const captcha = await getCaptchaToken({ signal: controller.signal });
+      const res = await fetch(CONTACT_URL, {
         method: 'POST',
-        headers: { Accept: 'application/json' },
-        body: fd,
+        headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+        body: JSON.stringify({ email, subject, message, company, captcha, locale: lang }),
+        signal: controller.signal,
       });
-
-      if (res.ok) {
-        setStatusMsg(c.sent || 'Dziękujemy! Wiadomość wysłana.');
-        setStatusType('ok');
-        formEl.reset();
-      } else {
-        console.error('FormSubmit error:', await res.text());
-        setStatusMsg(c.failed || 'Nie udało się wysłać wiadomości. Spróbuj ponownie.');
-        setStatusType('error');
-      }
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      setStatus('ok');
     } catch (err) {
-      console.error('FormSubmit network error:', err);
-      setStatusMsg(c.failed || 'Nie udało się wysłać wiadomości. Spróbuj ponownie.');
-      setStatusType('error');
+      console.error('Contact form error:', err);
+      setStatus('error');
     } finally {
-      setSubmitting(false);
+      clearTimeout(timeoutId);
     }
   };
 
   const fieldProps = (key) => ({
     ref: refs[key],
     'aria-invalid': fieldErrors[key] ? 'true' : 'false',
-    'aria-describedby': fieldErrors[key] ? `contact-${key}-error` : undefined,
+    'aria-describedby': fieldErrors[key] ? `${uid}-${key}-error` : undefined,
   });
 
   const fieldError = (key) =>
     fieldErrors[key] ? (
-      <p id={`contact-${key}-error`} className="formError">
+      <p id={`${uid}-${key}-error`} className="formError">
         {fieldErrors[key]}
       </p>
     ) : null;
@@ -118,7 +91,7 @@ function Contact() {
   return (
     <main className="contact">
       <Seo
-        title={t.seo?.contact?.title ?? 'Kontakt – Młodzieżowy Strajk Klimatyczny'}
+        title={t.seo?.contact?.title ?? 'Kontakt | Młodzieżowy Strajk Klimatyczny'}
         description={t.seo?.contact?.description}
         url={`${SITE_URL}/${lang}/kontakt`}
       />
@@ -128,72 +101,96 @@ function Contact() {
       </div>
 
       <div className="panel form-container">
-        <form id="form" className="contact-form" onSubmit={handleSubmit} noValidate>
-          <input
-            type="text"
-            name="_honey"
-            tabIndex={-1}
-            autoComplete="off"
-            aria-hidden="true"
-            style={{ position: 'absolute', left: '-9999px', height: 0, width: 0, opacity: 0 }}
-          />
-
-          <label className="formLabel" htmlFor="contact-email">{c.email || 'E-mail'}</label>
-          <input
-            className="formField"
-            id="contact-email"
-            name="email"
-            type="email"
-            placeholder="email@example.com"
-            autoComplete="email"
-            required
-            {...fieldProps('email')}
-          />
-          {fieldError('email')}
-
-          <label className="formLabel" htmlFor="contact-subject">{c.title || 'Tytuł'}</label>
-          <input className="formField" name="_subject" id="contact-subject" type="text" required {...fieldProps('subject')} />
-          {fieldError('subject')}
-
-          <label className="formLabel" htmlFor="contact-message">{c.message || 'Wiadomość'}</label>
-          <textarea className="formField" name="message" id="contact-message" rows={6} required {...fieldProps('message')} />
-          {fieldError('message')}
-
-          <p className="agreement privacy-notice">
-            {c.privacyNotice ||
-              'Administratorem Twoich danych jest Fundacja Przyjaciół Młodzieżowego Strajku Klimatycznego. Użyjemy ich tylko, żeby odpowiedzieć na wiadomość.'}{' '}
-            <a href="/polityka-prywatnosci.pdf" target="_blank" rel="noopener noreferrer">
-              {t.cookies?.policy ?? 'Polityka prywatności'}
-              <span className="sr-only"> {t.a11y?.opensNewTab ?? '(otwiera się w nowej karcie)'}</span>
-            </a>
-          </p>
-
-          <div className="buttonContainer">
-            <button className="primaryBtn" type="submit" aria-disabled={submitting ? 'true' : 'false'}>
-              {submitting ? (c.pending || 'Wysyłanie…') : (c.b1 || 'Wyślij')}
+        {status === 'ok' ? (
+          <div className="formConfirmation" role="status">
+            <i className="bi bi-envelope-check emptyStateIcon" aria-hidden="true" />
+            <h2>{c.sentTitle || 'Wiadomość wysłana'}</h2>
+            <p>{c.sent || 'Dziękujemy! Odpowiemy na podany adres e-mail.'}</p>
+            <button type="button" className="primaryBtn" onClick={() => setStatus('idle')}>
+              {c.sendAnother || 'Napisz kolejną wiadomość'}
             </button>
           </div>
-          {/* Region na stale w DOM, zeby czytniki ekranu ogloszaly zmiany komunikatu. */}
-          <div role="status" aria-live="polite">
-            {statusMsg && (
-              <p
-                className={`formStatus ${statusType === 'ok' ? 'formStatus--ok' : 'formStatus--error'}`}
-                role={statusType === 'error' ? 'alert' : undefined}
-              >
-                {statusMsg}
-              </p>
-            )}
-          </div>
-        </form>
+        ) : (
+          <form
+            className="contact-form"
+            onSubmit={handleSubmit}
+            noValidate
+            aria-busy={submitting ? 'true' : 'false'}
+          >
+            <Honeypot id={`${uid}-company`} value={company} onChange={setCompany} />
+
+            <label className="formLabel" htmlFor={`${uid}-email`}>
+              {c.email || 'E-mail'}
+            </label>
+            <input
+              className="formField"
+              id={`${uid}-email`}
+              name="email"
+              type="email"
+              placeholder="email@example.com"
+              autoComplete="email"
+              maxLength={EMAIL_MAX_LENGTH}
+              required
+              {...fieldProps('email')}
+            />
+            {fieldError('email')}
+
+            <label className="formLabel" htmlFor={`${uid}-subject`}>
+              {c.title || 'Tytuł'}
+            </label>
+            <input
+              className="formField"
+              name="subject"
+              id={`${uid}-subject`}
+              type="text"
+              maxLength={CONTACT_LIMITS.subject}
+              required
+              {...fieldProps('subject')}
+            />
+            {fieldError('subject')}
+
+            <label className="formLabel" htmlFor={`${uid}-message`}>
+              {c.message || 'Wiadomość'}
+            </label>
+            <textarea
+              className="formField"
+              name="message"
+              id={`${uid}-message`}
+              rows={6}
+              maxLength={CONTACT_LIMITS.message}
+              required
+              {...fieldProps('message')}
+            />
+            {fieldError('message')}
+
+            <p className="agreement privacy-notice">
+              {c.privacyNotice ||
+                'Administratorem Twoich danych jest Fundacja Przyjaciół Młodzieżowego Strajku Klimatycznego. Użyjemy ich tylko, żeby odpowiedzieć na wiadomość.'}{' '}
+              <a href={PRIVACY_POLICY_PATH} target="_blank" rel="noopener noreferrer">
+                {t.cookies?.policy ?? 'Polityka prywatności'}
+                <span className="sr-only"> {t.a11y?.opensNewTab ?? '(otwiera się w nowej karcie)'}</span>
+              </a>
+            </p>
+
+            <div className="buttonContainer">
+              <button className="primaryBtn" type="submit" aria-disabled={submitting ? 'true' : 'false'}>
+                {submitting ? c.pending || 'Wysyłanie…' : c.b1 || 'Wyślij'}
+              </button>
+            </div>
+            {/* Region na stale w DOM, zeby czytniki ekranu oglaszaly zmiany komunikatu. */}
+            <div role="status" aria-live="polite">
+              {status === 'error' && (
+                <p className="formStatus formStatus--error" role="alert">
+                  {c.failed || 'Nie udało się wysłać wiadomości. Spróbuj ponownie.'}
+                </p>
+              )}
+            </div>
+          </form>
+        )}
       </div>
 
       <section className="contact-persons" data-reveal aria-busy={loading ? 'true' : 'false'}>
-        {loading && (
-          <div className="loader" role="status" aria-live="polite">
-            <span className="spinner" aria-hidden="true" />
-            <span className="sr-only">{t.a11y?.loading ?? 'Ładowanie…'}</span>
-          </div>
-        )}
+        {loading && <Loader />}
 
         {!loading && loadErr && <p role="alert">{c.loadError ?? 'Nie udało się wczytać kontaktów.'}</p>}
 
@@ -212,7 +209,7 @@ function Contact() {
                   <p className="contactLink">
                     <strong>
                       <i className="bi bi-telephone-fill" aria-hidden="true" />
-                      <span className="sr-only">{c.call ?? 'Zadzwoń:'} </span>&nbsp;
+                      <span className="sr-only">{c.call ?? 'Zadzwoń:'} </span>
                       <a href={`tel:${tel}`}>{p.phone}</a>
                     </strong>
                   </p>
@@ -221,7 +218,7 @@ function Contact() {
                   <p className="contactLink">
                     <strong>
                       <i className="bi bi-envelope-fill" aria-hidden="true" />
-                      <span className="sr-only">{c.write ?? 'Napisz:'} </span>&nbsp;
+                      <span className="sr-only">{c.write ?? 'Napisz:'} </span>
                       <a href={`mailto:${p.email}`}>{p.email}</a>
                     </strong>
                   </p>

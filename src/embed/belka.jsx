@@ -4,9 +4,9 @@ import { BrowserRouter } from 'react-router-dom';
 
 import DonateBar from '../features/donate/donateBar.jsx';
 import ErrorBoundary from '../shared/components/ErrorBoundary.jsx';
-import 'bootstrap-icons/font/bootstrap-icons.css';
-import '../style/index.css';
-import '../style/embed.css';
+import '../style/icons.css';
+import '../style/embed/belka.css';
+import '../style/embed/shared.css';
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>

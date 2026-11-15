@@ -1,11 +1,20 @@
-const required = {
-  VITE_SUPABASE_URL: import.meta.env.VITE_SUPABASE_URL,
-  VITE_SUPABASE_ANON_KEY: import.meta.env.VITE_SUPABASE_ANON_KEY,
-};
+/**
+ * Zmienne dostepne w przegladarce. Vite wystawia tylko nazwy z prefiksow podanych w envPrefix
+ * (vite.config.js): VITE_, SUPABASE_URL i SUPABASE_PUBLISHABLE_. SUPABASE_SECRET_KEY do bundla nie trafia.
+ * Starsze nazwy (VITE_SUPABASE_URL, VITE_SUPABASE_ANON_KEY) nadal dzialaja.
+ */
+const supabaseUrl = import.meta.env.SUPABASE_URL || import.meta.env.VITE_SUPABASE_URL;
+const supabaseKey =
+  import.meta.env.SUPABASE_PUBLISHABLE_KEY ||
+  import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY ||
+  import.meta.env.VITE_SUPABASE_ANON_KEY;
 
-const missing = Object.entries(required)
-  .filter(([, v]) => !v)
-  .map(([k]) => k);
+const missing = [
+  [supabaseUrl, 'SUPABASE_URL'],
+  [supabaseKey, 'SUPABASE_PUBLISHABLE_KEY'],
+]
+  .filter(([value]) => !value)
+  .map(([, name]) => name);
 
 if (missing.length > 0) {
   throw new Error(
@@ -14,8 +23,14 @@ if (missing.length > 0) {
   );
 }
 
+if (String(supabaseKey).startsWith('sb_secret_')) {
+  throw new Error(
+    'SUPABASE_PUBLISHABLE_KEY zawiera klucz secret. W przegladarce wolno uzyc tylko klucza publishable.'
+  );
+}
+
 export const env = {
-  supabaseUrl: required.VITE_SUPABASE_URL,
-  supabaseAnonKey: required.VITE_SUPABASE_ANON_KEY,
+  supabaseUrl,
+  supabaseKey,
   authCallbackUrl: import.meta.env.VITE_AUTH_CALLBACK_URL ?? undefined,
 };

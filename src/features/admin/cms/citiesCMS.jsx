@@ -1,44 +1,23 @@
-import { useEffect, useState } from "react";
-import {
-  fetchCities,
-  createCity,
-  updateCity,
-  deleteCity,
-} from "../../map/db/cities.jsx";
+import { useEffect, useState } from 'react';
+import { fetchCities, createCity, updateCity, deleteCity } from '../../map/db/cities.js';
 
-import { supabase } from "../../../services/supabaseClient.js";
+import { useConfirm } from '../../../shared/components/ConfirmDialog.jsx';
 
-const emptyCity = { name: "", facebook: "", instagram: "", meetings: "", voivodeship: "" };
+const emptyCity = { name: '', facebook: '', instagram: '', meetings: '', voivodeship: '' };
 
 export function CitiesCMS() {
-  const [sessionChecked, setSessionChecked] = useState(false);
-  const [user, setUser] = useState(null);
-
+  const { confirm, dialog } = useConfirm();
   const [rows, setRows] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [err, setErr] = useState("");
+  const [err, setErr] = useState('');
 
   const [editingId, setEditingId] = useState(null);
   const [form, setForm] = useState(emptyCity);
   const [saving, setSaving] = useState(false);
 
-  useEffect(() => {
-    let mounted = true;
-    async function initAuth() {
-      const { data, error } = await supabase.auth.getSession();
-      if (!mounted) return;
-      if (error) console.error(error);
-      setUser(data?.session?.user ?? null);
-      setSessionChecked(true);
-    }
-    initAuth();
-    const { data: sub } = supabase.auth.onAuthStateChange((_e, session) => setUser(session?.user ?? null));
-    return () => sub?.subscription?.unsubscribe?.();
-  }, []);
-
   const load = async () => {
     setLoading(true);
-    setErr("");
+    setErr('');
     try {
       const list = await fetchCities();
       setRows(list);
@@ -50,25 +29,28 @@ export function CitiesCMS() {
   };
 
   useEffect(() => {
-    if (sessionChecked && user) load();
-  }, [sessionChecked, user]);
+    load();
+  }, []);
 
   const startEdit = (row) => {
     setEditingId(row.id);
     setForm({
-      name: row.name || "",
-      facebook: row.facebook || "",
-      instagram: row.instagram || "",
-      meetings: row.meetings || "",
-      voivodeship: row.voivodeship || "",
+      name: row.name || '',
+      facebook: row.facebook || '',
+      instagram: row.instagram || '',
+      meetings: row.meetings || '',
+      voivodeship: row.voivodeship || '',
     });
   };
-  const cancelEdit = () => { setEditingId(null); setForm(emptyCity); };
+  const cancelEdit = () => {
+    setEditingId(null);
+    setForm(emptyCity);
+  };
 
   async function handleSubmit(e) {
     e.preventDefault();
     setSaving(true);
-    setErr("");
+    setErr('');
     try {
       if (editingId) await updateCity(editingId, form);
       else await createCity(form);
@@ -76,32 +58,31 @@ export function CitiesCMS() {
       cancelEdit();
     } catch (e) {
       setErr(e?.message || String(e));
-    } finally { setSaving(false); }
+    } finally {
+      setSaving(false);
+    }
   }
 
   async function handleDelete(id) {
-    if (!confirm("Usunąć to miasto?")) return;
-    setErr("");
-    try { await deleteCity(id); await load(); } catch (e) { setErr(e?.message || String(e)); }
+    if (!(await confirm('Usunąć to miasto?'))) return;
+    setErr('');
+    try {
+      await deleteCity(id);
+      await load();
+    } catch (e) {
+      setErr(e?.message || String(e));
+    }
   }
-
-  if (!sessionChecked) return <div style={{ padding: 24 }}>Sprawdzanie sesji…</div>;
-  if (!user)
-    return (
-      <div style={{ padding: 24 }}>
-        <h1 style={{ fontSize: 20, fontWeight: 600, margin: 0 }}>Dostęp tylko dla zalogowanych</h1>
-        <p>Zaloguj się, aby zarządzać miastami.</p>
-      </div>
-    );
 
   return (
     <>
+      {dialog}
       <section className="cms-section">
         {err && <div className="cms-error">{err}</div>}
         {loading ? (
           <div>Ładowanie…</div>
         ) : rows.length === 0 ? (
-          <div style={{ fontSize: 14, color: "#666" }}>Brak miast.</div>
+          <div className="cms-empty">Brak miast.</div>
         ) : (
           <aside className="cms-card">
             <table className="cms-table">
@@ -112,21 +93,51 @@ export function CitiesCMS() {
                   <th className="cms-th">Facebook</th>
                   <th className="cms-th">Instagram</th>
                   <th className="cms-th">Spotkania</th>
-                  <th className="cms-th" style={{ textAlign: "right" }}>Akcje</th>
+                  <th className="cms-th cms-th--right">Akcje</th>
                 </tr>
               </thead>
               <tbody>
                 {rows.map((r) => (
                   <tr key={r.id}>
-                    <td className="cms-td">{r.voivodeship || "—"}</td>
-                    <td className="cms-td" style={{ fontWeight: 500 }}>{r.name}</td>
-                    <td className="cms-td">{r.facebook ? <a href={r.facebook} target="_blank" rel="noreferrer">link</a> : "—"}</td>
-                    <td className="cms-td">{r.instagram ? <a href={r.instagram} target="_blank" rel="noreferrer">link</a> : "—"}</td>
-                    <td className="cms-td">{r.meetings || "—"}</td>
+                    <td className="cms-td">{r.voivodeship || '-'}</td>
+                    <td className="cms-td cms-strong">{r.name}</td>
+                    <td className="cms-td">
+                      {r.facebook ? (
+                        <a href={r.facebook} target="_blank" rel="noreferrer">
+                          link
+                        </a>
+                      ) : (
+                        '-'
+                      )}
+                    </td>
+                    <td className="cms-td">
+                      {r.instagram ? (
+                        <a href={r.instagram} target="_blank" rel="noreferrer">
+                          link
+                        </a>
+                      ) : (
+                        '-'
+                      )}
+                    </td>
+                    <td className="cms-td">{r.meetings || '-'}</td>
                     <td className="cms-td">
                       <div className="cms-actions">
-                        <button type="button" className="cms-btn" onClick={() => startEdit(r)} aria-label={`Edytuj: ${r.name}`}><i className="bi bi-pencil-fill" aria-hidden="true"></i></button>
-                        <button type="button" className="cms-btnDanger" onClick={() => handleDelete(r.id)} aria-label={`Usuń: ${r.name}`}><i className="bi bi-trash-fill" aria-hidden="true"></i></button>
+                        <button
+                          type="button"
+                          className="cms-btn"
+                          onClick={() => startEdit(r)}
+                          aria-label={`Edytuj: ${r.name}`}
+                        >
+                          <i className="bi bi-pencil-fill" aria-hidden="true"></i>
+                        </button>
+                        <button
+                          type="button"
+                          className="cms-btnDanger"
+                          onClick={() => handleDelete(r.id)}
+                          aria-label={`Usuń: ${r.name}`}
+                        >
+                          <i className="bi bi-trash-fill" aria-hidden="true"></i>
+                        </button>
                       </div>
                     </td>
                   </tr>
@@ -138,35 +149,58 @@ export function CitiesCMS() {
       </section>
 
       <aside className="cms-card">
-        <h3 style={{ fontWeight: 600, marginTop: 0 }}>{editingId ? "Edytuj miasto" : "Nowe miasto"}</h3>
+        <h2 className="cms-heading">{editingId ? 'Edytuj miasto' : 'Nowe miasto'}</h2>
         <form onSubmit={handleSubmit}>
           <label className="cms-labelWrap">
             <span className="cms-label">Nazwa</span>
-            <input className="cms-input" value={form.name} onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))} required />
+            <input
+              className="cms-input"
+              value={form.name}
+              onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
+              required
+            />
           </label>
           <label className="cms-labelWrap">
             <span className="cms-label">Województwo</span>
-            <input className="cms-input" value={form.voivodeship} onChange={(e) => setForm((f) => ({ ...f, voivodeship: e.target.value }))} />
+            <input
+              className="cms-input"
+              value={form.voivodeship}
+              onChange={(e) => setForm((f) => ({ ...f, voivodeship: e.target.value }))}
+            />
           </label>
           <label className="cms-labelWrap">
             <span className="cms-label">Facebook (URL)</span>
-            <input className="cms-input" value={form.facebook} onChange={(e) => setForm((f) => ({ ...f, facebook: e.target.value }))} />
+            <input
+              className="cms-input"
+              value={form.facebook}
+              onChange={(e) => setForm((f) => ({ ...f, facebook: e.target.value }))}
+            />
           </label>
           <label className="cms-labelWrap">
             <span className="cms-label">Instagram (URL)</span>
-            <input className="cms-input" value={form.instagram} onChange={(e) => setForm((f) => ({ ...f, instagram: e.target.value }))} />
+            <input
+              className="cms-input"
+              value={form.instagram}
+              onChange={(e) => setForm((f) => ({ ...f, instagram: e.target.value }))}
+            />
           </label>
           <label className="cms-labelWrap">
             <span className="cms-label">Spotkania (opis)</span>
-            <textarea className="cms-textarea" value={form.meetings} onChange={(e) => setForm((f) => ({ ...f, meetings: e.target.value }))} />
+            <textarea
+              className="cms-textarea"
+              value={form.meetings}
+              onChange={(e) => setForm((f) => ({ ...f, meetings: e.target.value }))}
+            />
           </label>
 
           <div className="cms-formActions">
             {editingId && (
-              <button type="button" className="cms-btn" onClick={cancelEdit}>Anuluj</button>
+              <button type="button" className="cms-btn" onClick={cancelEdit}>
+                Anuluj
+              </button>
             )}
             <button disabled={saving} className="cms-btnPrimary">
-              {saving ? "Zapisywanie…" : editingId ? "Zapisz zmiany" : "Dodaj miasto"}
+              {saving ? 'Zapisywanie…' : editingId ? 'Zapisz zmiany' : 'Dodaj miasto'}
             </button>
           </div>
         </form>
@@ -180,95 +214,90 @@ import {
   createLocalContact,
   updateLocalContact,
   deleteLocalContact,
-} from "../../map/db/localContacts.jsx";
+} from '../../map/db/localContacts.js';
 
 export function LocalContactsCMS() {
-  const [sessionChecked, setSessionChecked] = useState(false);
-  const [user, setUser] = useState(null);
-
+  const { confirm, dialog } = useConfirm();
   const [rows, setRows] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [err, setErr] = useState("");
+  const [err, setErr] = useState('');
 
   const [editingId, setEditingId] = useState(null);
-  const [form, setForm] = useState({ name: "", facebook: "", phone: "", email: "", city: "" });
+  const [form, setForm] = useState({ name: '', facebook: '', phone: '', email: '', city: '' });
   const [saving, setSaving] = useState(false);
 
   const [cities, setCities] = useState([]);
 
-  useEffect(() => {
-    let mounted = true;
-    async function initAuth() {
-      const { data, error } = await supabase.auth.getSession();
-      if (!mounted) return;
-      if (error) console.error(error);
-      setUser(data?.session?.user ?? null);
-      setSessionChecked(true);
-    }
-    initAuth();
-    const { data: sub } = supabase.auth.onAuthStateChange((_e, session) => setUser(session?.user ?? null));
-    return () => sub?.subscription?.unsubscribe?.();
-  }, []);
-
   const load = async () => {
     setLoading(true);
-    setErr("");
+    setErr('');
     try {
       const [list, cs] = await Promise.all([fetchLocalContacts(), fetchCities()]);
       setRows(list);
       setCities(cs);
-    } catch (e) { setErr(e?.message || String(e)); }
-    finally { setLoading(false); }
+    } catch (e) {
+      setErr(e?.message || String(e));
+    } finally {
+      setLoading(false);
+    }
   };
 
-  useEffect(() => { if (sessionChecked && user) load(); }, [sessionChecked, user]);
+  useEffect(() => {
+    load();
+  }, []);
 
   const startEdit = (row) => {
     setEditingId(row.id);
     setForm({
-      name: row.name || "",
-      facebook: row.facebook || "",
-      phone: row.phone || "",
-      email: row.email || "",
-      city: row.city || "",
+      name: row.name || '',
+      facebook: row.facebook || '',
+      phone: row.phone || '',
+      email: row.email || '',
+      city: row.city || '',
     });
   };
-  const cancelEdit = () => { setEditingId(null); setForm({ name: "", facebook: "", phone: "", email: "", city: "" }); };
+  const cancelEdit = () => {
+    setEditingId(null);
+    setForm({ name: '', facebook: '', phone: '', email: '', city: '' });
+  };
 
   async function handleSubmit(e) {
-    e.preventDefault(); setSaving(true); setErr("");
+    e.preventDefault();
+    setSaving(true);
+    setErr('');
     try {
       const payload = { ...form };
       if (editingId) await updateLocalContact(editingId, payload);
       else await createLocalContact(payload);
-      await load(); cancelEdit();
-    } catch (e) { setErr(e?.message || String(e)); } finally { setSaving(false); }
+      await load();
+      cancelEdit();
+    } catch (e) {
+      setErr(e?.message || String(e));
+    } finally {
+      setSaving(false);
+    }
   }
 
   async function handleDelete(id) {
-    if (!confirm("Usunąć tę osobę kontaktową?")) return;
-    setErr("");
-    try { await deleteLocalContact(id); await load(); } catch (e) { setErr(e?.message || String(e)); }
+    if (!(await confirm('Usunąć tę osobę kontaktową?'))) return;
+    setErr('');
+    try {
+      await deleteLocalContact(id);
+      await load();
+    } catch (e) {
+      setErr(e?.message || String(e));
+    }
   }
 
-  if (!sessionChecked) return <div style={{ padding: 24 }}>Sprawdzanie sesji…</div>;
-  if (!user)
-    return (
-      <div style={{ padding: 24 }}>
-        <h1 style={{ fontSize: 20, fontWeight: 600, margin: 0 }}>Dostęp tylko dla zalogowanych</h1>
-        <p>Zaloguj się, aby zarządzać kontaktami lokalnymi.</p>
-      </div>
-    );
-
   return (
-    
-      <>
+    <>
+      {dialog}
       <section>
         {err && <div className="cms-error">{err}</div>}
         {loading ? (
           <div>Ładowanie…</div>
         ) : rows.length === 0 ? (
-          <div style={{ fontSize: 14, color: "#666" }}>Brak kontaktów.</div>
+          <div className="cms-empty">Brak kontaktów.</div>
         ) : (
           <aside className="cms-card">
             <table className="cms-table">
@@ -279,21 +308,43 @@ export function LocalContactsCMS() {
                   <th className="cms-th">Facebook</th>
                   <th className="cms-th">Telefon</th>
                   <th className="cms-th">Email</th>
-                  <th className="cms-th" style={{ textAlign: "right" }}>Akcje</th>
+                  <th className="cms-th cms-th--right">Akcje</th>
                 </tr>
               </thead>
               <tbody>
                 {rows.map((r) => (
                   <tr key={r.id}>
-                    <td className="cms-td">{r.city || "—"}</td>
-                    <td className="cms-td" style={{ fontWeight: 500 }}>{r.name}</td>
-                    <td className="cms-td">{r.facebook ? <a href={r.facebook} target="_blank" rel="noreferrer">link</a> : "—"}</td>
-                    <td className="cms-td">{r.phone || "—"}</td>
-                    <td className="cms-td">{r.email || "—"}</td>
+                    <td className="cms-td">{r.city || '-'}</td>
+                    <td className="cms-td cms-strong">{r.name}</td>
+                    <td className="cms-td">
+                      {r.facebook ? (
+                        <a href={r.facebook} target="_blank" rel="noreferrer">
+                          link
+                        </a>
+                      ) : (
+                        '-'
+                      )}
+                    </td>
+                    <td className="cms-td">{r.phone || '-'}</td>
+                    <td className="cms-td">{r.email || '-'}</td>
                     <td className="cms-td">
                       <div className="cms-actions">
-                        <button type="button" className="cms-btn" onClick={() => startEdit(r)} aria-label={`Edytuj: ${r.name}`}>Edytuj</button>
-                        <button type="button" className="cms-btnDanger" onClick={() => handleDelete(r.id)} aria-label={`Usuń: ${r.name}`}>Usuń</button>
+                        <button
+                          type="button"
+                          className="cms-btn"
+                          onClick={() => startEdit(r)}
+                          aria-label={`Edytuj: ${r.name}`}
+                        >
+                          Edytuj
+                        </button>
+                        <button
+                          type="button"
+                          className="cms-btnDanger"
+                          onClick={() => handleDelete(r.id)}
+                          aria-label={`Usuń: ${r.name}`}
+                        >
+                          Usuń
+                        </button>
                       </div>
                     </td>
                   </tr>
@@ -305,40 +356,66 @@ export function LocalContactsCMS() {
       </section>
 
       <aside className="cms-card">
-        <h3 style={{ fontWeight: 600, marginTop: 0 }}>{editingId ? "Edytuj kontakt" : "Nowy kontakt"}</h3>
+        <h2 className="cms-heading">{editingId ? 'Edytuj kontakt' : 'Nowy kontakt'}</h2>
         <form onSubmit={handleSubmit}>
           <label className="cms-labelWrap">
             <span className="cms-label">Imię i nazwisko</span>
-            <input className="cms-input" value={form.name} onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))} required />
+            <input
+              className="cms-input"
+              value={form.name}
+              onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
+              required
+            />
           </label>
           <label className="cms-labelWrap">
             <span className="cms-label">Miasto</span>
-            <select className="cms-input" value={form.city || ""} onChange={(e) => setForm((f) => ({ ...f, city: e.target.value }))}>
-              <option value="">— wybierz —</option>
+            <select
+              className="cms-input"
+              value={form.city || ''}
+              onChange={(e) => setForm((f) => ({ ...f, city: e.target.value }))}
+            >
+              <option value="">- wybierz -</option>
               {cities.map((c) => (
-                <option key={c.id} value={c.name}>{c.name}</option>
+                <option key={c.id} value={c.name}>
+                  {c.name}
+                </option>
               ))}
             </select>
           </label>
           <label className="cms-labelWrap">
             <span className="cms-label">Facebook (URL)</span>
-            <input className="cms-input" value={form.facebook} onChange={(e) => setForm((f) => ({ ...f, facebook: e.target.value }))} />
+            <input
+              className="cms-input"
+              value={form.facebook}
+              onChange={(e) => setForm((f) => ({ ...f, facebook: e.target.value }))}
+            />
           </label>
           <label className="cms-labelWrap">
             <span className="cms-label">Telefon</span>
-            <input className="cms-input" value={form.phone} onChange={(e) => setForm((f) => ({ ...f, phone: e.target.value }))} />
+            <input
+              className="cms-input"
+              value={form.phone}
+              onChange={(e) => setForm((f) => ({ ...f, phone: e.target.value }))}
+            />
           </label>
           <label className="cms-labelWrap">
             <span className="cms-label">Email</span>
-            <input type="email" className="cms-input" value={form.email} onChange={(e) => setForm((f) => ({ ...f, email: e.target.value }))} />
+            <input
+              type="email"
+              className="cms-input"
+              value={form.email}
+              onChange={(e) => setForm((f) => ({ ...f, email: e.target.value }))}
+            />
           </label>
 
           <div className="cms-formActions">
             {editingId && (
-              <button type="button" className="cms-btn" onClick={cancelEdit}>Anuluj</button>
+              <button type="button" className="cms-btn" onClick={cancelEdit}>
+                Anuluj
+              </button>
             )}
             <button disabled={saving} className="cms-btnPrimary">
-              {saving ? "Zapisywanie…" : editingId ? "Zapisz zmiany" : "Dodaj kontakt"}
+              {saving ? 'Zapisywanie…' : editingId ? 'Zapisz zmiany' : 'Dodaj kontakt'}
             </button>
           </div>
         </form>

@@ -2,7 +2,10 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 const rpc = vi.fn();
 vi.mock('./_lib/supabaseAdmin.js', () => ({ getSupabaseAdmin: () => ({ rpc }) }));
-vi.mock('./_lib/rateLimit.js', () => ({ isLimited: vi.fn().mockResolvedValue(false), clientIp: () => '1.1.1.1' }));
+vi.mock('./_lib/rateLimit.js', () => ({
+  rejectIfLimited: vi.fn().mockResolvedValue(false),
+}));
+vi.mock('./_lib/captcha.js', () => ({ verifyCaptcha: vi.fn().mockResolvedValue(true) }));
 
 import handler from './survey-book.js';
 
@@ -12,12 +15,22 @@ const good = { slug: 'abc', name: 'Ola', email: 'Ola@Example.com', slotIds: [SLO
 function call(body, method = 'POST') {
   const res = {
     headers: {},
-    setHeader(k, v) { this.headers[k] = v; },
-    status(c) { this.code = c; return this; },
-    json(b) { this.body = b; return this; },
-    end() { return this; },
+    setHeader(k, v) {
+      this.headers[k] = v;
+    },
+    status(c) {
+      this.code = c;
+      return this;
+    },
+    json(b) {
+      this.body = b;
+      return this;
+    },
+    end() {
+      return this;
+    },
   };
-  return handler({ method, headers: {}, body }, res).then(() => res);
+  return handler({ method, headers: { origin: 'https://msk.earth' }, body }, res).then(() => res);
 }
 
 describe('/api/survey-book', () => {
@@ -27,7 +40,10 @@ describe('/api/survey-book', () => {
     rpc.mockResolvedValue({ data: 1, error: null });
     const res = await call(good);
     expect(res.code).toBe(201);
-    expect(rpc).toHaveBeenCalledWith('book_survey_slots', expect.objectContaining({ p_email: 'ola@example.com', p_slot_ids: [SLOT] }));
+    expect(rpc).toHaveBeenCalledWith(
+      'book_survey_slots',
+      expect.objectContaining({ p_email: 'ola@example.com', p_slot_ids: [SLOT] })
+    );
   });
 
   it('wymaga zgody, poprawnych id i pustego honeypota', async () => {

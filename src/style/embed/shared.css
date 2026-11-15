@@ -7,7 +7,6 @@
   align-content: start;
   background: var(--surface-veil);
   border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-1);
   color: var(--ink);
   margin: 0 auto;
   min-height: 0;
@@ -15,13 +14,17 @@
 }
 
 .embed h2 {
-  color: var(--green-strong);
+  color: var(--green);
   font-size: var(--step-1);
   text-shadow: none;
 }
 
-.embed--full { max-width: 640px; }
-.embed--bar { max-width: 980px; }
+.embed--full {
+  max-width: 640px;
+}
+.embed--bar {
+  max-width: 980px;
+}
 
 .donateBar {
   display: grid;
@@ -30,7 +33,7 @@
 }
 
 .donateBar__progress {
-  background: var(--green-soft);
+  background: var(--green-wash);
   border-radius: var(--radius-pill);
   height: 26px;
   overflow: hidden;
@@ -38,10 +41,10 @@
 }
 
 .donateBar__fill {
-  background: linear-gradient(90deg, var(--green-strong), var(--first-color));
+  background: linear-gradient(90deg, var(--green), var(--green));
   display: block;
   height: 100%;
-  transition: width 400ms cubic-bezier(.2, .6, .3, 1);
+  transition: width 400ms cubic-bezier(0.2, 0.6, 0.3, 1);
 }
 
 .donateBar__figure {
@@ -52,7 +55,7 @@
   inset: 0;
   justify-content: center;
   position: absolute;
-  text-shadow: 0 1px 2px rgba(251, 253, 251, .8);
+  text-shadow: 0 1px 2px rgba(251, 253, 251, 0.8);
 }
 
 .donateBar__fields {
@@ -77,21 +80,28 @@
 }
 
 .donateBar__row button:hover {
-  background: var(--green-soft);
-  border-color: var(--green-strong);
-  color: var(--green-strong);
-  translate: none;
+  background: var(--green-wash);
+  border-color: var(--green);
+  color: var(--green);
 }
 
-.donateBar__row button[aria-pressed="true"] {
-  background: var(--green-strong);
-  border-color: var(--green-strong);
-  color: var(--white);
+.donateBar__row button[aria-pressed='true'] {
+  background: var(--green);
+  border-color: var(--green);
+  color: var(--light);
 }
 
-.donateBar__consents { display: grid; gap: 6px; }
-.donateBar__submit { width: 100%; }
+.donateBar__consents {
+  display: grid;
+  gap: 6px;
+}
+.donateBar__submit {
+  width: 100%;
+}
 
 @media (max-width: 640px) {
-  .embed { border-radius: 0; padding: 16px; }
+  .embed {
+    border-radius: 0;
+    padding: 16px;
+  }
 }

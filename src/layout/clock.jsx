@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react';
 import { DateTime } from 'luxon';
 
+import { INTL_LOCALE } from '../shared/config/site.js';
+
 import { useTranslations } from '../shared/i18n/useTranslations.js';
 import { fetchClimateClock } from './climateClockApi.js';
 
@@ -32,11 +34,11 @@ function Clock() {
     : null;
 
   const clock = t.clock ?? {};
-  // "1 rok", "2 lata", "5 lat" – forma zalezna od liczby (Intl.PluralRules).
+  // "1 rok", "2 lata", "5 lat" - forma zalezna od liczby (Intl.PluralRules).
   const yearsLabel = (n) => {
     const forms = clock.yearForms;
     if (!forms) return clock.years || '';
-    const rule = new Intl.PluralRules(lang === 'en' ? 'en' : 'pl').select(n);
+    const rule = new Intl.PluralRules(INTL_LOCALE[lang]).select(n);
     return forms[rule] ?? forms.other ?? clock.years ?? '';
   };
 
@@ -51,7 +53,7 @@ function Clock() {
       {remaining && (
         <span aria-hidden="true">
           <span className="clock-title">
-            <span>{clock.title || ''}</span>
+            <p>{clock.title || ''}</p>
           </span>
           <span className="clock-time">
             {remaining.years}

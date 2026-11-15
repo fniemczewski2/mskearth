@@ -41,17 +41,28 @@ export async function deleteSurvey(id) {
   if (error) throw error;
 }
 
-/** Dodaje okno i jego sloty; przy bledzie slotow usuwa okno, zeby nie zostawic polowy danych. */
+const FUNCTION_NOT_FOUND = 'PGRST202';
+
+/** Dodaje okno i jego sloty w jednej transakcji (funkcja SQL add_survey_window). */
 export async function addWindow(surveyId, win, slots) {
+  const windowRow = {
+    slot_date: win.date,
+    start_time: win.start,
+    end_time: win.end,
+    slot_minutes: win.slotMinutes || null,
+  };
+  const { error: rpcError } = await supabase.rpc('add_survey_window', {
+    p_survey_id: surveyId,
+    p_window: windowRow,
+    p_slots: slots,
+  });
+  if (!rpcError) return;
+  if (rpcError.code !== FUNCTION_NOT_FOUND) throw rpcError;
+
+  // Baza bez migracji 20261114120000: dwa zapytania z recznym wycofaniem.
   const { data, error } = await supabase
     .from('survey_windows')
-    .insert({
-      survey_id: surveyId,
-      slot_date: win.date,
-      start_time: win.start,
-      end_time: win.end,
-      slot_minutes: win.slotMinutes || null,
-    })
+    .insert({ survey_id: surveyId, ...windowRow })
     .select()
     .single();
   if (error) throw error;

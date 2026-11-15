@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 
-// 'ua' usunieto: nie ma pliku public/locales/ua.json, a kod jezyka ukrainskiego to 'uk'.
-export const SUPPORTED_LANGS = new Set(['pl', 'en']);
-export const DEFAULT_LANG = 'pl';
+import { DEFAULT_LANG, LANGS } from '../config/site.js';
+
+export { DEFAULT_LANG };
+export const SUPPORTED_LANGS = new Set(LANGS);
 
 const CACHE = new Map();
 const RESOLVED = new Map();
@@ -73,7 +74,7 @@ export function useTranslations() {
     };
   }, [lang]);
 
-  const t = state.lang === lang ? state.t : RESOLVED.get(lang) ?? {};
+  const t = state.lang === lang ? state.t : (RESOLVED.get(lang) ?? {});
   return { t, lang, ready: state.lang === lang && state.ready };
 }
 

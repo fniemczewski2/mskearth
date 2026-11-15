@@ -1,4 +1,3 @@
-// api/slack-reminders.js
 import crypto from 'node:crypto';
 
 export const config = { maxDuration: 60 };
@@ -94,7 +93,7 @@ async function sendReminders(tasksByUser) {
     try {
       const main = await slackApi('chat.postMessage', {
         channel: userId,
-        text: `Cześć! 👋 Przypominam o zadaniach na agendzie${LIST_URL ? ` (<${LIST_URL}|zobacz>)` : ''}. Szczegóły znajdziesz w wątku tej wiadomości 👇`,
+        text: `Cześć! Przypominam o zadaniach na agendzie${LIST_URL ? ` (<${LIST_URL}|zobacz>)` : ''}. Szczegóły znajdziesz w wątku tej wiadomości.`,
       });
 
       const threadText =
@@ -122,10 +121,7 @@ async function sendReminders(tasksByUser) {
  * (np. 2026 -> 2027), w przeciwienstwie do numeru tygodnia ISO.
  */
 function weekIndexWarsaw(date = new Date()) {
-  const [y, m, d] = date
-    .toLocaleDateString('en-CA', { timeZone: 'Europe/Warsaw' })
-    .split('-')
-    .map(Number);
+  const [y, m, d] = date.toLocaleDateString('en-CA', { timeZone: 'Europe/Warsaw' }).split('-').map(Number);
   return Math.floor((Date.UTC(y, m - 1, d) - Date.UTC(2024, 0, 8)) / (7 * 86400000));
 }
 
@@ -162,7 +158,9 @@ export default async function handler(req, res) {
     const tasksByUser = groupTasksByUser(items);
 
     if (Object.keys(tasksByUser).length === 0) {
-      return res.status(200).json({ sent: 0, message: 'Brak otwartych zadań dla przypisanych użytkowników.' });
+      return res
+        .status(200)
+        .json({ sent: 0, message: 'Brak otwartych zadań dla przypisanych użytkowników.' });
     }
 
     const results = await sendReminders(tasksByUser);

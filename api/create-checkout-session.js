@@ -1,49 +1,50 @@
 import crypto from 'node:crypto';
 import { z } from 'zod';
 
+import { DONATION, EMAIL_MAX_LENGTH, LANGS, NAME_MAX_LENGTH } from '../src/shared/config/site.js';
 import { applyCors } from './_lib/cors.js';
+import { verifyCaptcha } from './_lib/captcha.js';
 import { log, redact } from './_lib/log.js';
+import { msg } from './_lib/messages.js';
 import { buildReturnUrls } from './_lib/urls.js';
 import { getSupabaseAdmin } from './_lib/supabaseAdmin.js';
-import { isLimited, clientIp } from './_lib/rateLimit.js';
-import { stripe, DONATION_RECIPIENT } from './_lib/stripe.js';
+import { rejectIfLimited } from './_lib/rateLimit.js';
+import { getStripe, DONATION_RECIPIENT } from './_lib/stripe.js';
 
 const CheckoutSchema = z.object({
-  amount: z.coerce.number().min(5).max(50_000),
-  email: z.string().trim().toLowerCase().email().max(254),
-  name: z.string().trim().max(120).optional().default(''),
-  // z.coerce.boolean() zamienia napis "false" na true, wiec przyjmujemy tylko prawdziwe wartosci logiczne.
-  newsletter: z.union([z.boolean(), z.enum(['true', 'false']).transform((v) => v === 'true')])
+  amount: z.coerce.number().min(DONATION.min).max(DONATION.max),
+  email: z.string().trim().toLowerCase().email().max(EMAIL_MAX_LENGTH),
+  name: z.string().trim().max(NAME_MAX_LENGTH).optional().default(''),
+  // z.coerce.boolean() zamienia napis "false" na true, dlatego akceptowane sa tylko wartosci logiczne.
+  newsletter: z
+    .union([z.boolean(), z.enum(['true', 'false']).transform((v) => v === 'true')])
     .optional()
     .default(false),
-  locale: z.enum(['pl', 'en']).optional().default('pl'),
+  locale: z.enum(LANGS).optional().default('pl'),
   payment_type: z.enum(['onetime', 'recurring']).optional().default('onetime'),
   returnHost: z.string().trim().max(64).optional(),
   attemptId: z.string().trim().min(8).max(64).optional(),
+  captcha: z.string().optional(),
 });
 
 export default async function handler(req, res) {
   if (applyCors(req, res)) return;
-
-  if (req.method !== 'POST') {
-    res.setHeader('Allow', 'POST, OPTIONS');
-    return res.status(405).json({ error: 'Method not allowed' });
-  }
-
-  const ip = clientIp(req);
-  if (await isLimited(`checkout:${ip}`, { max: 5, windowSec: 60 })) {
-    log.warn('checkout.rate_limited', { ip });
-    return res.status(429).json({ error: 'Zbyt wiele prób. Spróbuj za chwilę.' });
-  }
+  if (await rejectIfLimited(req, res, 'checkout')) return;
 
   const parsed = CheckoutSchema.safeParse(req.body ?? {});
   if (!parsed.success) {
-    return res.status(400).json({ error: 'Nieprawidłowe dane formularza.' });
+    return res.status(400).json({ code: 'invalid', error: msg(req, 'invalid') });
   }
-  const { amount, email, name, newsletter, locale, payment_type, returnHost, attemptId } = parsed.data;
+  const { amount, email, name, newsletter, locale, payment_type, returnHost, attemptId, captcha } =
+    parsed.data;
+
+  if (!(await verifyCaptcha(captcha, req))) {
+    log.security('captcha_failed', req, { form: 'checkout' });
+    return res.status(400).json({ code: 'captcha', error: msg(req, 'captcha') });
+  }
 
   const unitAmount = Math.round(amount * 100);
-  // Zapisujemy dokladnie to, co pobiera Stripe (np. 12.345 -> 12.35).
+  // Kwota zapisana w bazie musi byc rowna pobranej przez Stripe (np. 12.345 -> 12.35).
   const chargedAmount = unitAmount / 100;
   const { success: successUrl, cancel: cancelUrl } = buildReturnUrls({
     host: returnHost,
@@ -78,6 +79,7 @@ export default async function handler(req, res) {
     .digest('hex');
 
   try {
+    const stripe = getStripe();
     const common = {
       locale,
       success_url: successUrl,
@@ -97,11 +99,14 @@ export default async function handler(req, res) {
                 {
                   price_data: {
                     currency: 'pln',
-                    // Bez STRIPE_RECURRING_PRODUCT_ID Stripe odrzucal sesje ("product" jest wymagany),
-                    // wiec wplaty comiesieczne nie dzialaly. Awaryjnie tworzymy produkt w locie.
+                    // Stripe wymaga produktu; bez STRIPE_RECURRING_PRODUCT_ID powstaje on w locie.
                     ...(process.env.STRIPE_RECURRING_PRODUCT_ID
                       ? { product: process.env.STRIPE_RECURRING_PRODUCT_ID }
-                      : { product_data: { name: `Regularna darowizna na cele statutowe: ${DONATION_RECIPIENT}` } }),
+                      : {
+                          product_data: {
+                            name: `Regularna darowizna na cele statutowe: ${DONATION_RECIPIENT}`,
+                          },
+                        }),
                     unit_amount: unitAmount,
                     recurring: { interval: 'month' },
                   },
@@ -164,6 +169,6 @@ export default async function handler(req, res) {
     return res.status(200).json({ url: session.url });
   } catch (err) {
     log.error('checkout.create', err, { email: redact(email) });
-    return res.status(500).json({ error: 'Nie udało się rozpocząć płatności. Spróbuj ponownie.' });
+    return res.status(500).json({ code: 'server', error: msg(req, 'checkoutFailed') });
   }
 }

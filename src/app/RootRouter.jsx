@@ -1,12 +1,13 @@
-import { lazy, Suspense } from 'react';
+import { Suspense } from 'react';
 import { Routes, Route, Navigate, useLocation, useParams } from 'react-router-dom';
 
 import App from './App.jsx';
 import { DEFAULT_LANG, SUPPORTED_LANGS } from '../shared/i18n/useTranslations.js';
+import lazyWithRetry from '../shared/lib/lazyWithRetry.js';
 
 // Panel administracyjny nie trafia do paczki, ktora pobiera kazdy odwiedzajacy.
-const AdminPanel = lazy(() => import('../features/admin/adminPanel.jsx'));
-const RequireAdmin = lazy(() => import('../features/admin/RequireAdmin.jsx'));
+const AdminPanel = lazyWithRetry(() => import('../features/admin/adminPanel.jsx'));
+const RequireAdmin = lazyWithRetry(() => import('../features/admin/RequireAdmin.jsx'));
 
 // Renders the app when the URL already has a supported language prefix,
 // otherwise redirects to the same path with the default language prepended

@@ -58,10 +58,7 @@ async function selectRegion(user) {
 
 describe('MapElement auto-scroll', () => {
   beforeEach(() => {
-    vi.stubGlobal(
-      'fetch',
-      vi.fn().mockResolvedValue({ ok: true, json: async () => LOCALE_PAYLOAD })
-    );
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue({ ok: true, json: async () => LOCALE_PAYLOAD }));
     vi.spyOn(Element.prototype, 'scrollIntoView').mockImplementation(() => {});
   });
 

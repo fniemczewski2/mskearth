@@ -1,6 +1,10 @@
 import createDOMPurify from 'dompurify';
 
+import { SITE_HOST } from '../config/site.js';
+
 const ALLOWED_IMG = /^(?:\/(?!\/)|https:\/\/[a-z0-9-]+\.supabase\.co\/)/i;
+
+const OWN_LINK = new RegExp(`^https://(www\\.)?${SITE_HOST.replace('.', '\\.')}(/|$)`, 'i');
 
 let purifier = null;
 
@@ -11,7 +15,7 @@ function getPurifier() {
   purifier.addHook('afterSanitizeAttributes', (node) => {
     if (node.tagName === 'A') {
       const href = node.getAttribute('href') ?? '';
-      if (/^https?:/i.test(href) && !/^https:\/\/(www\.)?msk\.earth(\/|$)/i.test(href)) {
+      if (/^https?:/i.test(href) && !OWN_LINK.test(href)) {
         node.setAttribute('target', '_blank');
         node.setAttribute('rel', 'noopener noreferrer nofollow ugc');
       }
@@ -26,9 +30,29 @@ function getPurifier() {
 
 const CONFIG = {
   ALLOWED_TAGS: [
-    'p', 'br', 'strong', 'b', 'em', 'i', 'u', 's',
-    'h2', 'h3', 'h4', 'ul', 'ol', 'li', 'a',
-    'blockquote', 'figure', 'figcaption', 'img', 'hr', 'code', 'pre', 'span',
+    'p',
+    'br',
+    'strong',
+    'b',
+    'em',
+    'i',
+    'u',
+    's',
+    'h2',
+    'h3',
+    'h4',
+    'ul',
+    'ol',
+    'li',
+    'a',
+    'blockquote',
+    'figure',
+    'figcaption',
+    'img',
+    'hr',
+    'code',
+    'pre',
+    'span',
   ],
   ALLOWED_ATTR: ['href', 'title', 'alt', 'src', 'width', 'height', 'loading'],
   ALLOWED_URI_REGEXP: /^(?:https?:|mailto:|tel:|\/(?!\/))/i,

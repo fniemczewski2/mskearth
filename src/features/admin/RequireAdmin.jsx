@@ -36,7 +36,7 @@ export default function RequireAdmin({ children }) {
 
     supabase.auth.getSession().then(({ data }) => evaluate(data.session));
     const { data: sub } = supabase.auth.onAuthStateChange((_event, session) => {
-      // Wywolania Supabase (rpc, signOut) poza callbackiem – w nim trzymana jest blokada sesji.
+      // Wywolania Supabase (rpc, signOut) poza callbackiem - w nim trzymana jest blokada sesji.
       setTimeout(() => evaluate(session), 0);
     });
 
@@ -49,7 +49,9 @@ export default function RequireAdmin({ children }) {
   if (state.status === 'loading') {
     return (
       <main className="adminPanel">
-        <p role="status" aria-live="polite">Sprawdzanie uprawnień…</p>
+        <p role="status" aria-live="polite">
+          Sprawdzanie uprawnień…
+        </p>
       </main>
     );
   }
@@ -68,14 +70,10 @@ export default function RequireAdmin({ children }) {
       <main className="adminPanel">
         <h1>Brak uprawnień</h1>
         <p role="alert">
-          To konto nie ma uprawnień administratora. Jeśli to pomyłka, poproś o dodanie
-          do listy administratorów.
+          To konto nie ma uprawnień administratora. Jeśli to pomyłka, poproś o dodanie do listy
+          administratorów.
         </p>
-        <button
-          type="button"
-          className="primaryBtn"
-          onClick={() => supabase.auth.signOut()}
-        >
+        <button type="button" className="primaryBtn" onClick={() => supabase.auth.signOut()}>
           Wyloguj
         </button>
       </main>

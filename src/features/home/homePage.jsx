@@ -7,6 +7,7 @@ import NewsletterForm from '../newsletter/newsletter.jsx';
 import Seo from '../../shared/components/Seo.jsx';
 import { useTranslations } from '../../shared/i18n/useTranslations.js';
 import { SITE_URL } from '../../shared/config/site.js';
+import Loader from '../../shared/components/Loader.jsx';
 
 function prefersReducedMotion() {
   return window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false;
@@ -80,7 +81,7 @@ function Main() {
   return (
     <main className="index">
       <Seo
-        title={t.seo?.home?.title ?? 'Młodzieżowy Strajk Klimatyczny – Fridays for Future Polska'}
+        title={t.seo?.home?.title ?? 'Młodzieżowy Strajk Klimatyczny - Fridays for Future Polska'}
         description={t.seo?.home?.description}
         url={`${SITE_URL}/${lang}`}
       />
@@ -98,10 +99,12 @@ function Main() {
 
         <div className="hero-cta-group">
           <a href="#joinUs" className="cta">
-            {h.join ?? 'Dołącz do nas'}&nbsp;<i className="bi bi-rocket-takeoff" aria-hidden="true" />
+            {h.join ?? 'Dołącz do nas'}&nbsp;
+            <i className="bi bi-rocket-takeoff" aria-hidden="true" />
           </a>
           <a href="#donate" className="cta ghost">
-            {h.support ?? 'Wesprzyj nas'}&nbsp;<i className="bi bi-piggy-bank" aria-hidden="true" />
+            {h.support ?? 'Wesprzyj nas'}&nbsp;
+            <i className="bi bi-piggy-bank" aria-hidden="true" />
           </a>
         </div>
 
@@ -128,12 +131,7 @@ function Main() {
           {h.videoFallback ?? 'Twoja przeglądarka nie obsługuje elementu wideo.'}
         </video>
 
-        {isLoading && !userPaused && (
-          <div className="loader" role="status" aria-live="polite">
-            <span className="spinner" aria-hidden="true" />
-            <span className="sr-only">{t.a11y?.loading ?? 'Ładowanie…'}</span>
-          </div>
-        )}
+        {isLoading && !userPaused && <Loader />}
 
         <div className="film-controls">
           <button

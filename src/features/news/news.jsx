@@ -1,9 +1,10 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 
 import Seo from '../../shared/components/Seo.jsx';
 import { useTranslations } from '../../shared/i18n/useTranslations.js';
-import { SITE_URL } from '../../shared/config/site.js';
+import { NEWS_PAGE_SIZE, SITE_URL } from '../../shared/config/site.js';
+import Loader from '../../shared/components/Loader.jsx';
 import { fetchPublishedArticles } from './db/article.js';
 
 const PREVIEW_LENGTH = 200;
@@ -17,27 +18,34 @@ function toPlainText(html = '') {
 function News() {
   const { t, lang } = useTranslations();
   const [articles, setArticles] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [failed, setFailed] = useState(false);
+  const [status, setStatus] = useState('loading');
+  const [hasMore, setHasMore] = useState(false);
+  const loadingRef = useRef(false);
+
+  const loadPage = useCallback(async (offset) => {
+    if (loadingRef.current) return;
+    loadingRef.current = true;
+    setStatus('loading');
+    try {
+      // Jeden wiersz ponad strone mowi, czy sa starsze wpisy.
+      const list = await fetchPublishedArticles({ limit: NEWS_PAGE_SIZE + 1, offset });
+      setHasMore(list.length > NEWS_PAGE_SIZE);
+      setArticles((prev) => [...(offset === 0 ? [] : prev), ...list.slice(0, NEWS_PAGE_SIZE)]);
+      setStatus('ready');
+    } catch (err) {
+      console.error('Error fetching articles:', err);
+      setStatus('error');
+    } finally {
+      loadingRef.current = false;
+    }
+  }, []);
 
   useEffect(() => {
-    let active = true;
-    setLoading(true);
-    fetchPublishedArticles({ limit: 30 })
-      .then((list) => {
-        if (active) setArticles(list);
-      })
-      .catch((err) => {
-        console.error('Error fetching articles:', err);
-        if (active) setFailed(true);
-      })
-      .finally(() => {
-        if (active) setLoading(false);
-      });
-    return () => {
-      active = false;
-    };
-  }, []);
+    loadPage(0);
+  }, [loadPage]);
+
+  const loading = status === 'loading';
+  const failed = status === 'error';
 
   const suffix = lang === 'pl' ? '' : lang;
   const field = (name) => `${name}${suffix}`;
@@ -54,7 +62,7 @@ function News() {
   return (
     <main className="news">
       <Seo
-        title={t.seo?.news?.title ?? 'Aktualności – Młodzieżowy Strajk Klimatyczny'}
+        title={t.seo?.news?.title ?? 'Aktualności - Młodzieżowy Strajk Klimatyczny'}
         description={t.seo?.news?.description}
         url={`${SITE_URL}/${lang}/aktualnosci`}
       />
@@ -63,18 +71,21 @@ function News() {
         <span className="section-divider" aria-hidden="true" />
       </div>
 
-      {loading && (
-        <div className="loader" role="status" aria-live="polite">
-          <span className="spinner" aria-hidden="true" />
-          <span className="sr-only">{t.a11y?.loading ?? 'Ładowanie…'}</span>
+      {failed && (
+        <div className="emptyState" role="alert">
+          <i className="bi bi-exclamation-triangle emptyStateIcon" aria-hidden="true" />
+          <p>{t.news?.loadError || 'Nie udało się wczytać aktualności.'}</p>
+          <button type="button" className="primaryBtn" onClick={() => loadPage(articles.length)}>
+            {t.news?.retry || 'Spróbuj ponownie'}
+          </button>
         </div>
       )}
 
-      {!loading && (failed || visible.length === 0) && (
-        <article className="emptyState">
+      {status === 'ready' && visible.length === 0 && (
+        <div className="emptyState">
           <i className="bi bi-journal-richtext emptyStateIcon" aria-hidden="true" />
           <p>{t.news?.empty || 'Nie mamy jeszcze żadnych wpisów. Zajrzyj tu wkrótce.'}</p>
-        </article>
+        </div>
       )}
 
       {visible.map(({ article, title, text }) => {
@@ -112,6 +123,15 @@ function News() {
           </article>
         );
       })}
+      {loading && <Loader />}
+
+      {hasMore && !loading && !failed && (
+        <div className="buttonContainer">
+          <button type="button" className="primaryBtn" onClick={() => loadPage(articles.length)}>
+            {t.news?.loadMore || 'Wczytaj starsze wpisy'}
+          </button>
+        </div>
+      )}
     </main>
   );
 }

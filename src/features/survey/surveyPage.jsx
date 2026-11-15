@@ -2,15 +2,16 @@ import { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react'
 import { useParams } from 'react-router-dom';
 
 import Seo from '../../shared/components/Seo.jsx';
-import { SITE_URL } from '../../shared/config/site.js';
+import { EMAIL_RE, REQUEST_TIMEOUT_MS, SITE_URL } from '../../shared/config/site.js';
+import { getCaptchaToken } from '../../shared/lib/captcha.js';
 import { useTranslations } from '../../shared/i18n/useTranslations.js';
 import { fetchPublicSurvey } from './db/surveys.js';
 import { formatDay, groupByDate, isSelectable } from './slots.js';
 import './survey.css';
+import Honeypot from '../../shared/components/Honeypot.jsx';
+import Loader from '../../shared/components/Loader.jsx';
 
 const BOOK_URL = '/api/survey-book';
-const REQUEST_TIMEOUT_MS = 15000;
-const EMAIL_RE = /^\S+@\S+\.\S+$/;
 
 export default function SurveyPage() {
   const { slug } = useParams();
@@ -97,7 +98,7 @@ export default function SurveyPage() {
     if (company.trim()) return;
 
     const errs = {};
-    if (!name.trim()) errs.name = s.errName || 'Podaj imię.';
+    if (!name.trim()) errs.name = s.errName || 'Podaj imię i nazwisko.';
     if (!EMAIL_RE.test(email.trim())) errs.email = s.errEmail || 'Podaj poprawny adres e-mail.';
     if (selected.size === 0) errs.slots = s.errNoSlots || 'Wybierz co najmniej jeden termin.';
     if (!consent) errs.consent = s.errConsent || 'Zgoda jest wymagana, aby się zapisać.';
@@ -115,6 +116,7 @@ export default function SurveyPage() {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
     try {
+      const captcha = await getCaptchaToken({ signal: controller.signal });
       const resp = await fetch(BOOK_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json; charset=utf-8', Accept: 'application/json' },
@@ -125,6 +127,8 @@ export default function SurveyPage() {
           slotIds: [...selected],
           consent,
           company,
+          captcha,
+          locale: lang,
         }),
         signal: controller.signal,
       });
@@ -140,7 +144,11 @@ export default function SurveyPage() {
     } catch (err) {
       if (err.code === 'slot_full' || err.code === 'slot_past' || err.code === 'survey_closed') await load();
       setStatus('error');
-      setMessage(err.name === 'AbortError' ? s.errTimeout || 'Przekroczono czas. Spróbuj ponownie.' : errorFor(err.code));
+      setMessage(
+        err.name === 'AbortError'
+          ? s.errTimeout || 'Przekroczono czas. Spróbuj ponownie.'
+          : errorFor(err.code)
+      );
     } finally {
       clearTimeout(timeoutId);
     }
@@ -148,7 +156,7 @@ export default function SurveyPage() {
 
   const seo = (
     <Seo
-      title={`${survey?.title ?? s.seoTitle ?? 'Zapisy na terminy'} – MSK`}
+      title={`${survey?.title ?? s.seoTitle ?? 'Zapisy na terminy'} - MSK`}
       url={`${SITE_URL}/${lang}/ankieta/${slug}`}
       noindex
     />
@@ -158,10 +166,7 @@ export default function SurveyPage() {
     return (
       <main className="survey">
         {seo}
-        <div className="loader" role="status" aria-live="polite">
-          <span className="spinner" aria-hidden="true" />
-          <span className="sr-only">{t.a11y?.loading ?? 'Ładowanie…'}</span>
-        </div>
+        <Loader />
       </main>
     );
   }
@@ -171,7 +176,11 @@ export default function SurveyPage() {
       <main className="survey">
         {seo}
         <div className="page-intro">
-          <h1>{loadErr ? s.loadError || 'Nie udało się wczytać ankiety.' : s.notFound || 'Nie znaleziono ankiety.'}</h1>
+          <h1>
+            {loadErr
+              ? s.loadError || 'Nie udało się wczytać ankiety.'
+              : s.notFound || 'Nie znaleziono ankiety.'}
+          </h1>
         </div>
         {loadErr && (
           <div className="buttonContainer">
@@ -205,7 +214,7 @@ export default function SurveyPage() {
           <ul className="survey-booked">
             {booked.map((x) => (
               <li key={x.id}>
-                {formatDay(x.date, lang)}, {x.start}–{x.end}
+                {formatDay(x.date, lang)}, {x.start}-{x.end}
               </li>
             ))}
           </ul>
@@ -231,23 +240,10 @@ export default function SurveyPage() {
       ) : (
         <div className="panel survey-panel">
           <form onSubmit={handleSubmit} noValidate aria-busy={status === 'loading' ? 'true' : 'false'}>
-            <label aria-hidden="true" htmlFor={`${uid}-company`} style={{ position: 'absolute', left: '-9999px' }}>
-              Company
-            </label>
-            <input
-              id={`${uid}-company`}
-              type="text"
-              name="company"
-              tabIndex={-1}
-              autoComplete="off"
-              aria-hidden="true"
-              style={{ position: 'absolute', left: '-9999px', width: 1, height: 1, opacity: 0 }}
-              value={company}
-              onChange={(e) => setCompany(e.target.value)}
-            />
+            <Honeypot id={`${uid}-company`} value={company} onChange={setCompany} />
 
             <label className="formLabel" htmlFor={`${uid}-name`}>
-              {s.name || 'Imię'}
+              {s.name || 'Imię i nazwisko'}
             </label>
             <input
               className="formField"
@@ -320,7 +316,7 @@ export default function SurveyPage() {
                             onChange={() => toggle(slot.id)}
                           />
                           <span className="survey-slotTime">
-                            {slot.start}–{slot.end}
+                            {slot.start}-{slot.end}
                           </span>
                           <span className="survey-slotHint">{hint}</span>
                         </label>
@@ -345,7 +341,7 @@ export default function SurveyPage() {
               />
               <label htmlFor={`${uid}-consent`} className="agreement">
                 {s.consent ||
-                  'Wyrażam zgodę na przetwarzanie moich danych osobowych (imię, e-mail) w celu obsługi zapisu na wybrane terminy.'}
+                  'Wyrażam zgodę na przetwarzanie moich danych osobowych (imię, nazwisko, e-mail) w celu obsługi zapisu na wybrane terminy.'}
               </label>
             </div>
             {errorP('consent')}
@@ -360,7 +356,11 @@ export default function SurveyPage() {
             </p>
 
             <div className="buttonContainer">
-              <button className="primaryBtn" type="submit" aria-disabled={status === 'loading' ? 'true' : 'false'}>
+              <button
+                className="primaryBtn"
+                type="submit"
+                aria-disabled={status === 'loading' ? 'true' : 'false'}
+              >
                 {status === 'loading' ? s.sending || 'Zapisywanie…' : s.submit || 'Zapisz mnie'}
               </button>
             </div>

@@ -1,10 +1,11 @@
 import { useEffect, useState } from 'react';
 
 import { supabase } from '../../../services/supabaseClient.js';
+import { DONATION } from '../../../shared/config/site.js';
 
-export function useDonationStats({ pollMs = 60_000 } = {}) {
+export function useDonationStats({ pollMs = DONATION.statsPollMs } = {}) {
   const [state, setState] = useState({
-    goalAmount: 10_000,
+    goalAmount: DONATION.fallbackGoal,
     currentAmount: 0,
     donorsCount: 0,
     loading: true,
@@ -28,7 +29,7 @@ export function useDonationStats({ pollMs = 60_000 } = {}) {
       }
 
       setState({
-        goalAmount: Number(data?.goal_amount) || 10_000,
+        goalAmount: Number(data?.goal_amount) || DONATION.fallbackGoal,
         currentAmount: Number(data?.current_amount) || 0,
         donorsCount: Number(data?.donors_count) || 0,
         loading: false,

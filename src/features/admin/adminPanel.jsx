@@ -1,28 +1,13 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 
 import { supabase } from '../../services/supabaseClient.js';
 import AdminPanelNav from './adminPanelNav.jsx';
+import useAdminUser from './useAdminUser.js';
+import './admin.css';
 
 export default function AdminPanel() {
-  const [user, setUser] = useState(null);
+  const user = useAdminUser();
   const [statusMsg, setStatusMsg] = useState('');
-
-  useEffect(() => {
-    let active = true;
-
-    supabase.auth.getSession().then(({ data }) => {
-      if (active) setUser(data.session?.user ?? null);
-    });
-
-    const { data: sub } = supabase.auth.onAuthStateChange((_event, session) => {
-      if (active) setUser(session?.user ?? null);
-    });
-
-    return () => {
-      active = false;
-      sub.subscription.unsubscribe();
-    };
-  }, []);
 
   const handleSignOut = async () => {
     setStatusMsg('Wylogowywanie…');
@@ -42,10 +27,10 @@ export default function AdminPanel() {
       </div>
 
       <section className="sub-header">
-          {displayName}
-          <button className="logOutBtn primaryBtn" onClick={handleSignOut} type="button">
-            Wyloguj
-          </button>
+        {displayName}
+        <button className="logOutBtn primaryBtn" onClick={handleSignOut} type="button">
+          Wyloguj
+        </button>
       </section>
 
       <AdminPanelNav />

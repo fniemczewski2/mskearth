@@ -10,7 +10,12 @@ vi.mock('../../services/supabaseClient', () => ({
           limit: () => ({
             maybeSingle: () =>
               Promise.resolve({
-                data: { id: 1, instagram: 'https://instagram.com/msk', form: 'https://forms.example/ankieta', steps: [] },
+                data: {
+                  id: 1,
+                  instagram: 'https://instagram.com/msk',
+                  form: 'https://forms.example/ankieta',
+                  steps: [],
+                },
                 error: null,
               }),
           }),

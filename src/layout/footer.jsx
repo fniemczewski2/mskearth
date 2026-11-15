@@ -2,14 +2,16 @@ import { Link } from 'react-router-dom';
 
 import SocialLink from '../shared/components/socialLink.jsx';
 import { useTranslations } from '../shared/i18n/useTranslations.js';
+import { SOCIAL_LINKS } from '../shared/config/site.js';
+import { reopenConsent } from '../shared/lib/consent.js';
 
 const SOCIAL = [
-  { key: 'facebook', link: 'https://www.facebook.com/msk.polska', icon: 'bi bi-facebook', fallback: 'MSK na Facebooku' },
-  { key: 'instagram', link: 'https://www.instagram.com/mlodziezowystrajkklimatyczny', icon: 'bi bi-instagram', fallback: 'MSK na Instagramie' },
-  { key: 'tiktok', link: 'https://www.tiktok.com/@msklimatyczny', icon: 'bi bi-tiktok', fallback: 'MSK na TikToku' },
-  { key: 'x', link: 'https://x.com/msklimatyczny', icon: 'bi bi-twitter-x', fallback: 'MSK w serwisie X' },
-  { key: 'youtube', link: 'https://www.youtube.com/@ModziezowyStrajkKlimatyczny', icon: 'bi bi-youtube', fallback: 'Kanał MSK na YouTube' },
-];
+  { key: 'facebook', icon: 'bi bi-facebook', fallback: 'MSK na Facebooku' },
+  { key: 'instagram', icon: 'bi bi-instagram', fallback: 'MSK na Instagramie' },
+  { key: 'tiktok', icon: 'bi bi-tiktok', fallback: 'MSK na TikToku' },
+  { key: 'x', icon: 'bi bi-twitter-x', fallback: 'MSK w serwisie X' },
+  { key: 'youtube', icon: 'bi bi-youtube', fallback: 'Kanał MSK na YouTube' },
+].map((item) => ({ ...item, link: SOCIAL_LINKS[item.key] }));
 
 function Footer({ lang }) {
   const { t } = useTranslations();
@@ -25,19 +27,33 @@ function Footer({ lang }) {
 
         <div className="social-icons">
           {SOCIAL.map((s) => (
-            <SocialLink key={s.key} label={`${f.social?.[s.key] ?? s.fallback} ${newTab}`} link={s.link} icon={s.icon} />
+            <SocialLink
+              key={s.key}
+              label={`${f.social?.[s.key] ?? s.fallback} ${newTab}`}
+              link={s.link}
+              icon={s.icon}
+            />
           ))}
         </div>
 
-        <FooterMenu menuItems={f.menuItems ?? []} lang={lang} newTab={newTab} label={f.navLabel ?? 'Stopka'} />
+        <FooterMenu
+          menuItems={f.menuItems ?? []}
+          lang={lang}
+          newTab={newTab}
+          label={f.navLabel ?? 'Stopka'}
+          cookieSettingsLabel={t.cookies?.settings ?? 'Ustawienia cookies'}
+        />
 
-        <p>&copy; {new Date().getFullYear()} {f.copyright ?? 'Młodzieżowy Strajk Klimatyczny – Fridays for Future Polska'}</p>
+        <p>
+          &copy; {new Date().getFullYear()}{' '}
+          {f.copyright ?? 'Młodzieżowy Strajk Klimatyczny - Fridays for Future Polska'}
+        </p>
       </div>
     </footer>
   );
 }
 
-function FooterMenu({ menuItems, lang, newTab, label }) {
+function FooterMenu({ menuItems, lang, newTab, label, cookieSettingsLabel }) {
   return (
     <nav className="foot-menu" aria-label={label}>
       <ul>
@@ -61,6 +77,11 @@ function FooterMenu({ menuItems, lang, newTab, label }) {
             </li>
           );
         })}
+        <li>
+          <button type="button" className="foot-menu__button" onClick={reopenConsent}>
+            {cookieSettingsLabel}
+          </button>
+        </li>
       </ul>
     </nav>
   );

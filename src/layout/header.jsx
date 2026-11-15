@@ -27,8 +27,16 @@ function Header({ lang, handleLanguageChange }) {
 
   return (
     <>
-      <DesktopHeader lang={lang} handleLanguageChange={handleLanguageChange} ticker={isMobile ? null : ticker} />
-      <MobileHeader lang={lang} handleLanguageChange={handleLanguageChange} ticker={isMobile ? ticker : null} />
+      <DesktopHeader
+        lang={lang}
+        handleLanguageChange={handleLanguageChange}
+        ticker={isMobile ? null : ticker}
+      />
+      <MobileHeader
+        lang={lang}
+        handleLanguageChange={handleLanguageChange}
+        ticker={isMobile ? ticker : null}
+      />
     </>
   );
 }
@@ -51,7 +59,11 @@ function DesktopHeader({ lang, handleLanguageChange, ticker }) {
   return (
     <header className={`desktopHeader${isScrolled ? ' is-scrolled' : ''}`} id="header">
       <div className="headerElementsContainer">
-        <Link to={`/${lang}`} className="desktop logo" aria-label={t.header?.homeLink ?? 'Młodzieżowy Strajk Klimatyczny – strona główna'}>
+        <Link
+          to={`/${lang}`}
+          className="desktop logo"
+          aria-label={t.header?.homeLink ?? 'Młodzieżowy Strajk Klimatyczny - strona główna'}
+        >
           <img src="/logoMSK.webp" alt="" width="512" height="512" decoding="async" />
           <img src="/logoFFF.png" alt="" width="512" height="512" decoding="async" />
         </Link>

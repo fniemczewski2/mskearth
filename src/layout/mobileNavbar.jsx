@@ -5,7 +5,13 @@ import PropTypes from 'prop-types';
 import LanguageSwitch from './languageSwitch.jsx';
 import { useTranslations } from '../shared/i18n/useTranslations.js';
 
-export default function MobileNavbar({ id = 'mobile-nav', lang = 'pl', handleLanguageChange, isOpen, onNavigate }) {
+export default function MobileNavbar({
+  id = 'mobile-nav',
+  lang = 'pl',
+  handleLanguageChange,
+  isOpen,
+  onNavigate,
+}) {
   const { t } = useTranslations();
   const { pathname } = useLocation();
   const menuItems = useMemo(() => t.mobileNavbar?.menuItems ?? [], [t.mobileNavbar?.menuItems]);
@@ -41,7 +47,6 @@ export default function MobileNavbar({ id = 'mobile-nav', lang = 'pl', handleLan
       id={id}
       ref={navRef}
       className={`mobileNavbar ${isOpen ? 'is-open' : ''}`}
-      style={{ transform: isOpen ? 'translateX(0)' : 'translateX(-100%)' }}
       aria-label={t.a11y?.mobileMenu ?? 'Nawigacja mobilna'}
       aria-hidden={!isOpen}
       inert={!isOpen ? true : undefined}
@@ -49,7 +54,8 @@ export default function MobileNavbar({ id = 'mobile-nav', lang = 'pl', handleLan
       <ul className="navbarItems">
         {menuItems.map((item) => {
           const to = `/${lang}${item.link === '/' ? '' : item.link}`;
-          const active = item.link === '/' ? pathname === to : pathname === to || pathname.startsWith(`${to}/`);
+          const active =
+            item.link === '/' ? pathname === to : pathname === to || pathname.startsWith(`${to}/`);
           return (
             <li key={item.link}>
               <Link to={to} onClick={onNavigate} aria-current={active ? 'page' : undefined}>

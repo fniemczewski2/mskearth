@@ -2,6 +2,7 @@ import Goals from './goals.jsx';
 import Seo from '../../shared/components/Seo.jsx';
 import { useTranslations } from '../../shared/i18n/useTranslations.js';
 import { SITE_URL } from '../../shared/config/site.js';
+import Loader from '../../shared/components/Loader.jsx';
 
 export default function About() {
   const { t, lang, ready } = useTranslations();
@@ -13,7 +14,7 @@ export default function About() {
   return (
     <main className="about" aria-busy={ready ? 'false' : 'true'}>
       <Seo
-        title={t.seo?.about?.title ?? 'O nas – Młodzieżowy Strajk Klimatyczny'}
+        title={t.seo?.about?.title ?? 'O nas - Młodzieżowy Strajk Klimatyczny'}
         description={t.seo?.about?.description}
         url={`${SITE_URL}/${lang}/o-nas`}
       />
@@ -23,14 +24,11 @@ export default function About() {
           <span className="section-divider" aria-hidden="true" />
         </div>
 
-        {!ready && (
-          <div className="loader" role="status" aria-live="polite">
-            <span className="spinner" aria-hidden="true" />
-            <span className="sr-only">{t.a11y?.loading ?? 'Ładowanie…'}</span>
-          </div>
-        )}
+        {!ready && <Loader />}
 
-        {ready && paragraphs.length === 0 && <p role="alert">{t.about_error ?? 'Nie udało się wczytać treści.'}</p>}
+        {ready && paragraphs.length === 0 && (
+          <p role="alert">{t.about_error ?? 'Nie udało się wczytać treści.'}</p>
+        )}
 
         {ready && paragraphs.length > 0 && (
           <article>

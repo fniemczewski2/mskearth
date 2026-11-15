@@ -1,12 +1,15 @@
 import { useId, useRef, useState } from 'react';
 
 import { useTranslations } from '../../shared/i18n/useTranslations.js';
+import { EMAIL_RE, PRIVACY_POLICY_PATH, REQUEST_TIMEOUT_MS } from '../../shared/config/site.js';
+import { getCaptchaToken } from '../../shared/lib/captcha.js';
+import Honeypot from '../../shared/components/Honeypot.jsx';
+import Loader from '../../shared/components/Loader.jsx';
 
 const SUBSCRIBE_URL = '/api/newsletter-subscribe';
-const REQUEST_TIMEOUT_MS = 15000;
 
 export default function NewsletterForm() {
-  const { t } = useTranslations();
+  const { t, lang } = useTranslations();
   const uid = useId();
   const emailRef = useRef(null);
   const consentRef = useRef(null);
@@ -24,16 +27,22 @@ export default function NewsletterForm() {
     if (company.trim().length > 0) {
       return { ok: false, msg: t.newsletter?.failed || 'Coś poszło nie tak.' };
     }
-    if (!/^\S+@\S+\.\S+$/.test(email.trim())) return { ok: false, field: 'email', msg: t.newsletter?.invalidEmail || 'Podaj poprawny adres e-mail.' };
-    if (!consent) return { ok: false, field: 'consent', msg: t.newsletter?.consentRequired || 'Zaznacz zgodę na otrzymywanie newslettera.' };
+    if (!EMAIL_RE.test(email.trim()))
+      return { ok: false, field: 'email', msg: t.newsletter?.invalidEmail || 'Podaj poprawny adres e-mail.' };
+    if (!consent)
+      return {
+        ok: false,
+        field: 'consent',
+        msg: t.newsletter?.consentRequired || 'Zaznacz zgodę na otrzymywanie newslettera.',
+      };
     return { ok: true, msg: '' };
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (status === 'loading') return; 
+    if (status === 'loading') return;
 
-    setStatus('loading'); 
+    setStatus('loading');
     setErrMsg('');
     setErrField('');
 
@@ -54,13 +63,14 @@ export default function NewsletterForm() {
     const timeoutId = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
 
     try {
+      const captcha = await getCaptchaToken({ signal: controller.signal });
       const resp = await fetch(SUBSCRIBE_URL, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json; charset=utf-8',
           Accept: 'application/json',
         },
-        body: JSON.stringify({ email: email.trim(), consent, company }),
+        body: JSON.stringify({ email: email.trim(), consent, company, captcha, locale: lang }),
         signal: controller.signal,
       });
 
@@ -71,7 +81,12 @@ export default function NewsletterForm() {
           info =
             j?.message ||
             j?.error?.message ||
-            (Array.isArray(j?.errors) ? j.errors.map((x) => x?.message).filter(Boolean).join(', ') : '');
+            (Array.isArray(j?.errors)
+              ? j.errors
+                  .map((x) => x?.message)
+                  .filter(Boolean)
+                  .join(', ')
+              : '');
         } catch {
           info = '';
         }
@@ -87,12 +102,14 @@ export default function NewsletterForm() {
         setStatus('error');
         setErrMsg(t.newsletter?.timeout || 'Przekroczono czas. Spróbuj ponownie.');
       } else {
-        const isTimeout = String(err?.message || '').toLowerCase().includes('timeout');
+        const isTimeout = String(err?.message || '')
+          .toLowerCase()
+          .includes('timeout');
         setStatus('error');
         setErrMsg(
           isTimeout
-            ? (t.newsletter?.timeout || 'Przekroczono czas. Spróbuj ponownie.')
-            : (t.newsletter?.failed || 'Nie udało się zapisać do newslettera.')
+            ? t.newsletter?.timeout || 'Przekroczono czas. Spróbuj ponownie.'
+            : t.newsletter?.failed || 'Nie udało się zapisać do newslettera.'
         );
         console.error('Newsletter subscribe error:', err);
       }
@@ -114,20 +131,7 @@ export default function NewsletterForm() {
           noValidate
           aria-busy={busy ? 'true' : 'false'}
         >
-          <label aria-hidden="true" htmlFor={`${uid}-company`} style={{ position: 'absolute', left: '-9999px' }}>
-            Company
-          </label>
-          <input
-            id={`${uid}-company`}
-            type="text"
-            name="company"
-            tabIndex={-1}
-            autoComplete="off"
-            aria-hidden="true"
-            style={{ position: 'absolute', left: '-9999px', width: 1, height: 1, opacity: 0 }}
-            value={company}
-            onChange={(e) => setCompany(e.target.value)}
-          />
+          <Honeypot id={`${uid}-company`} value={company} onChange={setCompany} />
 
           <label className="formLabel" htmlFor={`${uid}-email`}>
             {t.newsletter?.emailLabel || 'E-mail'}
@@ -166,28 +170,20 @@ export default function NewsletterForm() {
 
           <p className="agreement privacy-notice">
             {t.newsletter?.privacyNotice ||
-              'Administratorem danych jest Fundacja Przyjaciół Młodzieżowego Strajku Klimatycznego. Wysyłkę obsługuje Kit (ConvertKit).'}{' '}
-            <a href="/polityka-prywatnosci.pdf" target="_blank" rel="noopener noreferrer">
+              'Administratorem danych jest Fundacja Przyjaciół Młodzieżowego Strajku Klimatycznego. Wysyłkę obsługuje GetResponse.'}{' '}
+            <a href={PRIVACY_POLICY_PATH} target="_blank" rel="noopener noreferrer">
               {t.cookies?.policy ?? 'Polityka prywatności'}
               <span className="sr-only"> {t.a11y?.opensNewTab ?? '(otwiera się w nowej karcie)'}</span>
             </a>
           </p>
 
-          <button
-            type="submit"
-            className="newsletterButton"
-            aria-disabled={busy ? 'true' : 'false'}
-          >
-            {busy ? (t.newsletter?.pending || 'Przetwarzanie…') : (t.newsletter?.submit || 'Zapisz się')}
-            &nbsp;<i className="bi bi-envelope icon newsletterIcon" aria-hidden="true" />
+          <button type="submit" className="newsletterButton" aria-disabled={busy ? 'true' : 'false'}>
+            {busy ? t.newsletter?.pending || 'Przetwarzanie…' : t.newsletter?.submit || 'Zapisz się'}
+            &nbsp;
+            <i className="bi bi-envelope icon newsletterIcon" aria-hidden="true" />
           </button>
-          
-          {busy && (
-            <div className="loader" role="status" aria-live="polite">
-              <span className="spinner" aria-hidden="true" />
-              <span className="sr-only">{t.a11y?.loading ?? 'Ładowanie…'}</span>
-            </div>
-          )}
+
+          {busy && <Loader />}
           {status === 'error' && (
             <p className="failed" role="alert" id={`${uid}-error`}>
               {errMsg || t.newsletter?.failed || 'Coś poszło nie tak.'}

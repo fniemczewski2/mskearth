@@ -1,46 +1,35 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState } from 'react';
 import {
   getRecruitmentSettings,
   replaceRecruitmentSettings,
-} from "../../recruitment/db/recruitmentSettings.jsx";
-import { DEFAULT_RECRUITMENT_STEPS } from "../../recruitment/recruitmentDefaults.js";
+} from '../../recruitment/db/recruitmentSettings.js';
+import { DEFAULT_RECRUITMENT_STEPS } from '../../recruitment/recruitmentDefaults.js';
 
-import { supabase } from "../../../services/supabaseClient.js";
-
-const emptyStep = { text: "", link: "", linkLabel: "" };
+const emptyStep = { text: '', link: '', linkLabel: '' };
 
 function RecruitmentSettingsCMS() {
-  const [sessionChecked, setSessionChecked] = useState(false);
-  const [user, setUser] = useState(null);
-
-  const [settings, setSettings] = useState({ instagram: "", form: "" });
+  const [settings, setSettings] = useState({ instagram: '', form: '' });
   const [steps, setSteps] = useState(DEFAULT_RECRUITMENT_STEPS);
   const [loading, setLoading] = useState(true);
-  const [err, setErr] = useState("");
+  const [err, setErr] = useState('');
   const [saving, setSaving] = useState(false);
 
-  useEffect(() => {
-    let mounted = true;
-    async function initAuth() {
-      const { data, error } = await supabase.auth.getSession();
-      if (!mounted) return; if (error) console.error(error);
-      setUser(data?.session?.user ?? null); setSessionChecked(true);
-    }
-    initAuth();
-    const { data: sub } = supabase.auth.onAuthStateChange((_e, session) => setUser(session?.user ?? null));
-    return () => sub?.subscription?.unsubscribe?.();
-  }, []);
-
   const load = async () => {
-    setLoading(true); setErr("");
+    setLoading(true);
+    setErr('');
     try {
       const s = await getRecruitmentSettings();
-      setSettings({ instagram: s?.instagram || "", form: s?.form || "" });
+      setSettings({ instagram: s?.instagram || '', form: s?.form || '' });
       setSteps(Array.isArray(s?.steps) && s.steps.length > 0 ? s.steps : DEFAULT_RECRUITMENT_STEPS);
-    } catch (e) { setErr(e?.message || String(e)); }
-    finally { setLoading(false); }
+    } catch (e) {
+      setErr(e?.message || String(e));
+    } finally {
+      setLoading(false);
+    }
   };
-  useEffect(() => { if (sessionChecked && user) load(); }, [sessionChecked, user]);
+  useEffect(() => {
+    load();
+  }, []);
 
   function updateStep(index, patch) {
     setSteps((list) => list.map((step, i) => (i === index ? { ...step, ...patch } : step)));
@@ -62,10 +51,16 @@ function RecruitmentSettingsCMS() {
   }
 
   async function handleSave(e) {
-    e.preventDefault(); setSaving(true); setErr("");
+    e.preventDefault();
+    setSaving(true);
+    setErr('');
     try {
       const cleanSteps = steps
-        .map((s) => ({ text: (s.text || "").trim(), link: (s.link || "").trim(), linkLabel: (s.linkLabel || "").trim() }))
+        .map((s) => ({
+          text: (s.text || '').trim(),
+          link: (s.link || '').trim(),
+          linkLabel: (s.linkLabel || '').trim(),
+        }))
         .filter((s) => s.text);
       await replaceRecruitmentSettings({
         instagram: settings.instagram || null,
@@ -73,32 +68,42 @@ function RecruitmentSettingsCMS() {
         steps: cleanSteps,
       });
       await load();
-    } catch (e) { setErr(e?.message || String(e)); }
-    finally { setSaving(false); }
+    } catch (e) {
+      setErr(e?.message || String(e));
+    } finally {
+      setSaving(false);
+    }
   }
-
-  if (!sessionChecked) return <div style={{ padding: 24 }}>Sprawdzanie sesji…</div>;
-  if (!user)
-    return (
-      <div style={{ padding: 24 }}>
-        <h1 style={{ fontSize: 20, fontWeight: 600, margin: 0 }}>Dostęp tylko dla zalogowanych</h1>
-        <p>Zaloguj się, aby zarządzać ustawieniami rekrutacji.</p>
-      </div>
-    );
 
   return (
     <div className="cms-sectionGrid">
       <aside className="cms-card">
-        <h3 style={{ fontWeight: 600, marginTop: 0 }}>Zmień ustawienia</h3>
-        <form onSubmit={handleSave} aria-busy={loading ? "true" : "false"}>
-          {loading && <div role="status" aria-live="polite" className="cms-helperXs">Wczytywanie ustawień…</div>}
+        <h2 className="cms-heading">Zmień ustawienia</h2>
+        <form onSubmit={handleSave} aria-busy={loading ? 'true' : 'false'}>
+          {loading && (
+            <div role="status" aria-live="polite" className="cms-helperXs">
+              Wczytywanie ustawień…
+            </div>
+          )}
           <label className="cms-labelWrap">
             <span className="cms-label">Instagram URL</span>
-            <input type="url" placeholder="https://instagram.com/..." className="cms-input" value={settings.instagram} onChange={(e) => setSettings((s) => ({ ...s, instagram: e.target.value }))} />
+            <input
+              type="url"
+              placeholder="https://instagram.com/..."
+              className="cms-input"
+              value={settings.instagram}
+              onChange={(e) => setSettings((s) => ({ ...s, instagram: e.target.value }))}
+            />
           </label>
           <label className="cms-labelWrap">
             <span className="cms-label">Link do formularza</span>
-            <input type="url" placeholder="https://…" className="cms-input" value={settings.form} onChange={(e) => setSettings((s) => ({ ...s, form: e.target.value }))} />
+            <input
+              type="url"
+              placeholder="https://…"
+              className="cms-input"
+              value={settings.form}
+              onChange={(e) => setSettings((s) => ({ ...s, form: e.target.value }))}
+            />
           </label>
 
           <div className="cms-labelWrap">
@@ -109,13 +114,30 @@ function RecruitmentSettingsCMS() {
                   <div className="cms-stepRowHead">
                     <span className="cms-stepIndex">{i + 1}</span>
                     <div className="cms-stepRowActions">
-                      <button type="button" className="cms-btn" onClick={() => moveStep(i, -1)} disabled={i === 0} aria-label={`Przesuń krok ${i + 1} w górę`}>
+                      <button
+                        type="button"
+                        className="cms-btn"
+                        onClick={() => moveStep(i, -1)}
+                        disabled={i === 0}
+                        aria-label={`Przesuń krok ${i + 1} w górę`}
+                      >
                         <i className="bi bi-arrow-up" aria-hidden="true"></i>
                       </button>
-                      <button type="button" className="cms-btn" onClick={() => moveStep(i, 1)} disabled={i === steps.length - 1} aria-label={`Przesuń krok ${i + 1} w dół`}>
+                      <button
+                        type="button"
+                        className="cms-btn"
+                        onClick={() => moveStep(i, 1)}
+                        disabled={i === steps.length - 1}
+                        aria-label={`Przesuń krok ${i + 1} w dół`}
+                      >
                         <i className="bi bi-arrow-down" aria-hidden="true"></i>
                       </button>
-                      <button type="button" className="cms-btnDanger" onClick={() => removeStep(i)} aria-label={`Usuń krok ${i + 1}`}>
+                      <button
+                        type="button"
+                        className="cms-btnDanger"
+                        onClick={() => removeStep(i)}
+                        aria-label={`Usuń krok ${i + 1}`}
+                      >
                         <i className="bi bi-trash-fill" aria-hidden="true"></i>
                       </button>
                     </div>
@@ -148,7 +170,7 @@ function RecruitmentSettingsCMS() {
                 </div>
               ))}
             </div>
-            <button type="button" className="cms-btn" onClick={addStep} style={{ marginTop: 12 }}>
+            <button type="button" className="cms-btn cms-gapTop" onClick={addStep}>
               <i className="bi bi-plus-lg" aria-hidden="true"></i>&nbsp;Dodaj krok
             </button>
           </div>
@@ -156,7 +178,7 @@ function RecruitmentSettingsCMS() {
           {err && <div className="cms-error">{err}</div>}
           <div className="cms-formActions">
             <button disabled={saving} className="cms-btnPrimary">
-              {saving ? "Zapisywanie…" : "Zapisz"}
+              {saving ? 'Zapisywanie…' : 'Zapisz'}
             </button>
           </div>
         </form>

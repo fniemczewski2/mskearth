@@ -1,17 +1,31 @@
-import { useState, useRef, useEffect, useCallback } from 'react';
+import { useState, useRef, useCallback } from 'react';
 import clsx from 'clsx';
 
 import Cities from './cities.jsx';
-import { supabase } from '../../services/supabaseClient.js';
+import { RECRUITMENT_QUERY, fetchRecruitment } from '../recruitment/joinUs.jsx';
+import useQuery from '../../shared/hooks/useQuery.js';
+import { safeHref } from '../../shared/lib/safeHref.js';
 import Seo from '../../shared/components/Seo.jsx';
 import { useTranslations } from '../../shared/i18n/useTranslations.js';
 import { SITE_URL } from '../../shared/config/site.js';
 
 const DB_VOIVODESHIPS = [
-  'dolnośląskie','kujawsko-pomorskie','lubelskie','lubuskie','łódzkie',
-  'małopolskie','mazowieckie','opolskie','podkarpackie','podlaskie',
-  'pomorskie','śląskie','świętokrzyskie','warmińsko-mazurskie','wielkopolskie',
-  'zachodniopomorskie'
+  'dolnośląskie',
+  'kujawsko-pomorskie',
+  'lubelskie',
+  'lubuskie',
+  'łódzkie',
+  'małopolskie',
+  'mazowieckie',
+  'opolskie',
+  'podkarpackie',
+  'podlaskie',
+  'pomorskie',
+  'śląskie',
+  'świętokrzyskie',
+  'warmińsko-mazurskie',
+  'wielkopolskie',
+  'zachodniopomorskie',
 ];
 const DB_SET = new Set(DB_VOIVODESHIPS);
 
@@ -22,7 +36,7 @@ function toDbVoiv(value) {
     lodzkie: 'łódzkie',
     slaskie: 'śląskie',
     swietokrzyskie: 'świętokrzyskie',
-    'świetokrzyskie': 'świętokrzyskie',
+    świetokrzyskie: 'świętokrzyskie',
     warminsko_mazurskie: 'warmińsko-mazurskie',
     warminsko_mazurskie2: 'warmińsko-mazurskie',
     warminsko_mazurskie3: 'warmińsko-mazurskie',
@@ -42,33 +56,13 @@ export default function MapElement() {
 
   const [selectedRegion, setSelectedRegion] = useState(null);
   const [selectedCity, setSelectedCity] = useState(null);
-  const [recruitment, setRecruitment] = useState(null);
   const [showArticle, setShowArticle] = useState(false);
 
   const regionRef = useRef(null);
   const articleRef = useRef(null);
 
-  useEffect(() => {
-    let active = true;
-    (async () => {
-      try {
-        const { data, error } = await supabase
-          .from('recruitments')
-          .select('id, instagram, form, created_at')
-          .order('created_at', { ascending: false })
-          .limit(1)
-          .maybeSingle();
-        if (error) throw error;
-        if (active) setRecruitment(data || null);
-      } catch (e) {
-        console.error('Map recruitments error:', e);
-        if (active) setRecruitment(null);
-      }
-    })();
-    return () => {
-      active = false;
-    };
-  }, []);
+  const { data: recruitment } = useQuery(RECRUITMENT_QUERY, fetchRecruitment);
+  const instagram = safeHref(recruitment?.instagram);
 
   const scrollToElement = (el) => {
     if (!el) return;
@@ -108,7 +102,7 @@ export default function MapElement() {
   return (
     <main className="cities">
       <Seo
-        title={t.seo?.cities?.title ?? 'Grupy lokalne – Młodzieżowy Strajk Klimatyczny'}
+        title={t.seo?.cities?.title ?? 'Grupy lokalne - Młodzieżowy Strajk Klimatyczny'}
         description={t.seo?.cities?.description}
         url={`${SITE_URL}/${lang}/miasta`}
       />
@@ -151,7 +145,11 @@ export default function MapElement() {
 
       {selectedRegion ? (
         <div className="citiesInfo" ref={regionRef}>
-          <Cities selectedRegion={selectedRegion} onSelectCity={setSelectedCity} selectedCity={selectedCity} />
+          <Cities
+            selectedRegion={selectedRegion}
+            onSelectCity={setSelectedCity}
+            selectedCity={selectedCity}
+          />
           <button
             type="button"
             onClick={toggleArticle}
@@ -186,11 +184,12 @@ export default function MapElement() {
 
           <p className="contactUs">
             {content[4] || ''}
-            {recruitment?.instagram && (
-              <a className="joinUsButton" href={recruitment.instagram} target="_blank" rel="noopener noreferrer">
+            {instagram && (
+              <a className="joinUsButton" href={instagram} target="_blank" rel="noopener noreferrer">
                 {content[5] || 'Instagram'}
                 <span className="sr-only"> {t.a11y?.opensNewTab ?? '(otwiera się w nowej karcie)'}</span>
-                &nbsp;<i className="bi bi-instagram" aria-hidden="true" />
+                &nbsp;
+                <i className="bi bi-instagram" aria-hidden="true" />
               </a>
             )}
           </p>

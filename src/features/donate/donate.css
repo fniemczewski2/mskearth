@@ -1,5 +1,5 @@
 .donate {
-    max-width: 768px;
+  max-width: 768px;
 }
 .progress-stats {
   display: grid;
@@ -19,13 +19,13 @@
 .stat-value {
   font-size: 1.5rem;
   font-weight: 700;
-  color: var(--second-color);
+  color: var(--green);
   line-height: 1.2;
 }
 
 .stat-label {
   font-size: 0.875rem;
-  color: var(--second-color);
+  color: var(--green);
   text-transform: uppercase;
   letter-spacing: 0.5px;
 }
@@ -34,16 +34,15 @@
   position: relative;
   width: 100%;
   height: 32px;
-  background-color: var(--white);
+  background-color: var(--light);
   border-radius: 16px;
   overflow: hidden;
-  box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.3);
   margin-bottom: 1rem;
 }
 
 .progress-bar-fill {
   height: 100%;
-  background: linear-gradient(90deg, var(--first-color) 0%, var(--second-color) 100%);
+  background: linear-gradient(90deg, var(--green) 0%, var(--green) 100%);
   border-radius: 16px;
   transition: width 0.6s ease-in-out;
   display: flex;
@@ -51,7 +50,6 @@
   justify-content: flex-end;
   padding-right: 0.75rem;
   position: relative;
-  box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3);
 }
 
 .progress-percentage {
@@ -98,44 +96,44 @@
 }
 
 .amounts {
- display: flex;
- gap: 1rem;
+  display: flex;
+  gap: 1rem;
 }
 
 .amounts button {
   padding: 0.875rem 1rem;
-  background-color: var(--white);
+  background-color: var(--light);
   font-weight: 600;
   font-size: 1rem;
   cursor: pointer;
   transition: all 0.2s ease;
-  color: var(--second-color);
+  color: var(--green);
   flex-direction: column;
   justify-content: center;
-  flex: 1
+  flex: 1;
 }
 
 .amount {
-    font-size: 1.5rem;
-    min-width: 64px;
+  font-size: 1.5rem;
+  min-width: 64px;
 }
 
 .desc {
-    font-size: 0.7rem;
+  font-size: 0.7rem;
 }
 
-.amounts button:hover, .amounts button.active {
-  background-color: var(--second-color);
+.amounts button:hover,
+.amounts button.active {
+  background-color: var(--green);
   color: white;
 }
-
 
 .buttonContainer .primaryBtn {
   width: 100%;
   padding: 1rem 1.5rem;
   font-size: 1.125rem;
   font-weight: 700;
-  background: linear-gradient(135deg, var(--first-color) 0%, var(--second-color) 100%);
+  background: linear-gradient(135deg, var(--green) 0%, var(--green) 100%);
   border: none;
   border-radius: 8px;
   color: white;
@@ -143,13 +141,12 @@
   justify-items: center;
   text-align: center;
   transition: all 0.3s ease;
-  box-shadow: 0 4px 12px #cccccc;
   position: relative;
   overflow: hidden;
 }
 
 .primaryBtn p {
-    margin: 0 auto;
+  margin: 0 auto;
 }
 
 .buttonContainer .primaryBtn::before {
@@ -159,12 +156,7 @@
   left: -100%;
   width: 100%;
   height: 100%;
-  background: linear-gradient(
-    90deg,
-    transparent,
-    #cccccc,
-    transparent
-  );
+  background: linear-gradient(90deg, transparent, var(--gray), transparent);
   transition: left 0.5s ease;
 }
 
@@ -183,41 +175,40 @@
   align-items: center;
   gap: 0.5rem;
   font-size: 0.875rem;
-  color: var(--second-color);
+  color: var(--green);
   margin: 0;
 }
 
 .trust-text i {
-  color: var(--first-color);
+  color: var(--green);
   font-size: 1.125rem;
 }
 
 @media (max-width: 768px) {
+  .progress-stats {
+    grid-template-columns: repeat(2, 1fr);
+  }
 
-    .progress-stats {
-        grid-template-columns: repeat(2, 1fr);
-    }
+  .progress-stats .stat-item:last-of-type {
+    display: none;
+  }
 
-    .progress-stats .stat-item:last-of-type {
-        display: none;
-    }
+  .amounts {
+    flex-direction: column;
+  }
 
-    .amounts {
-        flex-direction: column;
-    }
+  .amounts button {
+    flex-direction: row;
+    width: 100%;
+  }
 
-    .amounts button {
-        flex-direction: row;
-        width: 100%;
-    }
-
-    .amount {
-        font-size: 1rem;
-        width: fit-content;
-    }
-    .desc {
-        font-size: 0.7rem;
-    }
+  .amount {
+    font-size: 1rem;
+    width: fit-content;
+  }
+  .desc {
+    font-size: 0.7rem;
+  }
 
   .stat-value {
     font-size: 1.25rem;
@@ -269,7 +260,6 @@
 .donation-progress {
   background: var(--surface-veil);
   border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-1);
   display: grid;
   gap: 12px;
   margin-bottom: 20px;
@@ -285,7 +275,7 @@
 }
 
 .payment-type {
-  background: var(--green-soft);
+  background: var(--green-wash);
   border-radius: var(--radius-pill);
   display: flex;
   gap: 4px;
@@ -296,28 +286,26 @@
 .payment-type button {
   background: transparent;
   box-shadow: none;
-  color: var(--green-strong);
+  color: var(--green);
   flex: 1 1 0;
   min-height: 40px;
-  font-size: clamp(.75rem, 2.6vw, var(--step-0));
+  font-size: clamp(0.75rem, 2.6vw, var(--step-0));
   white-space: nowrap;
   padding-inline: 6px;
 }
 
 .payment-type button:hover {
-  background: color-mix(in srgb, var(--green-strong) 12%, transparent);
-  color: var(--green-strong);
-  translate: none;
+  background: color-mix(in srgb, var(--green) 12%, transparent);
+  color: var(--green);
 }
 
-.payment-type button[aria-pressed="true"] {
-  background: var(--green-strong);
-  box-shadow: var(--shadow-1);
-  color: var(--white);
+.payment-type button[aria-pressed='true'] {
+  background: var(--green);
+  color: var(--light);
 }
 
-.amounts button[aria-pressed="true"],
+.amounts button[aria-pressed='true'],
 .amounts button.active {
-  background: var(--green-strong);
-  color: var(--white);
+  background: var(--green);
+  color: var(--light);
 }

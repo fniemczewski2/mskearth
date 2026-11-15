@@ -2,6 +2,7 @@ import { useCallback, useState } from 'react';
 import { v4 as uuid } from 'uuid';
 
 import { supabase } from '../supabaseClient.js';
+import { STORAGE_BUCKET } from '../../shared/config/site.js';
 
 const KINDS = {
   image: {
@@ -69,28 +70,7 @@ async function uploadOne(file, { bucket, prefix, kind }) {
   return path;
 }
 
-export async function uploadImages(files, { bucket = 'mskearth', prefix = '', kind = 'image' } = {}) {
-  const arr = Array.from(files ?? []);
-  if (arr.length === 0) return [];
-
-  const results = await Promise.allSettled(arr.map((file) => uploadOne(file, { bucket, prefix, kind })));
-  const failed = results.filter((r) => r.status === 'rejected');
-  if (failed.length > 0) throw new Error(failed[0].reason?.message ?? 'Upload nieudany.');
-  return results.map((r) => r.value);
-}
-
-export async function removeImage(path, bucket = 'mskearth') {
-  if (!path) return;
-  await supabase.storage.from(bucket).remove([path]);
-}
-
-export async function getSignedUrl(path, { bucket = 'mskearth', expiresIn = 3600 } = {}) {
-  const { data, error } = await supabase.storage.from(bucket).createSignedUrl(path, expiresIn);
-  if (error) throw error;
-  return data?.signedUrl ?? '';
-}
-
-export default function useUploadFiles(defaultBucket = 'mskearth') {
+export default function useUploadFiles(defaultBucket = STORAGE_BUCKET) {
   const [fileIds, setFileIds] = useState([]);
   const [uploadProgress, setUploadProgress] = useState({});
   const [allUploadsComplete, setAllUploadsComplete] = useState(true);

@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useRef, useState } from 'react';
+import { useCallback, useRef, useState } from 'react';
 
 import ArticlesCMS from './cms/articlesCMS.jsx';
 import CitiesLocalCMS from './cms/citiesCMS.jsx';
@@ -8,13 +8,22 @@ import RecruitmentCMS from './cms/recruitmentCMS.jsx';
 import SurveysCMS from './cms/surveysCMS.jsx';
 
 const TABS = [
-  { id: 'recrutation', label: 'Rekrutacja' },
+  { id: 'recruitment', label: 'Rekrutacja' },
   { id: 'articles', label: 'Artykuły' },
   { id: 'map', label: 'Miasta' },
   { id: 'foundation', label: 'Fundacja' },
   { id: 'contact', label: 'Kontakt' },
   { id: 'surveys', label: 'Ankiety' },
 ];
+
+const PANELS = {
+  recruitment: RecruitmentCMS,
+  articles: ArticlesCMS,
+  map: CitiesLocalCMS,
+  foundation: FoundationCMS,
+  contact: ContactPeopleCMS,
+  surveys: SurveysCMS,
+};
 
 function AdminPanelNav() {
   const [formType, setFormType] = useState('articles');
@@ -45,57 +54,11 @@ function AdminPanelNav() {
     [formType, activate]
   );
 
-  const content = useMemo(() => {
-    switch (formType) {
-      case 'recrutation':
-        return (
-          <>
-            <RecruitmentCMS/>
-          </>
-        );
-      case 'articles':
-        return (
-          <>
-            <ArticlesCMS />
-          </>
-        );
-      case 'map':
-        return (
-          <>
-            <CitiesLocalCMS/>
-          </>
-        );
-      case 'foundation':
-        return (
-          <>
-            <FoundationCMS/>
-          </>
-        );
-      case 'contact':
-        return (
-          <>
-            <ContactPeopleCMS/>
-          </>
-        );
-      case 'surveys':
-        return <SurveysCMS />;
-      default:
-        return (
-          <>
-            <ArticlesCMS/>
-          </>
-        );
-    }
-  }, [formType]);
+  const Panel = PANELS[formType] ?? ArticlesCMS;
 
   return (
     <>
-      <div
-        className="formMenu"
-        role="tablist"
-        aria-label="Wybierz sekcję danych"
-        onKeyDown={handleKeyNav}
-      >
+      <div className="formMenu" role="tablist" aria-label="Wybierz sekcję danych" onKeyDown={handleKeyNav}>
         {TABS.map((tab) => {
           const selected = formType === tab.id;
           return (
@@ -120,12 +83,8 @@ function AdminPanelNav() {
         })}
       </div>
 
-      <div
-        id={`panel-${formType}`}
-        role="tabpanel"
-        aria-labelledby={`tab-${formType}`}
-      >
-        {content}
+      <div id={`panel-${formType}`} role="tabpanel" aria-labelledby={`tab-${formType}`}>
+        <Panel />
       </div>
     </>
   );

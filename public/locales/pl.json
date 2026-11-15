@@ -14,7 +14,7 @@
       "icon": "bi bi-megaphone-fill",
       "content": [
         "Żądamy prowadzenia polityki klimatycznej w oparciu o aktualne stanowisko nauki wyrażone w najnowszych raportach Międzyrządowego Zespołu ds. Zmian Klimatu (IPCC) powołanego przez ONZ. Oczekujemy, że sugerowane przez środowisko naukowe rozwiązania będą wdrażane niezwłocznie we współpracy międzynarodowej.",
-        "Wzywamy rząd polski, by oficjalnie uznał katastrofę klimatyczną poprzez ogłoszenie stanu kryzysu klimatycznego. Kwestia kryzysu nie może być przedmiotem ideologicznych sporów – w obliczu katastrofy musimy mówić wspólnym głosem, ponad podziałami."
+        "Wzywamy rząd polski, by oficjalnie uznał katastrofę klimatyczną poprzez ogłoszenie stanu kryzysu klimatycznego. Kwestia kryzysu nie może być przedmiotem ideologicznych sporów - w obliczu katastrofy musimy mówić wspólnym głosem, ponad podziałami."
       ]
     },
     {
@@ -44,7 +44,7 @@
     "content": [
       "Załóż nową grupę",
       "W Twojej okolicy nie ma grupy MSK?",
-      "Możesz założyć nową – spokojnie, we wszystkim Ci pomożemy.",
+      "Możesz założyć nową - spokojnie, we wszystkim Ci pomożemy.",
       "Dzięki Tobie MSK będzie mogło dotrzeć do nowego miejsca i nowych ludzi!",
       "Napisz do nas na",
       "Instagramie",
@@ -90,16 +90,18 @@
     "email": "Twój adres e-mail: ",
     "title": "Tytuł wiadomości: ",
     "message": "Twoja wiadomość: ",
-    "privacyNotice": "Administratorem Twoich danych jest Fundacja Przyjaciół Młodzieżowego Strajku Klimatycznego, Smolnik 77, 59-820 Leśna. Użyjemy ich tylko, żeby odpowiedzieć na wiadomość. Formularz obsługuje serwis FormSubmit. Szczegóły w polityce prywatności.",
+    "privacyNotice": "Administratorem Twoich danych jest Fundacja Przyjaciół Młodzieżowego Strajku Klimatycznego, Smolnik 77, 59-820 Leśna. Użyjemy ich tylko, żeby odpowiedzieć na wiadomość. Wiadomość trafia na naszą skrzynkę Gmail (Google). Szczegóły w polityce prywatności.",
     "call": "Zadzwoń:",
     "write": "Napisz:",
     "loadError": "Nie udało się wczytać kontaktów.",
     "invalidEmail": "Podaj poprawny adres e-mail.",
     "missingSubject": "Wpisz tytuł wiadomości.",
     "missingMessage": "Wpisz treść wiadomości.",
-    "sent": "Dziękujemy! Wiadomość wysłana.",
+    "sent": "Dziękujemy! Odpowiemy na podany adres e-mail.",
     "failed": "Nie udało się wysłać wiadomości. Spróbuj ponownie.",
-    "pending": "Wysyłanie…"
+    "pending": "Wysyłanie…",
+    "sentTitle": "Wiadomość wysłana",
+    "sendAnother": "Napisz kolejną wiadomość"
   },
   "joinUs": {
     "h2": "Dołącz do nas!",
@@ -153,14 +155,9 @@
     "amountPlaceholder": "Wpisz kwotę",
     "secure": "Bezpieczna płatność obsługiwana przez Stripe.",
     "receipt": "Po zaksięgowaniu płatności dostaniesz potwierdzenie e-mailem.",
-    "descriptions": [
-      "Godzina warsztatu dla jednej klasy",
-      "Dzień warsztatów dla jednej szkoły",
-      "Szkolenie osoby prowadzącej"
-    ],
     "privacyNotice": "Darowiznę otrzymuje Fundacja Przyjaciół Młodzieżowego Strajku Klimatycznego, Smolnik 77, 59-820 Leśna (KRS 0000915501). Twoje dane przetwarzamy, żeby zrealizować darowiznę i wystawić potwierdzenie. Płatność obsługuje Stripe.",
-    "emailRequired": "Podaj adres e-mail – wyślemy na niego potwierdzenie.",
-    "invalidAmount": "Kwota musi mieścić się w przedziale 5–50 000 zł.",
+    "emailRequired": "Podaj adres e-mail - wyślemy na niego potwierdzenie.",
+    "invalidAmount": "Kwota musi mieścić się w przedziale 5-50 000 zł.",
     "customAmountLabel": "Wpisz kwotę:",
     "onetime": "Jednorazowo",
     "recurring": "Co miesiąc",
@@ -190,7 +187,7 @@
     "backToList": "Wróć do aktualności"
   },
   "clock": {
-    "title": "Globalne ocieplenie przekroczy 1,5°C za:",
+    "title": "Globalne ocieplenie \nprzekroczy 1,5°C za:",
     "years": "lata",
     "yearForms": {
       "one": "rok",
@@ -203,7 +200,10 @@
   "news": {
     "h1": "Aktualności",
     "more": "Czytaj dalej",
-    "empty": "Nie mamy jeszcze żadnych wpisów. Zajrzyj tu wkrótce."
+    "empty": "Nie mamy jeszcze żadnych wpisów. Zajrzyj tu wkrótce.",
+    "loadError": "Nie udało się wczytać aktualności.",
+    "retry": "Spróbuj ponownie",
+    "loadMore": "Wczytaj starsze wpisy"
   },
   "newsletter": {
     "h2": "Newsletter",
@@ -211,7 +211,7 @@
     "pending": "Zapisywanie…",
     "failed": "Wystąpił błąd. Spróbuj ponownie później lub skontaktuj się z nami.",
     "consent": "Chcę otrzymywać newsletter Fundacji Przyjaciół Młodzieżowego Strajku Klimatycznego na podany adres e-mail. Zgodę mogę wycofać w każdej chwili, klikając link w wiadomości.",
-    "privacyNotice": "Administratorem danych jest Fundacja Przyjaciół Młodzieżowego Strajku Klimatycznego (KRS 0000915501). Adres e-mail przetwarzamy wyłącznie w celu wysyłki newslettera, do czasu wycofania zgody. Wysyłkę obsługuje Kit (ConvertKit).",
+    "privacyNotice": "Administratorem danych jest Fundacja Przyjaciół Młodzieżowego Strajku Klimatycznego (KRS 0000915501). Adres e-mail przetwarzamy wyłącznie w celu wysyłki newslettera, do czasu wycofania zgody. Wysyłkę obsługuje GetResponse.",
     "success": "Gotowe! Sprawdź skrzynkę i potwierdź zapis.",
     "emailLabel": "Adres e-mail",
     "invalidEmail": "Podaj poprawny adres e-mail.",
@@ -222,7 +222,11 @@
     "title": "Pliki cookies",
     "message": "Ta strona używa tylko plików niezbędnych do działania (np. zapamiętania tej informacji). Nie śledzimy Cię i nie używamy analityki ani reklam.",
     "button": "Rozumiem",
-    "policy": "Polityka prywatności"
+    "policy": "Polityka prywatności",
+    "messageAnalytics": "Używamy plików niezbędnych do działania strony. Za Twoją zgodą włączymy też Google Analytics, żeby wiedzieć, które treści są czytane. Zgodę możesz zmienić w stopce strony.",
+    "accept": "Zgadzam się na analitykę",
+    "reject": "Tylko niezbędne",
+    "settings": "Ustawienia cookies"
   },
   "footer": {
     "menuItems": [
@@ -260,7 +264,7 @@
       }
     ],
     "title": "Młodzieżowy Strajk Klimatyczny",
-    "copyright": "Młodzieżowy Strajk Klimatyczny – Fridays for Future Polska",
+    "copyright": "Młodzieżowy Strajk Klimatyczny - Fridays for Future Polska",
     "social": {
       "facebook": "MSK na Facebooku",
       "instagram": "MSK na Instagramie",
@@ -335,7 +339,7 @@
     "shareSubtitle": "Pomóż nam dotrzeć do większej liczby osób",
     "shareText": "Wspieram Młodzieżowy Strajk Klimatyczny!",
     "nextSteps": "Co dalej?",
-    "step1": "Sprawdź skrzynkę e-mail – Stripe wyśle tam potwierdzenie płatności",
+    "step1": "Sprawdź skrzynkę e-mail - Stripe wyśle tam potwierdzenie płatności",
     "step2": "Obserwuj nas w mediach społecznościowych",
     "step3": "Zostań wolontariuszem lub dołącz do lokalnej grupy",
     "backHome": "Wróć do strony głównej",
@@ -423,7 +427,7 @@
     "pauseTicker": "Zatrzymaj wiadomości",
     "playTicker": "Wznów wiadomości",
     "tickerHeading": "Wiadomości klimatyczne",
-    "openClock": "Climate Clock – licznik czasu do przekroczenia 1,5°C",
+    "openClock": "Climate Clock - licznik czasu do przekroczenia 1,5°C",
     "mapLabel": "Mapa województw",
     "required": "(wymagane)"
   },
@@ -434,43 +438,43 @@
   },
   "seo": {
     "home": {
-      "title": "Młodzieżowy Strajk Klimatyczny – Fridays for Future Polska",
+      "title": "Młodzieżowy Strajk Klimatyczny - Fridays for Future Polska",
       "description": "Młodzieżowy Strajk Klimatyczny (MSK) to część Fridays for Future. Sprawdź aktualności, znajdź grupę w swoim mieście i dołącz do ruchu."
     },
     "news": {
-      "title": "Aktualności – Młodzieżowy Strajk Klimatyczny",
+      "title": "Aktualności - Młodzieżowy Strajk Klimatyczny",
       "description": "Najnowsze wiadomości i działania Młodzieżowego Strajku Klimatycznego w Polsce."
     },
     "about": {
-      "title": "O nas – Młodzieżowy Strajk Klimatyczny",
+      "title": "O nas - Młodzieżowy Strajk Klimatyczny",
       "description": "Jesteśmy częścią globalnej inicjatywy Fridays for Future. Poznaj historię i postulaty Młodzieżowego Strajku Klimatycznego."
     },
     "cities": {
-      "title": "Grupy lokalne – Młodzieżowy Strajk Klimatyczny",
+      "title": "Grupy lokalne - Młodzieżowy Strajk Klimatyczny",
       "description": "Znajdź lokalną grupę MSK w swoim województwie albo załóż nową w swojej okolicy."
     },
     "foundation": {
-      "title": "Fundacja Przyjaciół MSK – dokumenty i zarząd",
+      "title": "Fundacja Przyjaciół MSK - dokumenty i zarząd",
       "description": "Dane, sprawozdania finansowe, statut i skład zarządu: Fundacja Przyjaciół Młodzieżowego Strajku Klimatycznego."
     },
     "contact": {
-      "title": "Kontakt – Młodzieżowy Strajk Klimatyczny",
+      "title": "Kontakt - Młodzieżowy Strajk Klimatyczny",
       "description": "Napisz do Młodzieżowego Strajku Klimatycznego albo znajdź osobę kontaktową w swoim regionie."
     },
     "donate": {
-      "title": "Wesprzyj nas – Młodzieżowy Strajk Klimatyczny",
+      "title": "Wesprzyj nas - Młodzieżowy Strajk Klimatyczny",
       "description": "Wpłać darowiznę jednorazową lub comiesięczną na cele statutowe: Fundacja Przyjaciół Młodzieżowego Strajku Klimatycznego."
     },
     "thankyou": {
-      "title": "Dziękujemy za wsparcie – MSK"
+      "title": "Dziękujemy za wsparcie - MSK"
     },
     "notFound": {
-      "title": "Nie znaleziono strony – MSK"
+      "title": "Nie znaleziono strony - MSK"
     },
     "articleNotFound": {
-      "title": "Nie znaleziono artykułu – MSK"
+      "title": "Nie znaleziono artykułu - MSK"
     },
-    "articleSuffix": " – MSK"
+    "articleSuffix": " - MSK"
   },
   "home": {
     "h1": [
@@ -490,13 +494,13 @@
   "header": {
     "logoMsk": "Logo Młodzieżowego Strajku Klimatycznego",
     "logoFff": "Logo Fridays for Future",
-    "homeLink": "Młodzieżowy Strajk Klimatyczny – strona główna"
+    "homeLink": "Młodzieżowy Strajk Klimatyczny - strona główna"
   },
   "about_error": "Nie udało się wczytać treści.",
   "about_logoAlt": "Logo Młodzieżowego Strajku Klimatycznego",
   "survey": {
     "seoTitle": "Zapisy na terminy",
-    "name": "Imię",
+    "name": "Imię i nazwisko",
     "email": "E-mail",
     "slotsLegend": "Wybierz terminy",
     "limit": "Wybrano {n} z {max}",
@@ -504,7 +508,7 @@
     "full": "brak miejsc",
     "past": "minął",
     "noSlots": "Brak dostępnych terminów.",
-    "consent": "Wyrażam zgodę na przetwarzanie moich danych osobowych (imię, e-mail) w celu obsługi zapisu na wybrane terminy.",
+    "consent": "Wyrażam zgodę na przetwarzanie moich danych osobowych (imię, nazwisko, e-mail) w celu obsługi zapisu na wybrane terminy.",
     "privacyNotice": "Administratorem Twoich danych jest Fundacja Przyjaciół Młodzieżowego Strajku Klimatycznego, Smolnik 77, 59-820 Leśna. Dane posłużą wyłącznie do obsługi zapisów na terminy i będą widoczne dla organizatorów. Zgodę możesz wycofać w każdej chwili, pisząc do nas. Szczegóły w polityce prywatności.",
     "submit": "Zapisz mnie",
     "sending": "Zapisywanie…",
@@ -515,7 +519,7 @@
     "thanksTitle": "Dziękujemy za zapis!",
     "thanksText": "Zapisaliśmy Cię na wybrane terminy:",
     "thanksNote": "Jeśli chcesz zmienić lub odwołać zapis, napisz do nas, podając adres e-mail użyty w formularzu.",
-    "errName": "Podaj imię.",
+    "errName": "Podaj imię i nazwisko.",
     "errEmail": "Podaj poprawny adres e-mail.",
     "errNoSlots": "Wybierz co najmniej jeden termin.",
     "errConsent": "Zgoda jest wymagana, aby się zapisać.",

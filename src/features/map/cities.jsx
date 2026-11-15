@@ -1,89 +1,36 @@
-import { useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
 
-import { supabase } from '../../services/supabaseClient';
+import Loader from '../../shared/components/Loader.jsx';
+import useQuery from '../../shared/hooks/useQuery.js';
+import { safeHref } from '../../shared/lib/safeHref.js';
+import { fetchCitiesByVoivodeship } from './db/cities.js';
+import { fetchPublicLocalContacts } from './db/localContacts.js';
 import { format, useTranslations } from '../../shared/i18n/useTranslations.js';
+
+// Starsze wpisy w bazie maja literowke w nazwie wojewodztwa.
+const VOIVODESHIP_ALIASES = { świętokrzyskie: ['świętokrzyskie', 'świetokrzyskie'] };
 
 function Cities({ selectedRegion = null, onSelectCity, selectedCity = null }) {
   const { t } = useTranslations();
   const c = t.cities ?? {};
   const newTab = t.a11y?.opensNewTab ?? '(otwiera się w nowej karcie)';
 
-  const [cityList, setCityList] = useState([]);
-  const [cityLoading, setCityLoading] = useState(false);
-
-  const [contactPeople, setContactPeople] = useState([]);
-  const [peopleLoading, setPeopleLoading] = useState(false);
-  const [peopleError, setPeopleError] = useState(false);
-
-  useEffect(() => {
-    let active = true;
-    (async () => {
-      if (!selectedRegion) {
-        setCityList([]);
-        return;
-      }
-      setCityLoading(true);
-      try {
-        const { data, error } = await supabase
-          .from('cities')
-          .select('id,name,voivodeship,facebook,instagram,meetings')
-          // Starsze wpisy w bazie moga miec literowke "świetokrzyskie".
-          .in(
-            'voivodeship',
-            selectedRegion === 'świętokrzyskie' ? ['świętokrzyskie', 'świetokrzyskie'] : [selectedRegion]
-          )
-          .order('name', { ascending: true });
-
-        if (error) throw error;
-        if (active) setCityList(data || []);
-      } catch (err) {
-        console.error('Cities error:', err);
-        if (active) setCityList([]);
-      } finally {
-        if (active) setCityLoading(false);
-      }
-    })();
-    return () => {
-      active = false;
-    };
-  }, [selectedRegion]);
-
-  useEffect(() => {
-    let active = true;
-    (async () => {
-      setContactPeople([]);
-      setPeopleError(false);
-      if (!selectedCity?.name) return;
-
-      setPeopleLoading(true);
-      try {
-        const { data, error } = await supabase
-          .from('local_contact_people')
-          .select('id,name,facebook,city')
-          .eq('city', selectedCity.name)
-          .order('name', { ascending: true });
-
-        if (error) throw error;
-        if (active) setContactPeople(data || []);
-      } catch (err) {
-        console.error('Contact people error:', err);
-        if (active) setPeopleError(true);
-      } finally {
-        if (active) setPeopleLoading(false);
-      }
-    })();
-    return () => {
-      active = false;
-    };
-  }, [selectedCity?.name]);
-
-  const loader = (label) => (
-    <div className="loader" role="status" aria-live="polite">
-      <span className="spinner" aria-hidden="true" />
-      <span className="sr-only">{label}</span>
-    </div>
+  const cityQuery = useQuery(selectedRegion ? `cities:${selectedRegion}` : null, () =>
+    fetchCitiesByVoivodeship(VOIVODESHIP_ALIASES[selectedRegion] ?? [selectedRegion])
   );
+  const cityList = cityQuery.data ?? [];
+  const cityLoading = cityQuery.loading;
+
+  const cityName = selectedCity?.name;
+  const peopleQuery = useQuery(cityName ? `local-contacts:${cityName}` : null, () =>
+    fetchPublicLocalContacts(cityName)
+  );
+  const contactPeople = peopleQuery.data ?? [];
+  const peopleLoading = peopleQuery.loading;
+  const peopleError = Boolean(peopleQuery.error);
+
+  const facebook = safeHref(selectedCity?.facebook);
+  const instagram = safeHref(selectedCity?.instagram);
 
   return (
     <>
@@ -92,7 +39,7 @@ function Cities({ selectedRegion = null, onSelectCity, selectedCity = null }) {
       </h2>
 
       <div aria-busy={cityLoading ? 'true' : 'false'}>
-        {cityLoading && loader(c.loading ?? 'Ładowanie miast…')}
+        {cityLoading && <Loader label={c.loading ?? 'Ładowanie miast…'} />}
         {!cityLoading && cityList.length > 0 && (
           <ul className="citiesInRegion">
             {cityList.map((city) => (
@@ -122,19 +69,21 @@ function Cities({ selectedRegion = null, onSelectCity, selectedCity = null }) {
             <div className="cityInfoHeader">
               <h3>{selectedCity.name}</h3>
               <div className="socialIcons">
-                {selectedCity.facebook && (
-                  <a className="social-media-link" href={selectedCity.facebook} target="_blank" rel="noopener noreferrer">
+                {facebook && (
+                  <a className="social-media-link" href={facebook} target="_blank" rel="noopener noreferrer">
                     <i className="social-icon bi bi-facebook" aria-hidden="true" />
                     <span className="sr-only">
-                      {format(c.cityFacebook ?? 'Facebook grupy {city}', { city: selectedCity.name })} {newTab}
+                      {format(c.cityFacebook ?? 'Facebook grupy {city}', { city: selectedCity.name })}{' '}
+                      {newTab}
                     </span>
                   </a>
                 )}
-                {selectedCity.instagram && (
-                  <a className="social-media-link" href={selectedCity.instagram} target="_blank" rel="noopener noreferrer">
+                {instagram && (
+                  <a className="social-media-link" href={instagram} target="_blank" rel="noopener noreferrer">
                     <i className="social-icon bi bi-instagram" aria-hidden="true" />
                     <span className="sr-only">
-                      {format(c.cityInstagram ?? 'Instagram grupy {city}', { city: selectedCity.name })} {newTab}
+                      {format(c.cityInstagram ?? 'Instagram grupy {city}', { city: selectedCity.name })}{' '}
+                      {newTab}
                     </span>
                   </a>
                 )}
@@ -153,8 +102,10 @@ function Cities({ selectedRegion = null, onSelectCity, selectedCity = null }) {
               )}
 
               <div className="peopleData" aria-busy={peopleLoading ? 'true' : 'false'}>
-                {peopleLoading && loader(t.a11y?.loading ?? 'Ładowanie…')}
-                {!peopleLoading && peopleError && <p role="alert">{c.loadError ?? 'Nie udało się wczytać kontaktów.'}</p>}
+                {peopleLoading && <Loader />}
+                {!peopleLoading && peopleError && (
+                  <p role="alert">{c.loadError ?? 'Nie udało się wczytać kontaktów.'}</p>
+                )}
                 {!peopleLoading && !peopleError && contactPeople.length > 0 && (
                   <>
                     <p>{c.contactPeople || 'Osoby kontaktowe:'}</p>
@@ -164,11 +115,17 @@ function Cities({ selectedRegion = null, onSelectCity, selectedCity = null }) {
                           <p className="personDetails">
                             <i className="bi bi-person-fill" aria-hidden="true" />
                             {person.name}
-                            {person.facebook && (
-                              <a className="social-media-link" href={person.facebook} target="_blank" rel="noopener noreferrer">
+                            {safeHref(person.facebook) && (
+                              <a
+                                className="social-media-link"
+                                href={safeHref(person.facebook)}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                              >
                                 <i className="social-icon bi bi-facebook" aria-hidden="true" />
                                 <span className="sr-only">
-                                  {format(c.personFacebook ?? 'Facebook: {name}', { name: person.name })} {newTab}
+                                  {format(c.personFacebook ?? 'Facebook: {name}', { name: person.name })}{' '}
+                                  {newTab}
                                 </span>
                               </a>
                             )}

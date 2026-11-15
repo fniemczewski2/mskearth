@@ -27,9 +27,15 @@ describe('isGoogleSession', () => {
   const token = (claims) => `x.${btoa(JSON.stringify(claims)).replace(/=+$/, '')}.y`;
 
   it('rozpoznaje sesje OAuth po claimie amr', () => {
-    const session = { access_token: token({ amr: [{ method: 'oauth', timestamp: 1 }] }), user: { app_metadata: { provider: 'email' } } };
+    const session = {
+      access_token: token({ amr: [{ method: 'oauth', timestamp: 1 }] }),
+      user: { app_metadata: { provider: 'email' } },
+    };
     expect(isGoogleSession(session)).toBe(true);
-    const pwd = { access_token: token({ amr: [{ method: 'password', timestamp: 1 }] }), user: { app_metadata: { provider: 'email' } } };
+    const pwd = {
+      access_token: token({ amr: [{ method: 'password', timestamp: 1 }] }),
+      user: { app_metadata: { provider: 'email' } },
+    };
     expect(isGoogleSession(pwd)).toBe(false);
   });
 

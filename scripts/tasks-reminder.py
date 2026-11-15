@@ -74,7 +74,7 @@ def parse_list_data(data):
 
 def send_reminders(tasks_by_user):
     for user_id, tasks in tasks_by_user.items():
-        main_message = f"Cześć! 👋 Przypominam, że masz otwarte zadania na naszej liście (<{LIST_URL}|kliknij tutaj, aby przejść do Listy>). Ich szczegóły znajdziesz w wątku tej wiadomości 👇"
+        main_message = f"Cześć! Przypominam, że masz otwarte zadania na naszej liście (<{LIST_URL}|kliknij tutaj, aby przejść do Listy>). Ich szczegóły znajdziesz w wątku tej wiadomości."
 
         try:
             response = client.chat_postMessage(channel=user_id, text=main_message)
@@ -85,10 +85,10 @@ def send_reminders(tasks_by_user):
                 thread_message += f"• {task}\n"
             
             client.chat_postMessage(channel=user_id, text=thread_message, thread_ts=thread_ts)
-            print(f"✅ Wysłano przypomnienie do {user_id} (Zadań: {len(tasks)})")
+            print(f"OK: Wysłano przypomnienie do {user_id} (Zadań: {len(tasks)})")
             
         except SlackApiError as e:
-            print(f"❌ Błąd wysyłki do {user_id}: {e}")
+            print(f"BLAD: Błąd wysyłki do {user_id}: {e}")
 
 if __name__ == "__main__":
     while True:

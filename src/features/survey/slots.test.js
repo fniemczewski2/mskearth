@@ -19,8 +19,12 @@ describe('generateSlots', () => {
     expect(generateSlots({ date: 'x', start: '10:00', end: '11:00' }).error).toBe('date');
     expect(generateSlots({ date: '2026-10-27', start: '', end: '11:00' }).error).toBe('time');
     expect(generateSlots({ date: '2026-10-27', start: '12:00', end: '12:00' }).error).toBe('range');
-    expect(generateSlots({ date: '2026-10-27', start: '10:00', end: '11:00', slotMinutes: 90 }).error).toBe('length');
-    expect(generateSlots({ date: '2026-10-27', start: '00:00', end: '23:00', slotMinutes: 5 }).error).toBe('tooMany');
+    expect(generateSlots({ date: '2026-10-27', start: '10:00', end: '11:00', slotMinutes: 90 }).error).toBe(
+      'length'
+    );
+    expect(generateSlots({ date: '2026-10-27', start: '00:00', end: '23:00', slotMinutes: 5 }).error).toBe(
+      'tooMany'
+    );
   });
 });
 

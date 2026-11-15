@@ -1,10 +1,11 @@
 import { createClient } from '@supabase/supabase-js';
 
 import { env } from '../shared/config/env.js';
+import { STORAGE_BUCKET } from '../shared/config/site.js';
 
 export const supabase =
   globalThis.__supabase__ ??
-  createClient(env.supabaseUrl, env.supabaseAnonKey, {
+  createClient(env.supabaseUrl, env.supabaseKey, {
     auth: {
       persistSession: true,
       autoRefreshToken: true,
@@ -12,23 +13,19 @@ export const supabase =
       flowType: 'pkce',
     },
     global: {
-      headers: { 'x-client-info': 'mskearth-web/3.0.0' },
+      headers: { 'x-client-info': `mskearth-web/${__APP_VERSION__}` },
     },
   });
 
 globalThis.__supabase__ = supabase;
 
-export function toPublicUrl(pathOrUrl, bucket = 'mskearth', transform) {
+export function toPublicUrl(pathOrUrl, bucket = STORAGE_BUCKET, transform) {
   if (!pathOrUrl) return '';
   if (/^https?:\/\//i.test(pathOrUrl)) return pathOrUrl;
   const { data } = supabase.storage
     .from(bucket)
     .getPublicUrl(pathOrUrl, transform ? { transform } : undefined);
   return data?.publicUrl ?? '';
-}
-
-export async function signInWithEmail(email, password) {
-  return supabase.auth.signInWithPassword({ email, password });
 }
 
 export async function signOut() {

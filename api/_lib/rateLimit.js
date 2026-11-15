@@ -1,3 +1,7 @@
+import { MEMORY_LIMIT_MAX_KEYS, RATE_LIMITS, UPSTASH_TIMEOUT_MS } from './config.js';
+import { clientIpOf, log } from './log.js';
+import { msg } from './messages.js';
+
 const memory = new Map();
 
 async function upstash(parts) {
@@ -7,7 +11,7 @@ async function upstash(parts) {
 
   const res = await fetch(`${url}/${parts.map(encodeURIComponent).join('/')}`, {
     headers: { Authorization: `Bearer ${token}` },
-    signal: AbortSignal.timeout(2000),
+    signal: AbortSignal.timeout(UPSTASH_TIMEOUT_MS),
   });
   if (!res.ok) throw new Error(`Upstash HTTP ${res.status}`);
   const data = await res.json();
@@ -18,8 +22,7 @@ let warnedNoUpstash = false;
 
 export async function isLimited(key, { max = 5, windowSec = 60 } = {}) {
   try {
-    // Klucz dostaje TTL zanim zostanie zwiekszony, wiec nawet przy bledzie
-    // drugiego wywolania nie zostanie zablokowany na zawsze.
+    // Klucz dostaje TTL przed zwiekszeniem licznika, wiec blad drugiego wywolania nie blokuje go na stale.
     const created = await upstash(['SET', key, '0', 'EX', String(windowSec), 'NX']);
     if (created !== undefined) {
       const hits = await upstash(['INCR', key]);
@@ -27,18 +30,18 @@ export async function isLimited(key, { max = 5, windowSec = 60 } = {}) {
     }
     if (!warnedNoUpstash) {
       warnedNoUpstash = true;
-      console.warn(JSON.stringify({ level: 'warn', msg: 'ratelimit.memory_fallback' }));
+      // Bez Upstash limit obejmuje tylko jedna instancje funkcji.
+      log.error('ratelimit.memory_fallback', new Error('Brak UPSTASH_REDIS_REST_URL/TOKEN'));
     }
   } catch (err) {
-    // Bez Upstash limit dziala tylko w pamieci jednej instancji: niech bedzie to widac w logach.
-    console.warn(JSON.stringify({ level: 'warn', msg: 'ratelimit.upstash_error', err: err?.message }));
+    log.error('ratelimit.upstash_error', err);
   }
 
   const now = Date.now();
   const entry = memory.get(key);
   if (!entry || now > entry.resetAt) {
     memory.set(key, { count: 1, resetAt: now + windowSec * 1000 });
-    if (memory.size > 5000) {
+    if (memory.size > MEMORY_LIMIT_MAX_KEYS) {
       for (const [k, v] of memory) if (now > v.resetAt) memory.delete(k);
     }
     return false;
@@ -47,6 +50,14 @@ export async function isLimited(key, { max = 5, windowSec = 60 } = {}) {
   return entry.count > max;
 }
 
-export function clientIp(req) {
-  return req.headers['x-forwarded-for']?.split(',')[0]?.trim() ?? 'unknown';
+export const clientIp = clientIpOf;
+
+/** Sprawdza limit z RATE_LIMITS[name]; przy przekroczeniu odpowiada 429 i zwraca true. */
+export async function rejectIfLimited(req, res, name) {
+  const limit = RATE_LIMITS[name];
+  if (!(await isLimited(`${name}:${clientIp(req)}`, limit))) return false;
+  log.security('rate_limited', req, { limit: name });
+  res.setHeader('Retry-After', String(limit.windowSec));
+  res.status(429).json({ code: 'rate_limited', error: msg(req, 'rateLimited') });
+  return true;
 }

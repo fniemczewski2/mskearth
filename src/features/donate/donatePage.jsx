@@ -9,7 +9,7 @@ export default function DonatePage() {
   return (
     <main className="donate-page">
       <Seo
-        title={t.seo?.donate?.title ?? 'Wesprzyj nas – Młodzieżowy Strajk Klimatyczny'}
+        title={t.seo?.donate?.title ?? 'Wesprzyj nas - Młodzieżowy Strajk Klimatyczny'}
         description={t.seo?.donate?.description}
         url={`${SITE_URL}/${lang}/wesprzyj`}
       />

@@ -1,3 +1,11 @@
 User-agent: *
 Allow: /
+Disallow: /admin
+Disallow: /api/
+Disallow: /embed/
+Disallow: /donate-iframe
+Disallow: /donate-belka
+Disallow: /*/ankieta/
+Disallow: /*/dziekujemy
+
 Sitemap: https://msk.earth/sitemap.xml

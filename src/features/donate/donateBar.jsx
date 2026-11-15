@@ -2,9 +2,17 @@ import { useId, useMemo, useRef, useState } from 'react';
 
 import { useDonationStats } from './db/donationStats.js';
 import { format, useTranslations } from '../../shared/i18n/useTranslations.js';
-import useCheckout, { EMAIL_RE } from './useCheckout.js';
+import {
+  DONATION,
+  EMAIL_RE,
+  INTL_LOCALE,
+  NAME_MAX_LENGTH,
+  PRIVACY_POLICY_PATH,
+  SITE_URL,
+} from '../../shared/config/site.js';
+import useCheckout from './useCheckout.js';
 
-const AMOUNTS = [30, 50, 100];
+const AMOUNTS = DONATION.barPresets;
 
 export default function DonateBar() {
   const { t, lang } = useTranslations();
@@ -12,7 +20,7 @@ export default function DonateBar() {
   const { goalAmount, currentAmount, loading } = useDonationStats();
   const uid = useId();
 
-  const [amount, setAmount] = useState(50);
+  const [amount, setAmount] = useState(DONATION.barDefaultAmount);
   const [isRecurring, setIsRecurring] = useState(false);
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
@@ -30,8 +38,7 @@ export default function DonateBar() {
   );
 
   const currency = d.currencySuffix ?? 'zł';
-  const fmt = (value) =>
-    new Intl.NumberFormat(lang === 'en' ? 'en-GB' : 'pl-PL').format(Math.round(value || 0));
+  const fmt = (value) => new Intl.NumberFormat(INTL_LOCALE[lang]).format(Math.round(value || 0));
 
   function handlePay() {
     setSubmitted(true);
@@ -64,7 +71,9 @@ export default function DonateBar() {
       )}
 
       <div className="donateBar__fields">
-        <label className="sr-only" htmlFor={`${uid}-name`}>{d.nameLabel ?? 'Imię'}</label>
+        <label className="sr-only" htmlFor={`${uid}-name`}>
+          {d.nameLabel ?? 'Imię'}
+        </label>
         <input
           id={`${uid}-name`}
           className="formField"
@@ -72,10 +81,12 @@ export default function DonateBar() {
           onChange={(e) => setName(e.target.value)}
           placeholder={d.namePlaceholder ?? 'Imię'}
           autoComplete="name"
-          maxLength={120}
+          maxLength={NAME_MAX_LENGTH}
         />
 
-        <label className="sr-only" htmlFor={`${uid}-email`}>{d.emailLabel ?? 'E-mail'}</label>
+        <label className="sr-only" htmlFor={`${uid}-email`}>
+          {d.emailLabel ?? 'E-mail'}
+        </label>
         <input
           id={`${uid}-email`}
           ref={emailRef}
@@ -93,7 +104,7 @@ export default function DonateBar() {
       {showEmailError && (
         <p id={`${uid}-email-error`} className="formError">
           {email.trim() === ''
-            ? (d.emailRequired ?? 'Podaj adres e-mail – wyślemy na niego potwierdzenie.')
+            ? (d.emailRequired ?? 'Podaj adres e-mail - wyślemy na niego potwierdzenie.')
             : (d.invalidEmail ?? 'Podaj poprawny adres e-mail.')}
         </p>
       )}
@@ -109,12 +120,7 @@ export default function DonateBar() {
 
       <div className="donateBar__row" role="group" aria-label={d.amountsAria ?? 'Wybierz kwotę'}>
         {AMOUNTS.map((value) => (
-          <button
-            key={value}
-            type="button"
-            aria-pressed={amount === value}
-            onClick={() => setAmount(value)}
-          >
+          <button key={value} type="button" aria-pressed={amount === value} onClick={() => setAmount(value)}>
             {value}&nbsp;{currency}
           </button>
         ))}
@@ -135,7 +141,7 @@ export default function DonateBar() {
         <p id={`${uid}-notice`} className="agreement privacy-notice">
           {d.privacyNotice ?? 'Darowiznę otrzymuje Fundacja Przyjaciół Młodzieżowego Strajku Klimatycznego.'}{' '}
           {/* Pasek jest osadzany na innych domenach, wiec link musi byc bezwzgledny. */}
-          <a href="https://msk.earth/polityka-prywatnosci.pdf" target="_blank" rel="noopener noreferrer">
+          <a href={`${SITE_URL}${PRIVACY_POLICY_PATH}`} target="_blank" rel="noopener noreferrer">
             {t.cookies?.policy ?? 'Polityka prywatności'}
             <span className="sr-only"> {t.a11y?.opensNewTab ?? '(otwiera się w nowej karcie)'}</span>
           </a>
@@ -151,7 +157,11 @@ export default function DonateBar() {
         </p>
       )}
 
-      {err && <p className="formError" role="alert">{err}</p>}
+      {err && (
+        <p className="formError" role="alert">
+          {err}
+        </p>
+      )}
 
       <button
         type="button"

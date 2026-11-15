@@ -7,13 +7,13 @@ describe('Seo', () => {
   it('sets the document title and core meta tags', () => {
     render(
       <Seo
-        title="Aktualności — MSK"
+        title="Aktualności - MSK"
         description="Najnowsze wiadomości"
         url="https://msk.earth/pl/aktualnosci"
       />
     );
 
-    expect(document.title).toBe('Aktualności — MSK');
+    expect(document.title).toBe('Aktualności - MSK');
     expect(document.querySelector('meta[name="description"]')).toHaveAttribute(
       'content',
       'Najnowsze wiadomości'
@@ -24,7 +24,7 @@ describe('Seo', () => {
     );
     expect(document.querySelector('meta[property="og:title"]')).toHaveAttribute(
       'content',
-      'Aktualności — MSK'
+      'Aktualności - MSK'
     );
   });
 
@@ -56,7 +56,13 @@ describe('Seo noindex and alternates', () => {
 
   it('adds hreflang alternates for language-prefixed URLs', () => {
     render(<Seo title="Kontakt" url="https://msk.earth/pl/kontakt" />);
-    expect(document.querySelector('link[hreflang="en"]')).toHaveAttribute('href', 'https://msk.earth/en/kontakt');
-    expect(document.querySelector('link[hreflang="x-default"]')).toHaveAttribute('href', 'https://msk.earth/pl/kontakt');
+    expect(document.querySelector('link[hreflang="en"]')).toHaveAttribute(
+      'href',
+      'https://msk.earth/en/kontakt'
+    );
+    expect(document.querySelector('link[hreflang="x-default"]')).toHaveAttribute(
+      'href',
+      'https://msk.earth/pl/kontakt'
+    );
   });
 });

@@ -1,4 +1,5 @@
-// Czysta logika slotow: bez zaleznosci od React/Supabase, dzieki czemu latwo ja testowac.
+// Czysta logika slotow: bez zaleznosci od React/Supabase.
+import { INTL_LOCALE } from '../../shared/config/site.js';
 
 export const MAX_SLOTS_PER_WINDOW = 100;
 
@@ -65,7 +66,7 @@ export function isSelectable(slot, { selected, max }) {
 export function formatDay(date, lang = 'pl') {
   const [y, m, d] = date.split('-').map(Number);
   // Poludnie UTC, zeby strefa czasowa przegladarki nie przesunela dnia.
-  return new Intl.DateTimeFormat(lang === 'en' ? 'en-GB' : 'pl-PL', {
+  return new Intl.DateTimeFormat(INTL_LOCALE[lang] ?? INTL_LOCALE.pl, {
     weekday: 'long',
     day: 'numeric',
     month: 'long',

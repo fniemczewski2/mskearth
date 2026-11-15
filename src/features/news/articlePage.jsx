@@ -1,11 +1,13 @@
-import { useMemo, useState, useRef, useEffect, useCallback } from 'react';
+import { useMemo, useState, useEffect, useCallback } from 'react';
 import { Link, useParams } from 'react-router-dom';
 
 import Seo from '../../shared/components/Seo.jsx';
 import { sanitizeArticle } from '../../shared/lib/sanitize.js';
 import { format, useTranslations } from '../../shared/i18n/useTranslations.js';
-import { FOUNDATION_NAME, ORG_NAME, SITE_URL } from '../../shared/config/site.js';
+import { FOUNDATION_NAME, INTL_LOCALE, LANGS, ORG_NAME, SITE_URL } from '../../shared/config/site.js';
+import { safeHref } from '../../shared/lib/safeHref.js';
 import { getPublishedArticleById } from './db/article.js';
+import Loader from '../../shared/components/Loader.jsx';
 
 const FIELDS = {
   pl: { title: 'title', subtitle: 'subtitle', content: 'content' },
@@ -27,7 +29,6 @@ export default function ArticlePage() {
   const [shareStatus, setShareStatus] = useState('');
 
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
-  const carouselImgRef = useRef(null);
 
   useEffect(() => {
     let active = true;
@@ -79,22 +80,17 @@ export default function ArticlePage() {
   if (loading) {
     return (
       <main>
-        <div className="loader" role="status" aria-live="polite" aria-busy="true">
-          <span className="spinner" aria-hidden="true" />
-          <span className="sr-only">{t.a11y?.loading ?? 'Ładowanie…'}</span>
-        </div>
+        <Loader />
       </main>
     );
   }
 
-  const backLink = (
-    <Link to={`/${lang}/aktualnosci`}>{a.backToList || 'Wróć do aktualności'}</Link>
-  );
+  const backLink = <Link to={`/${lang}/aktualnosci`}>{a.backToList || 'Wróć do aktualności'}</Link>;
 
   if (!article) {
     return (
       <main>
-        <Seo title={t.seo?.articleNotFound?.title ?? 'Nie znaleziono artykułu – MSK'} noindex />
+        <Seo title={t.seo?.articleNotFound?.title ?? 'Nie znaleziono artykułu - MSK'} noindex />
         <article>
           <h1>{t.notFound?.title ?? 'Nie znaleźliśmy tej strony'}</h1>
           <p>{a.error || 'Nie znaleziono artykułu.'}</p>
@@ -107,7 +103,7 @@ export default function ArticlePage() {
   if (!contentHtml.trim()) {
     return (
       <main>
-        <Seo title={`${title || article.title || 'Artykuł'}${t.seo?.articleSuffix ?? ' – MSK'}`} noindex />
+        <Seo title={`${title || article.title || 'Artykuł'}${t.seo?.articleSuffix ?? ' - MSK'}`} noindex />
         <article>
           <h1>{a.noTranslationTitle || 'Brak tłumaczenia'}</h1>
           <p>{a.noTranslation || 'Ten artykuł nie ma jeszcze tłumaczenia w wybranym języku.'}</p>
@@ -123,14 +119,16 @@ export default function ArticlePage() {
   const rawText = plainText(contentHtml);
   // Skracamy na granicy slowa, zeby opis nie konczyl sie w polowie wyrazu.
   const shortText =
-    rawText.length > 155 ? `${rawText.slice(0, Math.max(rawText.lastIndexOf(' ', 152), 80)).trimEnd()}…` : rawText;
+    rawText.length > 155
+      ? `${rawText.slice(0, Math.max(rawText.lastIndexOf(' ', 152), 80)).trimEnd()}…`
+      : rawText;
   const description = subtitle || shortText || title;
-  const availableLangs = ['pl', 'en'].filter((l) =>
+  const availableLangs = LANGS.filter((l) =>
     String((l === 'en' ? article.contenten : article.content) ?? '').trim()
   );
   const publishedISO = article.published || article.created || '';
   const publishedDate = publishedISO
-    ? new Intl.DateTimeFormat(lang === 'en' ? 'en-GB' : 'pl-PL', { dateStyle: 'long' }).format(new Date(publishedISO))
+    ? new Intl.DateTimeFormat(INTL_LOCALE[lang], { dateStyle: 'long' }).format(new Date(publishedISO))
     : '';
 
   const jsonLd = {
@@ -152,25 +150,25 @@ export default function ArticlePage() {
 
   const imageAlt = (i) => {
     const base = article.imgalt || title;
-    return manyImages ? `${base} – ${format(a.imageOf ?? 'obraz {n} z {total}', { n: i + 1, total: imgs.length })}` : base;
+    return manyImages
+      ? `${base} - ${format(a.imageOf ?? 'obraz {n} z {total}', { n: i + 1, total: imgs.length })}`
+      : base;
   };
 
-  const handlePrevImage = () => {
-    setCurrentImageIndex((i) => (i > 0 ? i - 1 : imgs.length - 1));
-    carouselImgRef.current?.focus();
-  };
-  const handleNextImage = () => {
-    setCurrentImageIndex((i) => (i < imgs.length - 1 ? i + 1 : 0));
-    carouselImgRef.current?.focus();
-  };
-  const handleCarouselKey = (e) => {
-    if (e.key === 'ArrowLeft') handlePrevImage();
-    if (e.key === 'ArrowRight') handleNextImage();
-  };
+  const handlePrevImage = () => setCurrentImageIndex((i) => (i > 0 ? i - 1 : imgs.length - 1));
+  const handleNextImage = () => setCurrentImageIndex((i) => (i < imgs.length - 1 ? i + 1 : 0));
+  const sourceHref = safeHref(article.sourcelink);
 
   return (
     <main>
-      <Seo title={`${title}${t.seo?.articleSuffix ?? ' – MSK'}`} description={description} image={imgs[0]} url={canonical} type="article" langs={availableLangs.length ? availableLangs : [lang]} />
+      <Seo
+        title={`${title}${t.seo?.articleSuffix ?? ' - MSK'}`}
+        description={description}
+        image={imgs[0]}
+        url={canonical}
+        type="article"
+        langs={availableLangs.length ? availableLangs : [lang]}
+      />
       <script type="application/ld+json">{JSON.stringify(jsonLd)}</script>
 
       <article className="singleNewsElement" aria-labelledby="article-title">
@@ -190,7 +188,9 @@ export default function ArticlePage() {
           >
             <i className="bi bi-share" aria-hidden="true" />
           </button>
-          <span className="sr-only" role="status">{shareStatus}</span>
+          <span className="sr-only" role="status">
+            {shareStatus}
+          </span>
         </div>
 
         {imgs.length > 0 && (
@@ -200,7 +200,11 @@ export default function ArticlePage() {
                 <img className="singleNewsImg" src={imgs[0]} alt={imageAlt(0)} decoding="async" />
               </figure>
             ) : (
-              <div className="image-carousel" role="group" aria-roledescription={a.carousel ?? 'karuzela obrazów'}>
+              <div
+                className="image-carousel"
+                role="group"
+                aria-roledescription={a.carousel ?? 'karuzela obrazów'}
+              >
                 <button
                   className="carousel-button prev"
                   onClick={handlePrevImage}
@@ -211,13 +215,10 @@ export default function ArticlePage() {
                 </button>
 
                 <img
-                  ref={carouselImgRef}
                   className="singleNewsImg"
                   src={imgs[currentImageIndex]}
                   alt={imageAlt(currentImageIndex)}
                   decoding="async"
-                  tabIndex={0}
-                  onKeyDown={handleCarouselKey}
                 />
 
                 <button
@@ -238,16 +239,18 @@ export default function ArticlePage() {
         )}
 
         <div className="singleNewsText">
-          <h1 id="article-title" className="articleTitle">{title}</h1>
+          <h1 id="article-title" className="articleTitle">
+            {title}
+          </h1>
           {subtitle && <p className="articleSubtitle">{subtitle}</p>}
           <hr />
 
           <div className="article-content" dangerouslySetInnerHTML={{ __html: safeHtml }} />
           <hr />
-          {article.sourcetext && article.sourcelink && (
+          {article.sourcetext && sourceHref && (
             <p className="source">
               <strong>{a.source || 'Źródło:'}</strong>{' '}
-              <a href={article.sourcelink} target="_blank" rel="noopener noreferrer nofollow">
+              <a href={sourceHref} target="_blank" rel="noopener noreferrer nofollow">
                 {article.sourcetext}
                 <span className="sr-only"> {t.a11y?.opensNewTab ?? '(otwiera się w nowej karcie)'}</span>
               </a>

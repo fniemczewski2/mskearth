@@ -1,74 +1,29 @@
-import { useEffect, useState } from 'react';
-
-import { supabase, toPublicUrl } from '../../services/supabaseClient';
+import { toPublicUrl } from '../../services/supabaseClient.js';
+import Loader from '../../shared/components/Loader.jsx';
+import useQuery from '../../shared/hooks/useQuery.js';
+import { fetchFinancialReports } from './db/financialReports.js';
+import { fetchFoundationBoardMembers } from './db/foundationBoard.js';
 import Seo from '../../shared/components/Seo.jsx';
 import { format, useTranslations } from '../../shared/i18n/useTranslations.js';
 import { SITE_URL } from '../../shared/config/site.js';
-
-const STORAGE_BUCKET = 'mskearth';
 
 export default function Foundation() {
   const { t, lang } = useTranslations();
   const f = t.foundation ?? {};
   const newTab = t.a11y?.opensNewTab ?? '(otwiera się w nowej karcie)';
 
-  const [financialReports, setFinancialReports] = useState([]);
-  const [reportsLoading, setReportsLoading] = useState(true);
-  const [reportsErr, setReportsErr] = useState(false);
+  const reports = useQuery('financial-reports', fetchFinancialReports);
+  const financialReports = (reports.data ?? [])
+    .filter((r) => r.file_path)
+    .map((r) => ({ id: r.id, year: r.year, url: toPublicUrl(r.file_path) }))
+    .filter((r) => r.url);
+  const reportsLoading = reports.loading;
+  const reportsErr = Boolean(reports.error);
 
-  const [boardRows, setBoardRows] = useState([]);
-  const [boardLoading, setBoardLoading] = useState(true);
-  const [boardErr, setBoardErr] = useState(false);
-
-  useEffect(() => {
-    let active = true;
-    (async () => {
-      try {
-        const { data, error } = await supabase
-          .from('financial_reports')
-          .select('id, year, file_path')
-          .not('file_path', 'is', null)
-          .order('year', { ascending: false });
-        if (error) throw error;
-        const items = (data || []).map((r) => ({
-          id: r.id,
-          year: r.year,
-          url: toPublicUrl(r.file_path, STORAGE_BUCKET),
-        }));
-        if (active) setFinancialReports(items.filter((r) => r.url));
-      } catch (e) {
-        console.error('financial_reports error:', e);
-        if (active) setReportsErr(true);
-      } finally {
-        if (active) setReportsLoading(false);
-      }
-    })();
-    return () => {
-      active = false;
-    };
-  }, []);
-
-  useEffect(() => {
-    let active = true;
-    (async () => {
-      try {
-        const { data, error } = await supabase
-          .from('foundation_board_members')
-          .select('id, name, role, role_en, phone, email, img_path, description, description_en')
-          .order('name', { ascending: true });
-        if (error) throw error;
-        if (active) setBoardRows(data || []);
-      } catch (e) {
-        console.error('board error:', e);
-        if (active) setBoardErr(true);
-      } finally {
-        if (active) setBoardLoading(false);
-      }
-    })();
-    return () => {
-      active = false;
-    };
-  }, []);
+  const boardQuery = useQuery('foundation-board', fetchFoundationBoardMembers);
+  const boardRows = boardQuery.data ?? [];
+  const boardLoading = boardQuery.loading;
+  const boardErr = Boolean(boardQuery.error);
 
   const board = boardRows.map((m) => ({
     id: m.id,
@@ -77,22 +32,15 @@ export default function Foundation() {
     description: lang === 'en' ? m.description_en || m.description || '' : m.description || '',
     phone: m.phone,
     email: m.email,
-    img: toPublicUrl(m.img_path, STORAGE_BUCKET),
+    img: toPublicUrl(m.img_path),
   }));
 
   const h1 = Array.isArray(f.h1) ? f.h1 : ['Fundacja Przyjaciół', 'Młodzieżowego Strajku Klimatycznego'];
 
-  const loader = (
-    <div className="loader" role="status" aria-live="polite">
-      <span className="spinner" aria-hidden="true" />
-      <span className="sr-only">{t.a11y?.loading ?? 'Ładowanie…'}</span>
-    </div>
-  );
-
   return (
     <main className="foundation">
       <Seo
-        title={t.seo?.foundation?.title ?? 'Fundacja Przyjaciół MSK – dokumenty i zarząd'}
+        title={t.seo?.foundation?.title ?? 'Fundacja Przyjaciół MSK - dokumenty i zarząd'}
         description={t.seo?.foundation?.description}
         url={`${SITE_URL}/${lang}/fundacja`}
       />
@@ -125,15 +73,25 @@ export default function Foundation() {
           </div>
           <div className="foundationDataElement">
             <dt className="foundationLabel">{f.phone || 'Telefon:'}</dt>
-            <dd><a className="mailto" href="tel:+48697302674">+48&nbsp;697&nbsp;302&nbsp;674</a></dd>
+            <dd>
+              <a className="mailto" href="tel:+48697302674">
+                +48&nbsp;697&nbsp;302&nbsp;674
+              </a>
+            </dd>
           </div>
           <div className="foundationDataElement">
             <dt className="foundationLabel">{f.email || 'E-mail:'}</dt>
-            <dd><a className="mailto" href="mailto:fundacja@msk.earth">fundacja@msk.earth</a></dd>
+            <dd>
+              <a className="mailto" href="mailto:fundacja@msk.earth">
+                fundacja@msk.earth
+              </a>
+            </dd>
           </div>
           <div className="foundationDataElement">
             <dt className="foundationLabel">{f.bank || 'Numer konta:'}</dt>
-            <dd className="bankAccountNumber">63&nbsp;1600&nbsp;1462&nbsp;1855&nbsp;8899&nbsp;4000&nbsp;0001</dd>
+            <dd className="bankAccountNumber">
+              63&nbsp;1600&nbsp;1462&nbsp;1855&nbsp;8899&nbsp;4000&nbsp;0001
+            </dd>
           </div>
         </dl>
         <div className="foundationLogoContainer">
@@ -153,21 +111,30 @@ export default function Foundation() {
         <article className="reports">
           <h3 className="reportsTitle">{f.financialReports || 'Sprawozdania finansowe'}</h3>
           <div className="reportsContainer" aria-busy={reportsLoading ? 'true' : 'false'}>
-            {reportsLoading && loader}
+            {reportsLoading && <Loader />}
             {!reportsLoading && reportsErr && (
               <p role="alert">{f.loadReportsError ?? 'Nie udało się wczytać sprawozdań.'}</p>
             )}
             {!reportsLoading &&
               !reportsErr &&
               financialReports.map((r) => (
-                <a className="report" key={r.id || r.year} href={r.url} target="_blank" rel="noopener noreferrer">
+                <a
+                  className="report"
+                  key={r.id || r.year}
+                  href={r.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
                   {r.year}
                   <span className="sr-only">
                     {' '}
-                    {format(f.downloadReport ?? 'Pobierz sprawozdanie finansowe za {year} (PDF)', { year: r.year })}{' '}
+                    {format(f.downloadReport ?? 'Pobierz sprawozdanie finansowe za {year} (PDF)', {
+                      year: r.year,
+                    })}{' '}
                     {newTab}
                   </span>
-                  &nbsp;<i className="bi bi-download" aria-hidden="true" />
+                  &nbsp;
+                  <i className="bi bi-download" aria-hidden="true" />
                 </a>
               ))}
           </div>
@@ -181,7 +148,8 @@ export default function Foundation() {
               {' '}
               {f.downloadStatute ?? 'statut (PDF)'} {newTab}
             </span>
-            &nbsp;<i className="bi bi-download" aria-hidden="true" />
+            &nbsp;
+            <i className="bi bi-download" aria-hidden="true" />
           </a>
         </article>
         <article>
@@ -192,7 +160,8 @@ export default function Foundation() {
               {' '}
               {f.downloadChildPolicy ?? 'politykę ochrony dzieci (PDF)'} {newTab}
             </span>
-            &nbsp;<i className="bi bi-download" aria-hidden="true" />
+            &nbsp;
+            <i className="bi bi-download" aria-hidden="true" />
           </a>
         </article>
       </section>
@@ -200,8 +169,10 @@ export default function Foundation() {
       <section className="boardContainer" data-reveal aria-busy={boardLoading ? 'true' : 'false'}>
         <h2>{f.board || 'Zarząd'}</h2>
 
-        {boardLoading && loader}
-        {!boardLoading && boardErr && <p role="alert">{f.loadBoardError ?? 'Nie udało się wczytać składu zarządu.'}</p>}
+        {boardLoading && <Loader />}
+        {!boardLoading && boardErr && (
+          <p role="alert">{f.loadBoardError ?? 'Nie udało się wczytać składu zarządu.'}</p>
+        )}
 
         {!boardLoading &&
           !boardErr &&
@@ -221,13 +192,15 @@ export default function Foundation() {
               <div className="boardContacts">
                 {m.phone && (
                   <strong>
-                    <i className="bi bi-telephone-fill" aria-hidden="true" />&nbsp;
+                    <i className="bi bi-telephone-fill" aria-hidden="true" />
+                    &nbsp;
                     <a href={`tel:${String(m.phone).replace(/\s+/g, '')}`}>{m.phone}</a>
                   </strong>
                 )}
                 {m.email && (
                   <strong>
-                    <i className="bi bi-envelope-fill" aria-hidden="true" />&nbsp;
+                    <i className="bi bi-envelope-fill" aria-hidden="true" />
+                    &nbsp;
                     <a href={`mailto:${m.email}`}>{m.email}</a>
                   </strong>
                 )}

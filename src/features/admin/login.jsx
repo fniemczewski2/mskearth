@@ -3,6 +3,7 @@ import PropTypes from 'prop-types';
 
 import { supabase } from '../../services/supabaseClient.js';
 import { env } from '../../shared/config/env.js';
+import { getCaptchaToken } from '../../shared/lib/captcha.js';
 import { DOMAIN_ERROR } from './allowedDomains.js';
 import './login.css';
 
@@ -77,9 +78,12 @@ export default function SignInForm({ onSignedIn, initialError = '' }) {
     setStatus({ type: 'loading', message: 'Logowanie…' });
 
     try {
+      // Token Turnstile sprawdza Supabase Auth (Authentication -> Attack Protection).
+      const captchaToken = await getCaptchaToken();
       const { data, error } = await supabase.auth.signInWithPassword({
         email: email.trim(),
         password,
+        options: captchaToken ? { captchaToken } : undefined,
       });
       if (error) throw error;
 
@@ -92,7 +96,6 @@ export default function SignInForm({ onSignedIn, initialError = '' }) {
       setSubmitting(false);
     }
   }
-
 
   return (
     <div className="login">
@@ -113,7 +116,9 @@ export default function SignInForm({ onSignedIn, initialError = '' }) {
           {status.message}
         </p>
 
-        <label className="sr-only" htmlFor={emailId}>E-mail</label>
+        <label className="sr-only" htmlFor={emailId}>
+          E-mail
+        </label>
         <input
           id={emailId}
           type="email"
@@ -126,7 +131,9 @@ export default function SignInForm({ onSignedIn, initialError = '' }) {
           required
         />
 
-        <label className="sr-only" htmlFor={passwordId}>Hasło</label>
+        <label className="sr-only" htmlFor={passwordId}>
+          Hasło
+        </label>
         <input
           id={passwordId}
           type="password"
@@ -148,7 +155,9 @@ export default function SignInForm({ onSignedIn, initialError = '' }) {
           {submitting ? 'Logowanie…' : 'Zaloguj'}
         </button>
 
-        <p className="loginDivider" aria-hidden="true"><span>lub</span></p>
+        <p className="loginDivider" aria-hidden="true">
+          <span>lub</span>
+        </p>
 
         <button
           type="button"
@@ -156,7 +165,6 @@ export default function SignInForm({ onSignedIn, initialError = '' }) {
           onClick={handleGoogleSignIn}
           aria-disabled={googleBusy ? 'true' : 'false'}
           aria-busy={googleBusy ? 'true' : 'false'}
-          aria-describedby={`${statusId}-google-hint`}
         >
           {googleBusy ? 'Przekierowanie…' : 'Zaloguj przez Google'}
         </button>

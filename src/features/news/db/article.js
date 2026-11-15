@@ -1,9 +1,9 @@
 import { supabase, toPublicUrl } from '../../../services/supabaseClient.js';
+import { ADMIN_PAGE_SIZE, NEWS_PAGE_SIZE } from '../../../shared/config/site.js';
 
 const PUBLIC_COLUMNS = `
   id, title, subtitle, content,
   titleen, subtitleen, contenten,
-  titleua, subtitleua, contentua,
   imgurl, imgalt, author, created, published,
   sourcelink, sourcetext, pinned
 `;
@@ -16,17 +16,15 @@ function mapArticleRow(a) {
   return {
     ...a,
     imgPaths: paths,
-    imgurl: paths.map((p) => toPublicUrl(p, 'mskearth')).filter(Boolean),
+    imgurl: paths.map((p) => toPublicUrl(p)).filter(Boolean),
   };
 }
 
 /** Lista na strone aktualnosci: tylko opublikowane, bez przyszlych dat. */
-export async function fetchPublishedArticles({ limit = 30, offset = 0 } = {}) {
+export async function fetchPublishedArticles({ limit = NEWS_PAGE_SIZE, offset = 0 } = {}) {
   const { data, error } = await supabase
     .from('articles')
-    .select(
-      'id, title, subtitle, content, titleen, subtitleen, contenten, imgurl, imgalt, published, pinned'
-    )
+    .select('id, title, subtitle, content, titleen, subtitleen, contenten, imgurl, imgalt, published, pinned')
     .eq('accepted', true)
     .not('published', 'is', null)
     .lte('published', new Date().toISOString())
@@ -52,25 +50,16 @@ export async function getPublishedArticleById(id) {
   return mapArticleRow(data);
 }
 
-export async function fetchArticles() {
+/** Strona listy w panelu: najnowsze wpisy, takze nieopublikowane. */
+export async function fetchArticles({ limit = ADMIN_PAGE_SIZE, offset = 0 } = {}) {
   const { data, error } = await supabase
     .from('articles')
     .select(ADMIN_COLUMNS)
-    .order('created', { ascending: false });
+    .order('created', { ascending: false })
+    .range(offset, offset + limit - 1);
 
   if (error) throw error;
   return (data ?? []).map(mapArticleRow);
-}
-
-export async function getArticleById(id) {
-  const { data, error } = await supabase
-    .from('articles')
-    .select(ADMIN_COLUMNS)
-    .eq('id', id)
-    .maybeSingle();
-
-  if (error) throw error;
-  return mapArticleRow(data);
 }
 
 export async function createArticle(payload) {
@@ -88,18 +77,21 @@ export async function deleteArticle(id) {
   if (error) throw error;
 }
 
-export async function toggleAccept(id, current) {
-  const { error } = await supabase
+/**
+ * Przelacza pole logiczne tylko wtedy, gdy w bazie nadal jest wartosc widziana przez administratora.
+ * Dwie osoby klikajace jednoczesnie nie nadpisza sobie zmian.
+ */
+async function toggleFlag(id, column, current) {
+  const { data, error } = await supabase
     .from('articles')
-    .update({ accepted: !current })
-    .eq('id', id);
+    .update({ [column]: !current })
+    .eq('id', id)
+    .eq(column, Boolean(current))
+    .select('id');
   if (error) throw error;
+  if (!data?.length)
+    throw new Error('Artykuł został w międzyczasie zmieniony. Odśwież listę i spróbuj ponownie.');
 }
 
-export async function togglePinned(id, current) {
-  const { error } = await supabase
-    .from('articles')
-    .update({ pinned: !current })
-    .eq('id', id);
-  if (error) throw error;
-}
+export const toggleAccept = (id, current) => toggleFlag(id, 'accepted', current);
+export const togglePinned = (id, current) => toggleFlag(id, 'pinned', current);

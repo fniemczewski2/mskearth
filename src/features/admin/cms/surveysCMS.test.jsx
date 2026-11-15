@@ -21,7 +21,13 @@ describe('SurveysCMS', () => {
     Object.values(db).forEach((f) => f.mockReset());
     db.fetchSurveys.mockResolvedValue([]);
     db.fetchSurveyDetails.mockResolvedValue({ windows: [], slots: [], bookings: [] });
-    db.createSurvey.mockResolvedValue({ id: 's1', slug: 'abc', title: 'Dyżury', capacity: 2, max_slots_per_user: 2 });
+    db.createSurvey.mockResolvedValue({
+      id: 's1',
+      slug: 'abc',
+      title: 'Dyżury',
+      capacity: 2,
+      max_slots_per_user: 2,
+    });
     db.addWindow.mockResolvedValue();
   });
 
@@ -48,14 +54,21 @@ describe('SurveysCMS', () => {
 
     await user.click(screen.getByRole('button', { name: 'Utwórz ankietę' }));
     await waitFor(() => expect(db.createSurvey).toHaveBeenCalled());
-    expect(db.createSurvey).toHaveBeenCalledWith({ title: 'Dyżury', description: null, capacity: 2, max_slots_per_user: 2 });
+    expect(db.createSurvey).toHaveBeenCalledWith({
+      title: 'Dyżury',
+      description: null,
+      capacity: 2,
+      max_slots_per_user: 2,
+    });
     expect(db.addWindow).toHaveBeenCalledTimes(1);
     const [id, win, slots] = db.addWindow.mock.calls[0];
     expect(id).toBe('s1');
     expect(win).toMatchObject({ date: '2026-10-27', start: '12:00', end: '16:00', slotMinutes: 60 });
     expect(slots).toHaveLength(4);
     // Po utworzeniu pokazuje się publiczny adres.
-    expect(await screen.findByLabelText('Publiczny adres ankiety')).toHaveValue(`${window.location.origin}/pl/ankieta/abc`);
+    expect(await screen.findByLabelText('Publiczny adres ankiety')).toHaveValue(
+      `${window.location.origin}/pl/ankieta/abc`
+    );
   });
 
   it('odrzuca okno z nieprawidłowym zakresem godzin', async () => {

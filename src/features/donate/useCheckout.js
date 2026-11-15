@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 
-export const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+import { DEFAULT_LANG, LANGS } from '../../shared/config/site.js';
+import { getCaptchaToken } from '../../shared/lib/captcha.js';
 
 function isEmbedded() {
   try {
@@ -40,6 +41,7 @@ export default function useCheckout({ t, lang }) {
     setFallbackUrl('');
 
     try {
+      const captcha = await getCaptchaToken();
       const res = await fetch('/api/create-checkout-session', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -48,10 +50,11 @@ export default function useCheckout({ t, lang }) {
           name,
           email,
           newsletter,
-          locale: lang === 'en' ? 'en' : 'pl',
+          locale: LANGS.includes(lang) ? lang : DEFAULT_LANG,
           payment_type: isRecurring ? 'recurring' : 'onetime',
           returnHost: window.location.hostname,
           attemptId: attemptRef.current,
+          captcha,
         }),
       });
 

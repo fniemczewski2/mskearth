@@ -1,7 +1,7 @@
 import { log, redact } from './_lib/log.js';
 import { requireSupabaseAdmin } from './_lib/supabaseAdmin.js';
-import { stripe } from './_lib/stripe.js';
-import { subscribeToKit } from './_lib/kit.js';
+import { getStripe } from './_lib/stripe.js';
+import { subscribeToNewsletter } from './_lib/getresponse.js';
 
 export const config = { api: { bodyParser: false } };
 
@@ -14,11 +14,7 @@ async function readRawBody(req) {
 }
 
 function subscriptionIdOf(invoice) {
-  return (
-    invoice.parent?.subscription_details?.subscription ??
-    invoice.subscription ??
-    null
-  );
+  return invoice.parent?.subscription_details?.subscription ?? invoice.subscription ?? null;
 }
 
 function paymentIntentIdOf(invoice) {
@@ -35,7 +31,7 @@ export default async function handler(req, res) {
   let event;
   try {
     const raw = await readRawBody(req);
-    event = stripe.webhooks.constructEvent(
+    event = getStripe().webhooks.constructEvent(
       raw,
       req.headers['stripe-signature'],
       process.env.STRIPE_WEBHOOK_SECRET
@@ -98,7 +94,9 @@ async function handleSession(session, forcedStatus) {
   const status = statusOf(session, forcedStatus);
   const metadata = session.metadata ?? {};
   const paymentIntentId =
-    typeof session.payment_intent === 'string' ? session.payment_intent : session.payment_intent?.id ?? null;
+    typeof session.payment_intent === 'string'
+      ? session.payment_intent
+      : (session.payment_intent?.id ?? null);
 
   const patch = {
     status,
@@ -106,9 +104,41 @@ async function handleSession(session, forcedStatus) {
     stripe_payment_intent_id: paymentIntentId,
   };
 
+  // Jedno zapytanie (funkcja SQL z blokada wiersza) zamiast update + insert:
+  // rownolegle zdarzenia Stripe nie utworza dwoch wierszy ani nie cofna statusu "completed".
+  const row = {
+    ...patch,
+    amount: (session.amount_total ?? 0) / 100,
+    currency: (session.currency ?? 'pln').toUpperCase(),
+    donor_name: metadata.donor_name || null,
+    donor_email: session.customer_details?.email ?? metadata.donor_email ?? null,
+    stripe_session_id: session.id,
+    newsletter: metadata.newsletter === 'true',
+    payment_type: metadata.payment_type === 'recurring' ? 'recurring' : 'onetime',
+  };
+  const { error: rpcError } = await requireSupabaseAdmin().rpc('record_donation_session', { p_row: row });
+  // PGRST202 = funkcja jeszcze nie wdrozona (migracja 20261114120000): sciezka zgodna wstecz.
+  if (rpcError?.code === 'PGRST202') await recordSessionLegacy(session, patch, row, status);
+  else if (rpcError) throw rpcError;
+
+  log.info('checkout.session', { session_id: session.id, status });
+
+  if (status === 'completed' && metadata.newsletter === 'true') {
+    const email = session.customer_details?.email ?? metadata.donor_email;
+    if (email) {
+      try {
+        await subscribeToNewsletter(email, { name: metadata.donor_name });
+      } catch (err) {
+        // Brak zapisu do newslettera nie moze blokowac ksiegowania darowizny.
+        log.error('donor.newsletter', err, { email: redact(email) });
+      }
+    }
+  }
+}
+
+async function recordSessionLegacy(session, patch, row, status) {
   let query = requireSupabaseAdmin().from('donations').update(patch).eq('stripe_session_id', session.id);
-  // Stripe nie gwarantuje kolejnosci zdarzen: spozniony/ponowiony "pending" nie moze
-  // cofnac juz zaksiegowanej wplaty.
+  // Stripe nie gwarantuje kolejnosci zdarzen: spozniony "pending" nie moze cofnac zaksiegowanej wplaty.
   if (status === 'pending') query = query.eq('status', 'pending');
   const { data: updated, error } = await query.select('id');
   if (error) throw error;
@@ -124,32 +154,9 @@ async function handleSession(session, forcedStatus) {
       if (existing && existing.length > 0) return;
     }
     // Wiersz "pending" nie powstal przy tworzeniu sesji: odtwarzamy go z metadanych.
-    const { error: insertError } = await requireSupabaseAdmin().from('donations').insert({
-      ...patch,
-      amount: (session.amount_total ?? 0) / 100,
-      currency: (session.currency ?? 'pln').toUpperCase(),
-      donor_name: metadata.donor_name || null,
-      donor_email: session.customer_details?.email ?? metadata.donor_email ?? null,
-      stripe_session_id: session.id,
-      newsletter: metadata.newsletter === 'true',
-      payment_type: metadata.payment_type === 'recurring' ? 'recurring' : 'onetime',
-    });
+    const { error: insertError } = await requireSupabaseAdmin().from('donations').insert(row);
     if (insertError && insertError.code !== '23505') throw insertError;
     log.warn('checkout.row_recreated', { session_id: session.id });
-  }
-
-  log.info('checkout.session', { session_id: session.id, status });
-
-  if (status === 'completed' && metadata.newsletter === 'true') {
-    const email = session.customer_details?.email ?? metadata.donor_email;
-    if (email) {
-      try {
-        await subscribeToKit(email);
-      } catch (err) {
-        // Brak zapisu do newslettera nie moze blokowac ksiegowania darowizny.
-        log.error('donor.newsletter', err, { email: redact(email) });
-      }
-    }
   }
 }
 
@@ -173,22 +180,24 @@ async function handleInvoicePaymentSucceeded(invoice, eventId) {
 
   if (invoice.billing_reason === 'subscription_create') return;
 
-  const subscription = await stripe.subscriptions.retrieve(subscriptionId);
+  const subscription = await getStripe().subscriptions.retrieve(subscriptionId);
   const metadata = subscription.metadata ?? {};
 
-  const { error } = await requireSupabaseAdmin().from('donations').insert({
-    stripe_event_id: eventId,
-    amount: invoice.amount_paid / 100,
-    currency: (invoice.currency ?? 'pln').toUpperCase(),
-    donor_name: metadata.donor_name || null,
-    donor_email: invoice.customer_email ?? metadata.donor_email ?? null,
-    status: 'completed',
-    payment_type: 'recurring',
-    stripe_payment_intent_id: paymentIntentIdOf(invoice),
-    completed_at: invoice.status_transitions?.paid_at
-      ? new Date(invoice.status_transitions.paid_at * 1000).toISOString()
-      : new Date().toISOString(),
-  });
+  const { error } = await requireSupabaseAdmin()
+    .from('donations')
+    .insert({
+      stripe_event_id: eventId,
+      amount: invoice.amount_paid / 100,
+      currency: (invoice.currency ?? 'pln').toUpperCase(),
+      donor_name: metadata.donor_name || null,
+      donor_email: invoice.customer_email ?? metadata.donor_email ?? null,
+      status: 'completed',
+      payment_type: 'recurring',
+      stripe_payment_intent_id: paymentIntentIdOf(invoice),
+      completed_at: invoice.status_transitions?.paid_at
+        ? new Date(invoice.status_transitions.paid_at * 1000).toISOString()
+        : new Date().toISOString(),
+    });
 
   if (error && error.code !== '23505') throw error;
 
@@ -198,15 +207,17 @@ async function handleInvoicePaymentSucceeded(invoice, eventId) {
 async function handleInvoicePaymentFailed(invoice, eventId) {
   if (!subscriptionIdOf(invoice)) return;
 
-  const { error } = await requireSupabaseAdmin().from('donations').insert({
-    stripe_event_id: eventId,
-    amount: invoice.amount_due / 100,
-    currency: (invoice.currency ?? 'pln').toUpperCase(),
-    donor_email: invoice.customer_email ?? null,
-    status: 'failed',
-    payment_type: 'recurring',
-    stripe_payment_intent_id: paymentIntentIdOf(invoice),
-  });
+  const { error } = await requireSupabaseAdmin()
+    .from('donations')
+    .insert({
+      stripe_event_id: eventId,
+      amount: invoice.amount_due / 100,
+      currency: (invoice.currency ?? 'pln').toUpperCase(),
+      donor_email: invoice.customer_email ?? null,
+      status: 'failed',
+      payment_type: 'recurring',
+      stripe_payment_intent_id: paymentIntentIdOf(invoice),
+    });
 
   if (error && error.code !== '23505') throw error;
 }
