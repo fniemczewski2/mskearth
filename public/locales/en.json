@@ -164,7 +164,9 @@
     "monthlySuffix": " / month",
     "paymentType": "Donation type",
     "progress": "{current} of {goal} raised",
-    "openCheckout": "If the payment page didn't open, click here"
+    "openCheckout": "If the payment page didn't open, click here",
+    "recurringHint": "You can cancel at any time on the",
+    "recurringLink": "monthly donation page"
   },
   "buttons": {
     "joinUs": "Join Us",
@@ -343,7 +345,12 @@
     "backHome": "Back to homepage",
     "getInvolved": "Learn more",
     "shareOn": "Share on {platform}",
-    "loadError": "Could not load content."
+    "loadError": "Could not load content.",
+    "manageHint": "You can change or cancel your monthly donation at any time.",
+    "manageCta": "Manage monthly donation",
+    "managePending": "Opening…",
+    "manageFailed": "Could not open the panel.",
+    "manageLink": "Monthly donation page"
   },
   "paths": [
     {
@@ -463,6 +470,9 @@
       "title": "Support us - Youth Climate Strike Poland",
       "description": "Make a one-time or monthly donation to the Friends of the Youth Climate Strike Foundation."
     },
+    "subscription": {
+      "title": "Monthly donation - Youth Climate Strike Poland"
+    },
     "thankyou": {
       "title": "Thank you for your support - MSK"
     },
@@ -529,5 +539,13 @@
     "errRate": "Too many attempts. Please try later.",
     "errTimeout": "Request timed out. Please try again.",
     "errGeneric": "Could not save your booking. Please try again."
+  },
+  "subscription": {
+    "h1": "Monthly donation",
+    "intro": "You can change or cancel your monthly donation at any time. This is handled by Stripe, our payment provider.",
+    "portalHint": "Enter the email address used for the donation. Stripe will send a link to a panel where you can change the card or cancel the donation.",
+    "portalCta": "Manage donation",
+    "contactHint": "To change or cancel the donation, write to us from the address used for the donation:",
+    "contactFallback": "If the link does not arrive, write to us:"
   }
 }

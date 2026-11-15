@@ -21,6 +21,7 @@ const Foundation = lazyWithRetry(() => import('../features/foundation/foundation
 const Contact = lazyWithRetry(() => import('../features/contact/contact.jsx'));
 const DonatePage = lazyWithRetry(() => import('../features/donate/donatePage.jsx'));
 const ThankYou = lazyWithRetry(() => import('../features/donate/thankyou.jsx'));
+const SubscriptionPage = lazyWithRetry(() => import('../features/donate/subscriptionPage.jsx'));
 const SurveyPage = lazyWithRetry(() => import('../features/survey/surveyPage.jsx'));
 const NotFound = lazyWithRetry(() => import('../features/notFound/notFound.jsx'));
 
@@ -90,6 +91,7 @@ export default function App() {
               <Route path="kontakt" element={<Contact />} />
               <Route path="wesprzyj" element={<DonatePage />} />
               <Route path="dziekujemy" element={<ThankYou />} />
+              <Route path="subskrypcja" element={<SubscriptionPage />} />
               <Route path="ankieta/:slug" element={<SurveyPage />} />
               <Route path="*" element={<NotFound />} />
             </Routes>

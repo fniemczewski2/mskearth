@@ -1,4 +1,5 @@
-import { useCallback, useRef, useState } from 'react';
+import { useCallback, useRef } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 
 import ArticlesCMS from './cms/articlesCMS.jsx';
 import CitiesLocalCMS from './cms/citiesCMS.jsx';
@@ -6,6 +7,7 @@ import FoundationCMS from './cms/foundationCMS.jsx';
 import ContactPeopleCMS from './cms/contactCMS.jsx';
 import RecruitmentCMS from './cms/recruitmentCMS.jsx';
 import SurveysCMS from './cms/surveysCMS.jsx';
+import FinancePanel from './financePanel.jsx';
 
 const TABS = [
   { id: 'recruitment', label: 'Rekrutacja' },
@@ -14,7 +16,11 @@ const TABS = [
   { id: 'foundation', label: 'Fundacja' },
   { id: 'contact', label: 'Kontakt' },
   { id: 'surveys', label: 'Ankiety' },
+  { id: 'finance', label: 'Finanse', path: '/admin/finanse' },
 ];
+
+const DEFAULT_TAB = 'articles';
+const pathOf = (tab) => tab.path ?? `/admin/${tab.id === DEFAULT_TAB ? '' : tab.id}`.replace(/\/$/, '');
 
 const PANELS = {
   recruitment: RecruitmentCMS,
@@ -23,16 +29,24 @@ const PANELS = {
   foundation: FoundationCMS,
   contact: ContactPeopleCMS,
   surveys: SurveysCMS,
+  finance: FinancePanel,
 };
 
 function AdminPanelNav() {
-  const [formType, setFormType] = useState('articles');
+  // Aktywna zakladka wynika z adresu (np. /admin/finanse), wiec mozna do niej linkowac.
+  const { pathname } = useLocation();
+  const navigate = useNavigate();
+  const current = pathname.replace(/\/$/, '');
+  const formType = TABS.find((tab) => pathOf(tab) === current)?.id ?? DEFAULT_TAB;
   const tabRefs = useRef(new Map());
 
-  const activate = useCallback((id) => {
-    setFormType(id);
-    requestAnimationFrame(() => tabRefs.current.get(id)?.focus());
-  }, []);
+  const activate = useCallback(
+    (id) => {
+      navigate(pathOf(TABS.find((tab) => tab.id === id)));
+      requestAnimationFrame(() => tabRefs.current.get(id)?.focus());
+    },
+    [navigate]
+  );
 
   const handleKeyNav = useCallback(
     (e) => {

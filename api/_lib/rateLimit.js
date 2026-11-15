@@ -20,7 +20,12 @@ async function upstash(parts) {
 
 let warnedNoUpstash = false;
 
-export async function isLimited(key, { max = 5, windowSec = 60 } = {}) {
+/**
+ * Zwraca true po przekroczeniu limitu. Bez Upstash (brak konfiguracji lub blad) licznik dziala w pamieci
+ * jednej instancji, chyba ze failClosed = true: wtedy rzuca blad RateLimitUnavailable.
+ */
+export async function isLimited(key, { max = 5, windowSec = 60, failClosed = false } = {}) {
+  let failure = null;
   try {
     // Klucz dostaje TTL przed zwiekszeniem licznika, wiec blad drugiego wywolania nie blokuje go na stale.
     const created = await upstash(['SET', key, '0', 'EX', String(windowSec), 'NX']);
@@ -28,13 +33,20 @@ export async function isLimited(key, { max = 5, windowSec = 60 } = {}) {
       const hits = await upstash(['INCR', key]);
       return Number(hits) > max;
     }
+    failure = new Error('Brak UPSTASH_REDIS_REST_URL/TOKEN');
     if (!warnedNoUpstash) {
       warnedNoUpstash = true;
-      // Bez Upstash limit obejmuje tylko jedna instancje funkcji.
-      log.error('ratelimit.memory_fallback', new Error('Brak UPSTASH_REDIS_REST_URL/TOKEN'));
+      log.error('ratelimit.memory_fallback', failure);
     }
   } catch (err) {
+    failure = err;
     log.error('ratelimit.upstash_error', err);
+  }
+
+  if (failClosed) {
+    const err = new Error(`Limit zapytan niedostepny: ${failure?.message}`);
+    err.code = 'rate_limit_unavailable';
+    throw err;
   }
 
   const now = Date.now();
@@ -52,10 +64,21 @@ export async function isLimited(key, { max = 5, windowSec = 60 } = {}) {
 
 export const clientIp = clientIpOf;
 
-/** Sprawdza limit z RATE_LIMITS[name]; przy przekroczeniu odpowiada 429 i zwraca true. */
+/**
+ * Sprawdza limit z RATE_LIMITS[name]; przy przekroczeniu odpowiada 429 i zwraca true.
+ * Limity z failClosed odpowiadaja 503, gdy Redis jest niedostepny (zadanie nie przechodzi).
+ */
 export async function rejectIfLimited(req, res, name) {
   const limit = RATE_LIMITS[name];
-  if (!(await isLimited(`${name}:${clientIp(req)}`, limit))) return false;
+  let limited;
+  try {
+    limited = await isLimited(`${name}:${clientIp(req)}`, limit);
+  } catch (err) {
+    log.security('rate_limit_unavailable', req, { limit: name });
+    res.status(503).json({ code: err.code, error: msg(req, 'unavailable') });
+    return true;
+  }
+  if (!limited) return false;
   log.security('rate_limited', req, { limit: name });
   res.setHeader('Retry-After', String(limit.windowSec));
   res.status(429).json({ code: 'rate_limited', error: msg(req, 'rateLimited') });

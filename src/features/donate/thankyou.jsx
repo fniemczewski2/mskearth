@@ -1,3 +1,6 @@
+import { useEffect, useState } from 'react';
+import { Link, useSearchParams } from 'react-router-dom';
+
 import Seo from '../../shared/components/Seo.jsx';
 import { format, useTranslations } from '../../shared/i18n/useTranslations.js';
 import { SITE_URL } from '../../shared/config/site.js';
@@ -11,6 +14,39 @@ const PLATFORMS = [
 export default function ThankYou() {
   const { t, lang, ready } = useTranslations();
   const ty = t.thankyou ?? {};
+  const [params] = useSearchParams();
+  const sessionId = params.get('session_id');
+  const isRecurring = params.get('typ') === 'cykliczna' && Boolean(sessionId);
+  const [portal, setPortal] = useState({ busy: false, error: '' });
+
+  // Bez webhooka wplate ksieguje to wywolanie: serwer pobiera stan sesji ze Stripe i zapisuje go w bazie.
+  useEffect(() => {
+    if (!sessionId) return;
+    fetch('/api/checkout-confirm', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ sessionId }),
+    }).catch((err) => console.error('Checkout confirm error:', err));
+  }, [sessionId]);
+
+  // Link z potwierdzenia otwiera portal Stripe bez logowania; serwer sprawdza sesje i jej wiek.
+  const openPortal = async () => {
+    if (portal.busy) return;
+    setPortal({ busy: true, error: '' });
+    try {
+      const res = await fetch('/api/stripe-portal', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ sessionId, locale: lang, returnHost: window.location.hostname }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok || !data.url)
+        throw new Error(data.error ?? ty.manageFailed ?? 'Nie udało się otworzyć panelu.');
+      window.location.assign(data.url);
+    } catch (err) {
+      setPortal({ busy: false, error: err.message });
+    }
+  };
 
   const handleShare = (platform) => {
     const text = ty.shareText || 'Wspieram Młodzieżowy Strajk Klimatyczny!';
@@ -53,6 +89,28 @@ export default function ThankYou() {
                   'Gdy płatność zostanie zaksięgowana, Stripe wyśle potwierdzenie na Twój adres e-mail.'}
               </p>
             </div>
+
+            {isRecurring && (
+              <div className="info-box">
+                <p>{ty.manageHint ?? 'Wpłatę cykliczną możesz w każdej chwili zmienić lub anulować.'}</p>
+                <button
+                  type="button"
+                  className="primaryBtn"
+                  onClick={openPortal}
+                  aria-disabled={portal.busy ? 'true' : 'false'}
+                >
+                  {portal.busy
+                    ? (ty.managePending ?? 'Otwieranie…')
+                    : (ty.manageCta ?? 'Zarządzaj wpłatą cykliczną')}
+                </button>
+                {portal.error && (
+                  <p className="formError formError--spaced" role="alert">
+                    {portal.error}{' '}
+                    <Link to={`/${lang}/subskrypcja`}>{ty.manageLink ?? 'Strona wpłaty cyklicznej'}</Link>
+                  </p>
+                )}
+              </div>
+            )}
 
             {description.map((paragraph) => (
               <p key={paragraph}>{paragraph}</p>

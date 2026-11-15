@@ -7,6 +7,7 @@ import {
   INTL_LOCALE,
   NAME_MAX_LENGTH,
   PRIVACY_POLICY_PATH,
+  SITE_URL,
 } from '../../shared/config/site.js';
 import useCheckout from './useCheckout.js';
 import './donate.css';
@@ -254,6 +255,17 @@ export default function DonateStripe({ headingLevel = 2, hideHeading = false }) 
                 }`}
           </button>
         </div>
+
+        {isRecurring && (
+          <p className="agreement">
+            {d.recurringHint ?? 'Możesz zrezygnować w każdej chwili na stronie'}{' '}
+            <a href={`${SITE_URL}/${lang}/subskrypcja`} target="_blank" rel="noopener noreferrer">
+              {d.recurringLink ?? 'wpłaty cyklicznej'}
+              <span className="sr-only"> {t.a11y?.opensNewTab ?? '(otwiera się w nowej karcie)'}</span>
+            </a>
+            .
+          </p>
+        )}
 
         <div className="trust-indicators">
           <p className="trust-text">

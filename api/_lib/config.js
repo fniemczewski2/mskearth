@@ -18,6 +18,10 @@ export const RATE_LIMITS = {
   newsletter: { max: 3, windowSec: 3600 },
   survey: { max: 10, windowSec: 3600 },
   contact: { max: 5, windowSec: 3600 },
+  // failClosed: bez dzialajacego Redis zadanie jest odrzucane (dostep do danych platniczych).
+  portal: { max: 10, windowSec: 3600, failClosed: true },
+  confirm: { max: 20, windowSec: 3600 },
+  finance: { max: 120, windowSec: 3600, failClosed: true },
 };
 
 export const UPSTREAM_TIMEOUT_MS = 10_000;

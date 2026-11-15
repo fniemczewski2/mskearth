@@ -164,7 +164,9 @@
     "monthlySuffix": " / mies.",
     "paymentType": "Rodzaj wsparcia",
     "progress": "Zebrano {current} z {goal}",
-    "openCheckout": "Jeśli płatność się nie otworzyła, kliknij tutaj"
+    "openCheckout": "Jeśli płatność się nie otworzyła, kliknij tutaj",
+    "recurringHint": "Możesz zrezygnować w każdej chwili na stronie",
+    "recurringLink": "wpłaty cyklicznej"
   },
   "buttons": {
     "joinUs": "Dołącz do nas",
@@ -345,7 +347,12 @@
     "backHome": "Wróć do strony głównej",
     "getInvolved": "Dowiedz się więcej",
     "shareOn": "Udostępnij na {platform}",
-    "loadError": "Nie udało się wczytać treści."
+    "loadError": "Nie udało się wczytać treści.",
+    "manageHint": "Wpłatę cykliczną możesz w każdej chwili zmienić lub anulować.",
+    "manageCta": "Zarządzaj wpłatą cykliczną",
+    "managePending": "Otwieranie…",
+    "manageFailed": "Nie udało się otworzyć panelu.",
+    "manageLink": "Strona wpłaty cyklicznej"
   },
   "paths": [
     {
@@ -465,6 +472,9 @@
       "title": "Wesprzyj nas - Młodzieżowy Strajk Klimatyczny",
       "description": "Wpłać darowiznę jednorazową lub comiesięczną na cele statutowe: Fundacja Przyjaciół Młodzieżowego Strajku Klimatycznego."
     },
+    "subscription": {
+      "title": "Wpłata cykliczna - Młodzieżowy Strajk Klimatyczny"
+    },
     "thankyou": {
       "title": "Dziękujemy za wsparcie - MSK"
     },
@@ -531,5 +541,13 @@
     "errRate": "Zbyt wiele prób. Spróbuj później.",
     "errTimeout": "Przekroczono czas. Spróbuj ponownie.",
     "errGeneric": "Nie udało się zapisać. Spróbuj ponownie."
+  },
+  "subscription": {
+    "h1": "Wpłata cykliczna",
+    "intro": "Comiesięczną darowiznę możesz w każdej chwili zmienić albo anulować. Obsługuje to Stripe, nasz operator płatności.",
+    "portalHint": "Podaj adres e-mail użyty przy wpłacie. Stripe wyśle na niego link do panelu, w którym zmienisz kartę lub anulujesz wpłatę.",
+    "portalCta": "Zarządzaj wpłatą",
+    "contactHint": "Żeby zmienić lub anulować wpłatę, napisz do nas z adresu użytego przy wpłacie:",
+    "contactFallback": "Jeśli link nie dotrze, napisz do nas:"
   }
 }

@@ -7,5 +7,6 @@ Disallow: /donate-iframe
 Disallow: /donate-belka
 Disallow: /*/ankieta/
 Disallow: /*/dziekujemy
+Disallow: /*/subskrypcja
 
 Sitemap: https://msk.earth/sitemap.xml

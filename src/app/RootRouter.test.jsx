@@ -33,6 +33,11 @@ describe('RootRouter language redirects', () => {
     expect(screen.getByTestId('app')).toHaveTextContent('/pl');
   });
 
+  it('sends an OAuth callback that landed on the root to the admin panel', async () => {
+    renderAt('/?code=abc123');
+    expect(await screen.findByTestId('admin-panel')).toBeInTheDocument();
+  });
+
   it('redirects an un-prefixed path to the default language, preserving the rest of the path', () => {
     renderAt('/fundacja');
     expect(screen.getByTestId('app')).toHaveTextContent('/pl/fundacja');

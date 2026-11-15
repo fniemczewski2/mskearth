@@ -39,7 +39,7 @@
       "destination": "/"
     },
     {
-      "source": "/:lang(pl|en)/:page(aktualnosci|o-nas|miasta|fundacja|kontakt|wesprzyj|dziekujemy)",
+      "source": "/:lang(pl|en)/:page(aktualnosci|o-nas|miasta|fundacja|kontakt|wesprzyj|dziekujemy|subskrypcja)",
       "destination": "/"
     },
     {
@@ -51,7 +51,7 @@
       "destination": "/"
     },
     {
-      "source": "/:page(aktualnosci|o-nas|miasta|fundacja|kontakt|wesprzyj|dziekujemy)",
+      "source": "/:page(aktualnosci|o-nas|miasta|fundacja|kontakt|wesprzyj|dziekujemy|subskrypcja)",
       "destination": "/"
     },
     {
@@ -137,7 +137,7 @@
       ]
     },
     {
-      "source": "/(pl|en)/(ankieta/.*|dziekujemy)",
+      "source": "/(pl|en)/(ankieta/.*|dziekujemy|subskrypcja)",
       "headers": [
         {
           "key": "X-Robots-Tag",

@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 
 import { DEFAULT_LANG, LANGS } from '../../shared/config/site.js';
 import { getCaptchaToken } from '../../shared/lib/captcha.js';
@@ -11,23 +11,17 @@ function isEmbedded() {
   }
 }
 
-function newAttemptId() {
-  return globalThis.crypto?.randomUUID?.() ?? `${Date.now()}-${Math.random().toString(36).slice(2)}`;
-}
-
 /** Wspolna logika przekierowania do Stripe Checkout dla obu formularzy darowizn. */
 export default function useCheckout({ t, lang }) {
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState('');
   const [fallbackUrl, setFallbackUrl] = useState('');
-  const attemptRef = useRef(newAttemptId());
 
   // Powrot z Stripe przyciskiem "Wstecz" przywraca strone z bfcache razem ze stanem
-  // busy=true: odblokuj przycisk i uzyj nowego klucza idempotencji.
+  // busy=true: odblokuj przycisk.
   useEffect(() => {
     const onPageShow = (e) => {
       if (!e.persisted) return;
-      attemptRef.current = newAttemptId();
       setBusy(false);
     };
     window.addEventListener('pageshow', onPageShow);
@@ -53,7 +47,6 @@ export default function useCheckout({ t, lang }) {
           locale: LANGS.includes(lang) ? lang : DEFAULT_LANG,
           payment_type: isRecurring ? 'recurring' : 'onetime',
           returnHost: window.location.hostname,
-          attemptId: attemptRef.current,
           captcha,
         }),
       });
@@ -79,8 +72,6 @@ export default function useCheckout({ t, lang }) {
         window.open(data.url, '_blank', 'noopener');
       }
     } catch (e) {
-      // Nowa proba = nowy klucz idempotencji.
-      attemptRef.current = newAttemptId();
       setErr(e.message || t.donate?.serverError || 'Wystąpił błąd po stronie serwera.');
       setBusy(false);
     }

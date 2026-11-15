@@ -23,10 +23,26 @@ export function LangGate() {
   return <App />;
 }
 
+const AUTH_CALLBACK_PARAMS = ['code', 'error', 'error_description'];
+const AUTH_CALLBACK_HASH = /(^|[#&])(access_token|error|error_code)=/;
+
+/**
+ * Strona glowna bez jezyka. Supabase odsyla tu po logowaniu Google, gdy adres /admin nie jest
+ * na liscie Redirect URLs projektu: wtedy parametry logowania trafiaja do panelu zamiast przepasc.
+ */
+function RootRedirect() {
+  const { search, hash } = useLocation();
+  const params = new URLSearchParams(search);
+  const isAuthCallback = AUTH_CALLBACK_PARAMS.some((p) => params.has(p)) || AUTH_CALLBACK_HASH.test(hash);
+
+  if (isAuthCallback) return <Navigate to={`/admin${search}${hash}`} replace />;
+  return <Navigate to={`/${DEFAULT_LANG}`} replace />;
+}
+
 export default function RootRouter() {
   return (
     <Routes>
-      <Route path="/" element={<Navigate to={`/${DEFAULT_LANG}`} replace />} />
+      <Route path="/" element={<RootRedirect />} />
       <Route
         path="/admin/*"
         element={

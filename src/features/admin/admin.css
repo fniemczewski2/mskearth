@@ -344,3 +344,23 @@
   justify-content: flex-end;
   margin-top: 16px;
 }
+
+.finance-figures {
+  display: grid;
+  gap: 16px;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  margin: 0;
+}
+.finance-figures dt {
+  color: var(--muted);
+  font-size: 13px;
+}
+.finance-figures dd {
+  font-size: var(--step-1);
+  font-weight: 700;
+  margin: 0;
+}
+.finance-search {
+  display: flex;
+  gap: 8px;
+}

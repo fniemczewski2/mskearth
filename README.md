@@ -18,11 +18,7 @@ Funkcje z katalogu `api/` nie działają pod `vite dev`. Żeby przetestować pł
 npx vercel dev --listen 3001   # w drugim terminalu; Vite proxuje /api na ten port
 ```
 
-Webhook Stripe w developmencie:
-
-```bash
-stripe listen --forward-to localhost:3001/api/stripe-webhook
-```
+Serwis działa wyłącznie na kluczach produkcyjnych Stripe (identyfikatory sesji `cs_live_`), więc potwierdzenia wpłaty i portalu nie da się przejść kluczem testowym.
 
 ## Skrypty
 
@@ -65,6 +61,8 @@ Pełna lista w `.env.example`.
 | `VITE_GA_MEASUREMENT_ID` | Google Analytics 4. Skrypt ładuje się dopiero po zgodzie w banerze cookies. Puste = brak analityki, baner jest samą informacją. |
 | `VITE_TURNSTILE_SITE_KEY`, `TURNSTILE_SECRET_KEY` | Cloudflare Turnstile w formularzach. Klucz witryny jest publiczny, sekret zostaje na serwerze (`api/_lib/captcha.js`). Bez pary kluczy captcha jest wyłączona. Żeby chronić też logowanie do panelu, włącz Turnstile w Supabase (Authentication → Attack Protection) z tym samym sekretem. |
 | `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `GOOGLE_REFRESH_TOKEN` | Wysyłka formularza kontaktowego przez Gmail API (zakres `gmail.send`) z konta, dla którego wystawiono token. |
+| `VITE_STRIPE_PORTAL_LOGIN_URL` | Opcjonalny link logowania do portalu klienta Stripe (tylko adresy `https://billing.stripe.com`). Pokazywany na stronie `/subskrypcja`; bez niego strona podaje adres e-mail fundacji. |
+| `STRIPE_PORTAL_CONFIGURATION_ID` | Opcjonalna konfiguracja portalu (`bpc_...`); pusta = domyślna z panelu Stripe. |
 | `CONTACT_RECIPIENT` | Adresat wiadomości z formularza kontaktowego. |
 | `UPSTASH_REDIS_REST_URL`, `UPSTASH_REDIS_REST_TOKEN` | Limit zapytań wspólny dla wszystkich instancji funkcji. Bez nich limit działa tylko w pamięci jednej instancji. |
 | `CRON_SECRET` i `SLACK_*` | Przypomnienia Slack (`api/slack-reminders.js`, cron w `vercel.json`: poniedziałki 10:00 UTC, co drugi tydzień). |
@@ -73,7 +71,19 @@ Sitemapa generowana po buildzie (`scripts/generate-sitemap.mjs`) potrzebuje tylk
 
 Kanoniczny host to `https://msk.earth`; `www.msk.earth` przekierowuje na niego (`vercel.json`).
 
-Darczyńcy, którzy zaznaczą newsletter, są zapisywani do GetResponse przez webhook Stripe po zaksięgowaniu płatności (`GETRESPONSE_API_KEY`, `GETRESPONSE_LIST_ID`: token listy z ustawień listy w GetResponse). Potwierdzenie zapisu (double opt-in) włącza się w ustawieniach listy. W Stripe włącz zdarzenia `checkout.session.completed`, `checkout.session.async_payment_succeeded` i `checkout.session.async_payment_failed` (BLIK, Przelewy24).
+### Płatności bez webhooka
+
+Serwis nie ma endpointu webhooka ani zmiennej `STRIPE_WEBHOOK_SECRET`. Po płatności Stripe przekierowuje na `/dziekujemy?session_id=...` (wpłata cykliczna: dodatkowo `&typ=cykliczna`). Strona podziękowania wywołuje `api/checkout-confirm`, a serwer pobiera stan sesji ze Stripe, zapisuje wpłatę w tabeli `donations` i zapisuje darczyńcę do GetResponse, jeśli zaznaczył newsletter (`GETRESPONSE_API_KEY`, `GETRESPONSE_LIST_ID`).
+
+Skutki braku webhooka:
+
+- wpłata jest księgowana w bazie tylko wtedy, gdy darczyńca wróci na stronę podziękowania; jeśli zamknie kartę wcześniej, wiersz zostaje ze statusem `pending` (pieniądze są w Stripe);
+- kolejne miesięczne pobrania wpłat cyklicznych nie trafiają do tabeli `donations`; ich stan pokazuje panel `/admin/finanse` prosto ze Stripe;
+- pasek zbiórki (`donation_stats`) liczy tylko wpłaty zaksięgowane w bazie.
+
+Wpłata cykliczna: przycisk „Zarządzaj wpłatą cykliczną" na stronie podziękowania (`api/stripe-portal`) działa 24 godziny od utworzenia sesji i ma limit 10 prób na godzinę z adresu IP. Limit wymaga Upstash Redis: bez niego endpoint odpowiada 503 (fail-closed). To samo dotyczy `api/finance`.
+
+Panel `/admin/finanse` (tylko administratorzy, `api/finance`): saldo Stripe (dostępne i w rozliczaniu), suma miesięczna wpłat cyklicznych, lista wpłat aktywnych i z nieudaną płatnością, wyszukiwanie i anulowanie z potwierdzeniem. Anulowanie zapisuje wpis w tabeli `security_events` (migracja `20261115120000_security_events.sql`).
 
 ## Baza danych
 
@@ -107,7 +117,7 @@ Jednorazowa konfiguracja:
    - Authorized redirect URIs: `https://<id-projektu>.supabase.co/auth/v1/callback`
    - Jeśli obie domeny są w jednym Google Workspace, ekran zgody można ustawić na *Internal*.
 2. **Supabase** → Authentication → Providers → **Google**: włącz i wklej Client ID oraz Client Secret.
-3. **Supabase** → Authentication → URL Configuration → *Redirect URLs*: dodaj `https://msk.earth/admin` i `http://localhost:5173/admin` (albo adres z `VITE_AUTH_CALLBACK_URL`).
+3. **Supabase** → Authentication → URL Configuration → *Redirect URLs*: dodaj `https://msk.earth/admin` i `http://localhost:5173/admin` (albo adres z `VITE_AUTH_CALLBACK_URL`). Bez tego wpisu Supabase odsyła po logowaniu na stronę główną (*Site URL*); aplikacja przekierowuje wtedy do `/admin`, ale tylko gdy *Site URL* wskazuje tę samą domenę.
 4. Wdróż migrację (`npx supabase db push`), a potem **Supabase** → Authentication → **Hooks** → *Before User Created* → Postgres → `public.hook_admin_google_domains` → włącz.
 5. Nic więcej: osoby z @msk.earth i @fpmsk.org.pl po pierwszym logowaniu przez Google mają dostęp do panelu. Konto Google z tym samym adresem co istniejące konto e-mail Supabase łączy automatycznie.
 
@@ -131,7 +141,10 @@ W panelu (`/admin` → zakładka **Ankiety**) tworzysz ankietę: tytuł, liczba 
 
 ```
 api/              funkcje serverless + wspólne moduły w _lib/
-  create-checkout-session, stripe-webhook   darowizny (Stripe)
+  create-checkout-session                   utworzenie płatności (Stripe Checkout)
+  checkout-confirm                          zaksięgowanie wpłaty po powrocie ze Stripe
+  stripe-portal                             zarządzanie wpłatą cykliczną (portal klienta Stripe)
+  finance                                   panel finansów dla administratorów
   newsletter-subscribe                      zapis do GetResponse
   contact                                   formularz kontaktowy (Gmail API)
   survey-book                               zapis na terminy ankiety

@@ -32,5 +32,6 @@ if (String(supabaseKey).startsWith('sb_secret_')) {
 export const env = {
   supabaseUrl,
   supabaseKey,
-  authCallbackUrl: import.meta.env.VITE_AUTH_CALLBACK_URL ?? undefined,
+  // Pusta wartosc z .env (VITE_AUTH_CALLBACK_URL=) znaczy "brak": logowanie wraca wtedy na /admin.
+  authCallbackUrl: import.meta.env.VITE_AUTH_CALLBACK_URL || undefined,
 };
